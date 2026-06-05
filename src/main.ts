@@ -1,15 +1,22 @@
 // Paw — Application Entry Point
 import { isEngineMode, setEngineMode, startEngineBridge } from './engine-bridge';
 import { pawEngine } from './engine';
-import { initDb, initDbEncryption, listModelPricing } from './db';
+import { initStorage, listModelPricing } from './db';
 import { initSecuritySettings } from './security';
 import { initAgentPolicies } from './features/agent-policies/molecules';
 import { initInjectionPolicy } from './features/prompt-injection/molecules';
 import { installErrorBoundary, setErrorHandler } from './error-boundary';
 import { appState, applyModelPricingOverrides } from './state/index';
-import { escHtml, populateModelSelect, promptModal, icon } from './components/helpers';
+import {
+  escHtml,
+  populateModelSelect,
+  promptModal,
+  icon,
+  cleanupTransientModals,
+} from './components/helpers';
 import { showToast } from './components/toast';
 import { initTheme, getTheme, setTheme } from './components/molecules/theme';
+import { initI18n } from './i18n';
 import { initHILModal } from './components/molecules/hil_modal';
 import {
   initChatListeners,
@@ -237,6 +244,7 @@ function handlePaletteAction(action: string) {
 document.addEventListener('DOMContentLoaded', async () => {
   try {
     console.debug('[main] Paw starting...');
+    cleanupTransientModals();
 
     // ── Lock screen gate — must authenticate before anything else ──
     await initLockScreen();
@@ -248,6 +256,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     initTheme();
+    initI18n();
 
     // ── Sidebar entrance animation (anime.js) ───────────────────────────
     sidebarNavEntrance('.nav-item');
@@ -299,69 +308,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     crashLog('startup');
 
-    let dbReady = false;
-    for (let attempt = 1; attempt <= 3; attempt++) {
-      try {
-        await initDb();
-        dbReady = true;
-        break;
-      } catch (e) {
-        console.warn(`[main] DB init attempt ${attempt}/3 failed:`, e);
-        if (attempt < 3) await new Promise((r) => setTimeout(r, 500 * attempt));
-      }
-    }
+    const dbReady = await initStorage();
     if (!dbReady) {
-      const dbBanner = $('db-error-banner');
-      if (dbBanner) {
-        dbBanner.style.display = 'flex';
-        $('db-error-retry')?.addEventListener('click', async () => {
-          try {
-            await initDb();
-            dbBanner.style.display = 'none';
-            showToast('Database connected successfully', 'success');
-            // Continue the init chain that was skipped
-            await initDbEncryption().catch((e) => {
-              console.error('[main] OS keychain unavailable after DB retry:', e);
-            });
-            await initSecuritySettings().catch(() => {});
-            await initAgentPolicies().catch(() => {});
-            await initInjectionPolicy().catch(() => {});
-          } catch (retryErr) {
-            const msg = $('db-error-message');
-            if (msg)
-              msg.textContent = `Retry failed: ${retryErr instanceof Error ? retryErr.message : String(retryErr)}`;
-          }
-        });
-        $('db-error-dismiss')?.addEventListener('click', () => {
-          dbBanner.style.display = 'none';
-        });
-      }
+      crashLog('sqlite unavailable at startup; using memory storage mode');
     }
 
-    const encReady = dbReady
-      ? await initDbEncryption().catch((e) => {
-          console.error('[main] OS keychain unavailable — DB field encryption disabled:', e);
-          return false;
-        })
-      : false;
-    if (dbReady) {
-      await initSecuritySettings().catch((e) =>
-        console.warn('[main] Security settings init failed:', e),
-      );
-      await initAgentPolicies().catch((e) => console.warn('[main] Agent policies init failed:', e));
-      await initInjectionPolicy().catch((e) =>
-        console.warn('[main] Injection policy init failed:', e),
-      );
-      // Load model pricing overrides from DB
-      try {
-        const pricingRows = await listModelPricing();
-        if (pricingRows.length > 0) {
-          applyModelPricingOverrides(pricingRows);
-          console.debug(`[main] Loaded ${pricingRows.length} model pricing override(s) from DB`);
-        }
-      } catch (e) {
-        console.warn('[main] Model pricing load failed:', e);
+    await initSecuritySettings().catch((e) =>
+      console.warn('[main] Security settings init failed:', e),
+    );
+    await initAgentPolicies().catch((e) => console.warn('[main] Agent policies init failed:', e));
+    await initInjectionPolicy().catch((e) =>
+      console.warn('[main] Injection policy init failed:', e),
+    );
+
+    // Load model pricing overrides from DB when SQLite is available.
+    try {
+      const pricingRows = await listModelPricing();
+      if (pricingRows.length > 0) {
+        applyModelPricingOverrides(pricingRows);
+        console.debug(`[main] Loaded ${pricingRows.length} model pricing override(s) from DB`);
       }
+    } catch (e) {
+      console.warn('[main] Model pricing load failed:', e);
     }
 
     // ── Persistent file log transport ────────────────────────────────────────
@@ -420,16 +388,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       console.warn('[main] File log transport init failed (non-fatal):', e);
     }
 
-    // Show persistent warning banner when encryption is unavailable
-    if (!encReady) {
-      const encBanner = $('encryption-warning-banner');
-      if (encBanner) {
-        encBanner.style.display = 'flex';
-        $('encryption-warning-dismiss')?.addEventListener('click', () => {
-          encBanner.style.display = 'none';
-        });
-      }
-    }
+    // Keychain access is lazy. Sensitive credential writes initialise encryption on demand
+    // and remain blocked if the OS keychain cannot protect them.
 
     MemoryPalaceModule.initPalaceEvents();
     window.addEventListener('palace-open-file', (e: Event) => {

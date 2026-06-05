@@ -6,6 +6,10 @@ import { invoke } from '@tauri-apps/api/core';
 import type {
   EngineConfig,
   EngineProviderConfig,
+  EntitlementCheck,
+  EnterpriseConfigureRequest,
+  EnterpriseOAuthStartRequest,
+  EnterpriseStatus,
   EngineChatRequest,
   EngineChatResponse,
   EngineSession,
@@ -218,6 +222,32 @@ export class PawEngineClient {
 
   async removeProvider(providerId: string): Promise<void> {
     return invoke('engine_remove_provider', { providerId });
+  }
+
+  // ── Enterprise Cloud ─────────────────────────────────────────────────
+
+  async enterpriseStatus(): Promise<EnterpriseStatus> {
+    return invoke<EnterpriseStatus>('engine_enterprise_status');
+  }
+
+  async enterpriseConfigure(request: EnterpriseConfigureRequest): Promise<EnterpriseStatus> {
+    return invoke<EnterpriseStatus>('engine_enterprise_configure', { request });
+  }
+
+  async enterpriseOAuthStart(request: EnterpriseOAuthStartRequest): Promise<EnterpriseStatus> {
+    return invoke<EnterpriseStatus>('engine_enterprise_oauth_start', { request });
+  }
+
+  async enterpriseHasEntitlement(feature: string): Promise<EntitlementCheck> {
+    return invoke<EntitlementCheck>('engine_enterprise_has_entitlement', { feature });
+  }
+
+  async enterpriseEnable(enabled: boolean): Promise<EnterpriseStatus> {
+    return invoke<EnterpriseStatus>('engine_enterprise_enable', { enabled });
+  }
+
+  async enterpriseLogout(removeProvider = true): Promise<EnterpriseStatus> {
+    return invoke<EnterpriseStatus>('engine_enterprise_logout', { removeProvider });
   }
 
   async listProviderModels(
@@ -1547,6 +1577,8 @@ export interface StoragePaths {
   is_custom: boolean;
   engine_db: string;
   engine_db_size: number;
+  frontend_db: string;
+  frontend_db_size: number;
   workspaces_dir: string;
   workspaces_size: number;
   skills_dir: string;

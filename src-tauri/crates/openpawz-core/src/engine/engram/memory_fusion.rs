@@ -1,4 +1,4 @@
-// ── Engram: Memory Fusion Pipeline (§ ENGRAM.md — Memory Fusion) ────────────
+// ── Engram: Memory Fusion Pipeline (§ docs/research/engram.md — Memory Fusion) ────────────
 //
 // Near-duplicate detection and merging for episodic memories.
 // FadeMem ablation shows removing fusion causes -53.7% F1 drop —

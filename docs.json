@@ -48,25 +48,25 @@
           {
             "group": "Home",
             "pages": [
-              "start/getting-started",
-              "start/overview",
-              "start/showcase"
+              "docs/start/getting-started",
+              "docs/start/overview",
+              "docs/start/showcase"
             ]
           },
           {
             "group": "Core concepts",
             "pages": [
-              "start/features"
+              "docs/start/features"
             ]
           },
           {
             "group": "First steps",
             "pages": [
-              "start/installation",
-              "start/first-agent",
-              "start/first-provider",
-              "start/configuration",
-              "start/dashboard"
+              "docs/start/installation",
+              "docs/start/first-agent",
+              "docs/start/first-provider",
+              "docs/start/configuration",
+              "docs/start/dashboard"
             ]
           }
         ]
@@ -77,56 +77,56 @@
           {
             "group": "Core",
             "pages": [
-              "guides/agents",
-              "guides/memory",
-              "guides/tasks",
-              "guides/skills"
+              "docs/guides/agents",
+              "docs/guides/memory",
+              "docs/guides/tasks",
+              "docs/guides/skills"
             ]
           },
           {
             "group": "Integrations",
             "pages": [
-              "guides/integrations",
-              "guides/mcp-bridge",
-              "guides/extensions",
-              "guides/n8n",
-              "guides/google-workspace",
-              "guides/voice",
-              "guides/email",
-              "guides/integration-guardrails",
-              "guides/integration-health"
+              "docs/guides/integrations",
+              "docs/guides/mcp-bridge",
+              "docs/guides/extensions",
+              "docs/guides/n8n",
+              "docs/guides/google-workspace",
+              "docs/guides/voice",
+              "docs/guides/email",
+              "docs/guides/integration-guardrails",
+              "docs/guides/integration-health"
             ]
           },
           {
             "group": "Workflows",
             "pages": [
-              "guides/flows",
-              "guides/orchestrator",
-              "guides/research",
-              "guides/trading",
-              "guides/automations",
-              "guides/slash-commands"
+              "docs/guides/flows",
+              "docs/guides/orchestrator",
+              "docs/guides/research",
+              "docs/guides/trading",
+              "docs/guides/automations",
+              "docs/guides/slash-commands"
             ]
           },
           {
             "group": "Tools",
             "pages": [
-              "guides/browser",
-              "guides/container-sandbox",
-              "guides/tailscale",
-              "guides/sessions"
+              "docs/guides/browser",
+              "docs/guides/container-sandbox",
+              "docs/guides/tailscale",
+              "docs/guides/sessions"
             ]
           },
           {
             "group": "Platform",
             "pages": [
-              "guides/dashboard",
-              "guides/foundry",
-              "guides/projects",
-              "guides/content-studio",
-              "guides/modular-workspace",
-              "guides/pawzhub",
-              "guides/pricing"
+              "docs/guides/dashboard",
+              "docs/guides/foundry",
+              "docs/guides/projects",
+              "docs/guides/content-studio",
+              "docs/guides/modular-workspace",
+              "docs/guides/pawzhub",
+              "docs/guides/pricing"
             ]
           }
         ]
@@ -160,17 +160,17 @@
           {
             "group": "AI Providers",
             "pages": [
-              "providers/overview",
-              "providers/ollama",
-              "providers/openai",
-              "providers/anthropic",
-              "providers/google",
-              "providers/openrouter",
-              "providers/deepseek",
-              "providers/grok",
-              "providers/mistral",
-              "providers/moonshot",
-              "providers/custom"
+              "docs/providers/overview",
+              "docs/providers/ollama",
+              "docs/providers/openai",
+              "docs/providers/anthropic",
+              "docs/providers/google",
+              "docs/providers/openrouter",
+              "docs/providers/deepseek",
+              "docs/providers/grok",
+              "docs/providers/mistral",
+              "docs/providers/moonshot",
+              "docs/providers/custom"
             ]
           }
         ]
@@ -181,20 +181,20 @@
           {
             "group": "Reference",
             "pages": [
-              "reference/architecture",
-              "reference/security",
-              "reference/quality",
-              "reference/troubleshooting"
+              "docs/reference/architecture",
+              "docs/reference/security",
+              "docs/reference/quality",
+              "docs/reference/troubleshooting"
             ]
           },
           {
             "group": "Original Research",
             "pages": [
-              "reference/librarian-method",
-              "reference/foreman-protocol",
-              "reference/conductor-protocol",
-              "reference/agent-canvas",
-              "reference/agent-execution-roadmap"
+              "docs/reference/librarian-method",
+              "docs/reference/foreman-protocol",
+              "docs/reference/conductor-protocol",
+              "docs/reference/agent-canvas",
+              "docs/reference/agent-execution-roadmap"
             ]
           }
         ]

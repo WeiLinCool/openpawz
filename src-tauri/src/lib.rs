@@ -111,12 +111,14 @@ pub fn run() {
 
     let engine_state =
         commands::state::EngineState::new().expect("Failed to initialize Paw Agent Engine");
+    {
+        let config = engine_state.config.lock();
+        openpawz_core::engine::http::set_model_proxy_config(config.model_proxy.clone());
+    }
 
-    // ── Unified Key Vault ─────────────────────────────────────────────────
-    // Pre-load all encryption keys from a single OS keychain entry.
-    // This triggers at most ONE keychain prompt instead of individual
-    // prompts per subsystem.  Keys are generated on first access if missing.
-    engine::key_vault::prefetch();
+    // Keychain access is intentionally lazy. Startup must not show a system
+    // prompt or mark credential storage unavailable before the user performs
+    // an action that actually needs protected secrets.
 
     // Initialize the cognitive event bus (§47.6 observability infrastructure).
     // Must happen before any gated_search / working_memory calls.
@@ -283,8 +285,11 @@ pub fn run() {
             commands::utility::keyring_has_password,
             commands::utility::keyring_delete_password,
             commands::utility::fetch_weather,
+            commands::utility::ensure_frontend_db_dir,
+            commands::utility::ensure_frontend_db_path,
             commands::utility::get_db_encryption_key,
             commands::utility::has_db_encryption_key,
+            commands::utility::retry_keychain,
             commands::utility::check_keychain_health,
             commands::utility::lock_screen_has_passphrase,
             commands::utility::lock_screen_set_passphrase,
@@ -315,6 +320,13 @@ pub fn run() {
             commands::config::engine_list_provider_models,
             commands::config::engine_status,
             commands::config::engine_auto_setup,
+            // ── Enterprise Cloud ──
+            commands::enterprise::engine_enterprise_status,
+            commands::enterprise::engine_enterprise_configure,
+            commands::enterprise::engine_enterprise_oauth_start,
+            commands::enterprise::engine_enterprise_has_entitlement,
+            commands::enterprise::engine_enterprise_enable,
+            commands::enterprise::engine_enterprise_logout,
             // ── Storage Paths ──
             commands::config::engine_storage_get_paths,
             commands::config::engine_storage_set_data_root,

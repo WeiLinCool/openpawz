@@ -1,0 +1,136 @@
+---
+title: "Google Workspace"
+description: "将 Pawz 连接到 Gmail、日历、云端硬盘、表格和文档——只需点击“使用 Google 登录”。"
+---
+
+# Google Workspace
+
+将 Pawz 连接到 Gmail、日历、云端硬盘、表格和文档。他可以读取您的收件箱、发送电子邮件、安排会议、浏览文件以及读写电子表格——全部无需动手。
+
+## Pawz 可以用 Google 做什么
+
+一旦连接，Pawz 可以获得 10 个 Google 工具：
+
+**邮件 (Gmail)**
+- 读取您的收件箱、搜索特定电子邮件 ("查找Sarah发来的所有未读电子邮件")
+- 读取完整电子邮件内容
+- 代表您发送电子邮件 (给任何人，带抄送、纯文本或HTML格式)
+
+**日历**
+- 查看您即将到来的日程 ("本周我有什么会议？")
+- 创建包含与会人员、地点和描述的活动
+
+**云端硬盘**
+- 浏览和搜索您的 Google Drive 文件
+- 读取文档、表格、PDF 和文本文件的内容
+
+**表格**
+- 读取电子表格数据 (以格式化的表格显示)
+- 将新行添加到电子表格中 (非常适合日志、跟踪和数据录入)
+
+**任何 Google API**
+- 一个通用的工具，可以访问任何 Google REST API 端点，用于上述未涵盖的任何内容
+
+---
+
+## 设置
+
+1. 前往 **技能** → **Google Workspace** → **启用** 功能
+2. 点击 **使用 Google 登录**
+3. 您的浏览器会打开——使用您的 Google 账户登录，然后点击 **允许**
+4. 浏览器页面显示 "Pawz 已连接！" — 您可以关闭页面
+5. 返回 Pawz，您应该看到 **"以 you@gmail.com 身份登录"**
+
+就这些。试着告诉 Pawz：
+- *"检查我的收件箱"*
+- *"本周我的日程安排是什么？"*
+- *"给 hello@example.com 发一封说 hi 的邮件"*
+- *"我 Google Drive 中有什么文件？"*
+
+<Callout type="info">
+登录过程中您会看到 Google 显示的"此应用未经验证"警告。这是正常现象——点击 **高级** → **转到 Pawz (不安全)** 继续即可。
+</Callout>
+
+---
+
+## Gmail 搜索技巧
+
+当要求 Pawz 查找特定邮件时，他在后台使用 Gmail 的搜索语法：
+
+| 说什么内容 | Pawz 实际搜索 |
+|---|---|
+| "查找未读邮件" | `is:unread` |
+| "Sarah发的邮件" | `from:sarah@...` |
+| "关于发票的邮件" | `subject:invoice` |
+| "上周具有附件的邮件" | `has:attachment after:2026/02/16` |
+| "已星标邮件" | `is:starred` |
+
+---
+
+## 断开连接
+
+前往 **技能** → **Google Workspace** → **断开连接**。您还可以从 [myaccount.google.com/permissions](https://myaccount.google.com/permissions) 撤销 Pawz 的访问权限。
+
+---
+
+## 安全
+
+- 您的刷新令牌是 **加密** 存储在 Pawz 的凭证库中（AES-256-GCM）——不会以明文形式存储
+- 访问令牌只存在于内存中，永不写入磁盘，并在一小时后过期
+- Pawz 仅申请所需的权限（Gmail、Calendar、Drive、Sheets、Docs）
+
+---
+
+## 自主托管构建
+
+如果您在从源代码构建 Pawz，则捆绑的 Google OAuth 凭证不会包含在内。您有两个选择：
+
+### 选项 A：设置构建时凭证
+
+在构建前设置这些环境变量：
+
+```bash
+export PAW_GOOGLE_CLIENT_ID="your-client-id.apps.googleusercontent.com"
+export PAW_GOOGLE_CLIENT_SECRET="GOCSPX-your-secret"
+cargo tauri build
+```
+
+要获取这些值，请在 [Google Cloud Console](https://console.cloud.google.com/apis/credentials/oauthclient) 上创建一个 OAuth 2.0 客户端 ID → 选择**桌面应用**。你还需要 [启用 API](https://console.cloud.google.com/apis/library)(Gmail、Calendar、Drive、Sheets、Docs) 并 [设置 OAuth 同意屏幕](https://console.cloud.google.com/apis/credentials/consent)。
+
+### 选项 B：在界面粘贴凭证
+
+如果没有构建时凭证，Pawz 将在 Google Workspace 技能设置中显示客户端 ID 和客户端密钥字段。在那粘贴您的 OAuth 凭证，然后点击 **使用 Google 登录**。
+
+---
+
+## 企业设置 (服务账号)
+
+<Callout type="warn">
+这是为希望使用全域委派进行服务器到服务器身份验证的**Google Workspace 管理员**设计的。大多数用户应使用上面的 OAuth 流程。
+</Callout>
+
+如果您需要 Pawz 用一个专有的机器人用户身份运行（比如 `pawz@yourdomain.com`) 并且不需要交互式登录 — 使用服务账号：
+
+1. [创建一个 Google Cloud 项目](https://console.cloud.google.com/projectcreate) 并 [启用 API](https://console.cloud.google.com/apis/library)
+2. [创建一个服务账号](https://console.cloud.google.com/iam-admin/serviceaccounts/create) → 下载 JSON 密钥
+3. [设置全域委派](https://admin.google.com/ac/owl/domainwidedelegation) 使用服务账号的客户端 ID 与所需范围
+4. 在 Pawz 中：技能 → Google Workspace → 打开 **企业 — 服务账号** 部分 → 粘贴 JSON 密钥和委派邮箱
+
+---
+
+## 常见问题
+
+**"使用 Google 登录"打开了浏览器但什么事都没发生**
+认证流程有 2 分钟超时时间。请务必在规定时间内完成登录并点击允许。如果超时，只需再次点击连接。
+
+**"Google OAuth 失败: 令牌交换失败"**
+对于自主托管构建：仔细检查客户端 ID 和密钥。对于官方构建：尝试断开连接后重新连接。
+
+**"Google API 错误 (403): 权限不足"**
+OAuth 凭证背后的一个或多个 Google API 可能未为此项目启用。
+
+**"访问被拒绝"或"此应用未验证"警告**
+单击 **高级** → **转到 Pawz (不安全)** 以继续。这是正常现象。
+
+**日历显示的时间不对**
+告诉 Pawz 使用自然语言，如 "明天下午两点"——他会正确格式化它。

@@ -16,7 +16,7 @@ A native desktop AI platform that runs fully offline, connects to any provider, 
 
 *Private by default. Powerful by design. Extensible by nature.*
 
-[English](README.md) · [简体中文](README.zh-CN.md)
+[English](README.md) · [简体中文](docs/project/zh/readme.md)
 
 </div>
 
@@ -120,7 +120,7 @@ User: "Email John about the quarterly report"
 
 **Key insight:** The LLM forms the search query (it has parsed intent). A pre-filter on the raw user message would have to guess — the agent knows.
 
-📄 [Full case study: The Librarian Method](reference/librarian-method.mdx)
+📄 [Full case study: The Librarian Method](docs/reference/librarian-method.mdx)
 
 ### The Foreman Protocol — Low-Cost Tool Execution
 
@@ -137,7 +137,7 @@ Architect (Cloud LLM): "Send hello to #general" → calls mcp_slack_send_message
 
 **Key insight:** MCP servers are self-describing. The worker model doesn't need to know how to use community integrations — MCP tells it at runtime.
 
-📄 [Full case study: The Foreman Protocol](reference/foreman-protocol.mdx)
+📄 [Full case study: The Foreman Protocol](docs/reference/foreman-protocol.mdx)
 
 ### The Conductor Protocol — AI-Compiled Flow Execution
 
@@ -157,7 +157,7 @@ Convergent Mesh (agent debate until consensus):
 
 **Key insight:**  n8n community nodes were designed for manual sequential automation. The Conductor makes them AI-orchestrable — describe a workflow in natural language, the NLP parser builds the graph, the Conductor compiles it, and the agents execute it. The entire n8n ecosystem becomes an AI-native automation engine.
 
-📄 [Full case study: The Conductor Protocol](reference/conductor-protocol.mdx)
+📄 [Full case study: The Conductor Protocol](docs/reference/conductor-protocol.mdx)
 
 ### Agent Execution Architecture — 5-Phase Optimization Pipeline
 
@@ -183,7 +183,7 @@ User: "Set up a weekly standup, invite the team, and summarize last week's actio
   Result: 2 inference calls instead of 6+. Task completes in 4–12s instead of 20–50s.
 ```
 
-📄 [Full architecture: .AGENT_EXECUTION_ROADMAP.md](.AGENT_EXECUTION_ROADMAP.md)
+📄 [Full architecture: Agent Execution Roadmap](docs/reference/agent-execution-roadmap-internal.md)
 
 ---
 
@@ -232,7 +232,7 @@ OpenPawz takes a defense-in-depth approach with 10 security layers. The agent ne
 - **Full audit trail** — Every security event logged with risk level, tool name, decision, and matched pattern. Filterable dashboard with JSON/CSV export.
 - **Skill vetting** — Community skills are checked against npm registry risk intelligence (download count, maintainer count, deprecation status) with a risk score before install.
 
-See [SECURITY.md](SECURITY.md) for the complete security architecture.
+See [SECURITY.md](docs/reference/security-full.md) for the complete security architecture.
 
 ---
 
@@ -394,7 +394,7 @@ flowchart LR
 
 No Node.js backend. No gateway process. No open ports. Everything flows through Tauri IPC.
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for the full technical breakdown.
+See [ARCHITECTURE.md](docs/reference/architecture-full.md) for the full technical breakdown.
 
 ---
 
@@ -736,7 +736,7 @@ OpenPawz is built by one developer and needs your help. Every contribution matte
 **Start here:**
 - [`good first issue`](https://github.com/OpenPawz/openpawz/labels/good%20first%20issue) — scoped tasks for newcomers
 - [`help wanted`](https://github.com/OpenPawz/openpawz/labels/help%20wanted) — bigger tasks we need help with
-- [CONTRIBUTING.md](CONTRIBUTING.md) — full setup guide, code style, and "where to start" picker
+- [CONTRIBUTING.md](docs/community/contributing.md) — full setup guide, code style, and "where to start" picker
 
 **Claim an issue** by commenting "I'd like to work on this" — you'll be assigned within 24 hours. Questions? Ask in [Discord](https://discord.gg/wVvmgrMV) or [Discussions](https://github.com/OpenPawz/openpawz/discussions).
 
@@ -752,13 +752,13 @@ OpenPawz is built by one developer and needs your help. Every contribution matte
 
 | Document | Description |
 |----------|-------------|
-| [ARCHITECTURE.md](ARCHITECTURE.md) | Full technical breakdown — directory structure, module design, data flow |
-| [SECURITY.md](SECURITY.md) | Complete security architecture — 7 layers, threat model, credential handling |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | Development setup, code style, testing, PR guidelines |
+| [ARCHITECTURE.md](docs/reference/architecture-full.md) | Full technical breakdown — directory structure, module design, data flow |
+| [SECURITY.md](docs/reference/security-full.md) | Complete security architecture — 7 layers, threat model, credential handling |
+| [CONTRIBUTING.md](docs/community/contributing.md) | Development setup, code style, testing, PR guidelines |
 | [ENTERPRISE_PLAN.md](ENTERPRISE_PLAN.md) | Enterprise hardening audit — all phases with test counts |
-| [ENGRAM.md](ENGRAM.md) | Engram memory system whitepaper — three-tier architecture, security model, formal proofs |
-| [.AGENT_EXECUTION_ROADMAP.md](.AGENT_EXECUTION_ROADMAP.md) | 5-phase agent execution optimization pipeline — Action DAG, Constrained Decoding, Tool Registry, Binary IPC, Speculative Execution |
-| [CHANGELOG.md](CHANGELOG.md) | Version history and release notes |
+| [ENGRAM.md](docs/research/engram.md) | Engram memory system whitepaper — three-tier architecture, security model, formal proofs |
+| [Agent Execution Roadmap](docs/reference/agent-execution-roadmap-internal.md) | 5-phase agent execution optimization pipeline — Action DAG, Constrained Decoding, Tool Registry, Binary IPC, Speculative Execution |
+| [CHANGELOG.md](docs/project/changelog.md) | Version history and release notes |
 | [Docs Site](https://www.openpawz.ai) | Full documentation with guides, channel setup, and API reference |
 
 ---

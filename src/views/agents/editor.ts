@@ -31,34 +31,34 @@ function buildEditorHtml(agent: Agent, availableModels: { id: string; name: stri
       </div>
       <div class="agent-modal-body">
         <div class="agent-editor-tabs">
-          <button class="agent-tab active" data-tab="basics">Basics</button>
-          <button class="agent-tab" data-tab="personality">Personality</button>
-          <button class="agent-tab" data-tab="skills">Tools</button>
-          <button class="agent-tab" data-tab="advanced">Advanced</button>
+          <button class="agent-tab active" data-tab="basics">基础</button>
+          <button class="agent-tab" data-tab="personality">人格</button>
+          <button class="agent-tab" data-tab="skills">工具</button>
+          <button class="agent-tab" data-tab="advanced">高级</button>
         </div>
 
         <!-- Basics Tab -->
         <div class="agent-tab-content active" id="tab-basics">
           <div class="form-group">
-            <label class="form-label">Name</label>
+            <label class="form-label">名称</label>
             <input type="text" class="form-input" id="agent-edit-name" value="${escAttr(agent.name)}">
           </div>
 
           <div class="form-group">
-            <label class="form-label">Bio</label>
-            <input type="text" class="form-input" id="agent-edit-bio" value="${escAttr(agent.bio)}" placeholder="What is this agent for?">
+            <label class="form-label">简介</label>
+            <input type="text" class="form-input" id="agent-edit-bio" value="${escAttr(agent.bio)}" placeholder="这个智能体用来做什么？">
           </div>
 
           <div class="form-group">
-            <label class="form-label">Model</label>
+            <label class="form-label">模型</label>
             <select class="form-input" id="agent-edit-model">
               ${availableModels.map((m) => `<option value="${m.id}" ${agent.model === m.id ? 'selected' : ''}>${m.name}</option>`).join('')}
             </select>
-            <div class="form-hint">Which AI model this agent uses</div>
+            <div class="form-hint">此智能体使用的 AI 模型</div>
           </div>
 
           <div class="form-group">
-            <label class="form-label">Avatar</label>
+            <label class="form-label">头像</label>
             <div class="agent-avatar-picker">
               ${SPRITE_AVATARS.map(
                 (s) =>
@@ -72,27 +72,27 @@ function buildEditorHtml(agent: Agent, availableModels: { id: string; name: stri
         <div class="agent-tab-content" id="tab-personality">
           <div class="agent-personality-grid">
             <div class="agent-personality-row">
-              <span class="agent-personality-label">Tone</span>
+              <span class="agent-personality-label">语气</span>
               <div class="agent-personality-options" data-key="tone">
-                <button class="agent-personality-btn ${agent.personality.tone === 'casual' ? 'selected' : ''}" data-value="casual">Casual</button>
-                <button class="agent-personality-btn ${agent.personality.tone === 'balanced' ? 'selected' : ''}" data-value="balanced">Balanced</button>
-                <button class="agent-personality-btn ${agent.personality.tone === 'formal' ? 'selected' : ''}" data-value="formal">Formal</button>
+                <button class="agent-personality-btn ${agent.personality.tone === 'casual' ? 'selected' : ''}" data-value="casual">轻松</button>
+                <button class="agent-personality-btn ${agent.personality.tone === 'balanced' ? 'selected' : ''}" data-value="balanced">均衡</button>
+                <button class="agent-personality-btn ${agent.personality.tone === 'formal' ? 'selected' : ''}" data-value="formal">正式</button>
               </div>
             </div>
             <div class="agent-personality-row">
-              <span class="agent-personality-label">Initiative</span>
+              <span class="agent-personality-label">主动性</span>
               <div class="agent-personality-options" data-key="initiative">
-                <button class="agent-personality-btn ${agent.personality.initiative === 'reactive' ? 'selected' : ''}" data-value="reactive">Wait for asks</button>
-                <button class="agent-personality-btn ${agent.personality.initiative === 'balanced' ? 'selected' : ''}" data-value="balanced">Balanced</button>
-                <button class="agent-personality-btn ${agent.personality.initiative === 'proactive' ? 'selected' : ''}" data-value="proactive">Proactive</button>
+                <button class="agent-personality-btn ${agent.personality.initiative === 'reactive' ? 'selected' : ''}" data-value="reactive">等待指令</button>
+                <button class="agent-personality-btn ${agent.personality.initiative === 'balanced' ? 'selected' : ''}" data-value="balanced">均衡</button>
+                <button class="agent-personality-btn ${agent.personality.initiative === 'proactive' ? 'selected' : ''}" data-value="proactive">主动</button>
               </div>
             </div>
             <div class="agent-personality-row">
-              <span class="agent-personality-label">Detail</span>
+              <span class="agent-personality-label">细节</span>
               <div class="agent-personality-options" data-key="detail">
-                <button class="agent-personality-btn ${agent.personality.detail === 'brief' ? 'selected' : ''}" data-value="brief">Brief</button>
-                <button class="agent-personality-btn ${agent.personality.detail === 'balanced' ? 'selected' : ''}" data-value="balanced">Balanced</button>
-                <button class="agent-personality-btn ${agent.personality.detail === 'thorough' ? 'selected' : ''}" data-value="thorough">Thorough</button>
+                <button class="agent-personality-btn ${agent.personality.detail === 'brief' ? 'selected' : ''}" data-value="brief">简洁</button>
+                <button class="agent-personality-btn ${agent.personality.detail === 'balanced' ? 'selected' : ''}" data-value="balanced">均衡</button>
+                <button class="agent-personality-btn ${agent.personality.detail === 'thorough' ? 'selected' : ''}" data-value="thorough">详尽</button>
               </div>
             </div>
           </div>
@@ -101,7 +101,7 @@ function buildEditorHtml(agent: Agent, availableModels: { id: string; name: stri
         <!-- Tools Tab -->
         <div class="agent-tab-content" id="tab-skills">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-            <div class="form-hint" style="margin:0">Control which tools this agent can use</div>
+            <div class="form-hint" style="margin:0">控制此智能体可以使用哪些工具</div>
             <div style="display:flex;gap:6px">
               ${Object.entries(POLICY_PRESETS)
                 .map(
@@ -157,7 +157,7 @@ function buildEditorHtml(agent: Agent, availableModels: { id: string; name: stri
             <div style="font-size:13px;font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:6px">
               <span class="ms ms-sm">extension</span> Community Skills
             </div>
-            <div class="form-hint" style="margin-bottom:12px">Enable or disable installed community skills for this agent. Install new skills from the <strong>Skills</strong> tab.</div>
+            <div class="form-hint" style="margin-bottom:12px">为此智能体启用或禁用已安装的社区技能。可在 <strong>技能</strong> 标签中安装新技能。</div>
             <div id="agent-community-skills-grid" class="agent-skills-grid">
               <div style="font-size:12px;color:var(--text-muted);padding:8px">Loading...</div>
             </div>
@@ -179,9 +179,9 @@ function buildEditorHtml(agent: Agent, availableModels: { id: string; name: stri
           </div>
 
           <div class="form-group">
-            <label class="form-label">Custom Instructions</label>
-            <textarea class="form-input agent-system-prompt" id="agent-edit-prompt" placeholder="Add custom instructions for this agent...">${escHtml(agent.systemPrompt || '')}</textarea>
-            <div class="form-hint">These instructions are added to every conversation with this agent</div>
+            <label class="form-label">自定义指令</label>
+            <textarea class="form-input agent-system-prompt" id="agent-edit-prompt" placeholder="为此智能体添加自定义指令...">${escHtml(agent.systemPrompt || '')}</textarea>
+            <div class="form-hint">这些指令会加入此智能体的每次对话</div>
           </div>
 
           <div class="form-group">
@@ -205,7 +205,7 @@ function buildEditorHtml(agent: Agent, availableModels: { id: string; name: stri
             agent.id !== 'default'
               ? `
           <div class="agent-danger-zone">
-            <button class="btn btn-ghost agent-delete-btn" style="color:var(--error)">Delete Agent</button>
+            <button class="btn btn-ghost agent-delete-btn" style="color:var(--error)">删除智能体</button>
           </div>
           `
               : ''
@@ -213,8 +213,8 @@ function buildEditorHtml(agent: Agent, availableModels: { id: string; name: stri
         </div>
       </div>
       <div class="agent-modal-footer">
-        <button class="btn btn-ghost agent-modal-cancel">Cancel</button>
-        <button class="btn btn-primary" id="agent-edit-save">Save Changes</button>
+        <button class="btn btn-ghost agent-modal-cancel">取消</button>
+        <button class="btn btn-primary" id="agent-edit-save">保存更改</button>
       </div>
     </div>
   `;
@@ -521,7 +521,7 @@ async function loadAgentCommunitySkills(
     const allSkills: CommunitySkill[] = await pawEngine.communitySkillsList();
 
     if (allSkills.length === 0) {
-      grid.innerHTML = `<div style="font-size:12px;color:var(--text-muted);padding:8px">No community skills installed. Browse and install from the <strong>Skills</strong> tab.</div>`;
+      grid.innerHTML = `<div style="font-size:12px;color:var(--text-muted);padding:8px">尚未安装社区技能。请在 <strong>技能</strong> 标签中浏览并安装。</div>`;
       return;
     }
 
@@ -586,7 +586,7 @@ async function loadAgentCommunitySkills(
       });
     });
   } catch {
-    grid.innerHTML = `<div style="font-size:12px;color:var(--text-muted);padding:8px">Could not load community skills</div>`;
+    grid.innerHTML = `<div style="font-size:12px;color:var(--text-muted);padding:8px">无法加载社区技能</div>`;
   }
 }
 
@@ -610,7 +610,7 @@ async function loadAgentForgeData(modal: HTMLElement, agentId: string): Promise<
       summary.failed;
 
     if (total === 0 && domains.length === 0) {
-      container.innerHTML = `<div style="font-size:12px;color:var(--text-muted);padding:8px">No procedural memories found. FORGE certification will appear here as this agent learns skills.</div>`;
+      container.innerHTML = `<div style="font-size:12px;color:var(--text-muted);padding:8px">暂无过程记忆。随着此智能体学习技能，FORGE 认证会显示在这里。</div>`;
       return;
     }
 
@@ -651,6 +651,6 @@ async function loadAgentForgeData(modal: HTMLElement, agentId: string): Promise<
 
     container.innerHTML = statsHtml + domainsHtml;
   } catch {
-    container.innerHTML = `<div style="font-size:12px;color:var(--text-muted);padding:8px">Could not load FORGE data</div>`;
+    container.innerHTML = `<div style="font-size:12px;color:var(--text-muted);padding:8px">无法加载 FORGE 数据</div>`;
   }
 }

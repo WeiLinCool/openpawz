@@ -114,16 +114,16 @@ export function renderIntegrations(): void {
     <div class="integrations-header">
       <div class="integrations-main-tabs">
         <button class="integrations-main-tab ${_mainTab === 'services' ? 'active' : ''}" data-main-tab="services">
-          <span class="ms ms-sm">extension</span> Services
+          <span class="ms ms-sm">extension</span> 服务
         </button>
         <button class="integrations-main-tab ${_mainTab === 'automations' ? 'active' : ''}" data-main-tab="automations">
-          <span class="ms ms-sm">auto_fix_high</span> Automations
+          <span class="ms ms-sm">auto_fix_high</span> 自动化
         </button>
         <button class="integrations-main-tab ${_mainTab === 'queries' ? 'active' : ''}" data-main-tab="queries">
-          <span class="ms ms-sm">psychology</span> Queries
+          <span class="ms ms-sm">psychology</span> 查询
         </button>
         <button class="integrations-main-tab ${_mainTab === 'community' ? 'active' : ''}" data-main-tab="community">
-          <span class="ms ms-sm">explore</span> Community
+          <span class="ms ms-sm">explore</span> 社区
         </button>
       </div>
     </div>
@@ -167,26 +167,26 @@ function _renderServicesTab(tabBody: HTMLElement): void {
       <div class="integrations-search-wrap">
         <span class="ms ms-sm">search</span>
         <input type="text" class="integrations-search" id="integrations-search"
-               placeholder="Search ${totalCount}+ services…"
+               placeholder="搜索 ${totalCount}+ 服务..."
                value="${escHtml(_searchQuery)}" />
       </div>
       <div class="integrations-controls">
         <select class="integrations-sort" id="integrations-sort">
-          <option value="popular" ${_sortOption === 'popular' ? 'selected' : ''}>Popular</option>
+          <option value="popular" ${_sortOption === 'popular' ? 'selected' : ''}>热门</option>
           <option value="a-z" ${_sortOption === 'a-z' ? 'selected' : ''}>A–Z</option>
-          <option value="category" ${_sortOption === 'category' ? 'selected' : ''}>Category</option>
+          <option value="category" ${_sortOption === 'category' ? 'selected' : ''}>类别</option>
         </select>
         <div class="integrations-view-toggle">
           <button class="btn btn-ghost btn-sm ${_viewMode === 'matrix' ? 'active' : ''}"
-                  data-viewmode="matrix" title="Matrix view">
+                  data-viewmode="matrix" title="矩阵视图">
             <span class="ms ms-sm">table_chart</span>
           </button>
           <button class="btn btn-ghost btn-sm ${_viewMode === 'grid' ? 'active' : ''}"
-                  data-viewmode="grid" title="Grid view">
+                  data-viewmode="grid" title="网格视图">
             <span class="ms ms-sm">grid_view</span>
           </button>
           <button class="btn btn-ghost btn-sm ${_viewMode === 'list' ? 'active' : ''}"
-                  data-viewmode="list" title="List view">
+                  data-viewmode="list" title="列表视图">
             <span class="ms ms-sm">view_list</span>
           </button>
         </div>
@@ -194,7 +194,7 @@ function _renderServicesTab(tabBody: HTMLElement): void {
     </div>
 
     <div class="integrations-categories" id="integrations-categories">
-      <button class="integrations-cat-pill ${_activeCategory === 'all' ? 'active' : ''}" data-cat="all">All</button>
+      <button class="integrations-cat-pill ${_activeCategory === 'all' ? 'active' : ''}" data-cat="all">全部</button>
       ${CATEGORIES.map(
         (
           c,
@@ -257,7 +257,7 @@ function _renderNativeSection(tabBody: HTMLElement): void {
           </div>
           <div class="native-card-status ${isConnected ? 'native-status-active' : 'native-status-offline'}">
             <span class="ms ms-sm">${isConnected ? 'check_circle' : 'radio_button_unchecked'}</span>
-            <span>${isConnected ? `Connected · ${toolCount} tools` : 'Offline'}</span>
+            <span>${isConnected ? `已连接 · ${toolCount} 个工具` : '离线'}</span>
           </div>
         </div>
       </div>`;

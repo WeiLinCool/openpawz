@@ -7,7 +7,7 @@ use crate::engine::http::{
     pinned_client, sign_and_log_request, update_last_audit_status, CircuitBreaker,
 };
 use crate::engine::providers::openai::{
-    is_retryable_status, parse_retry_after, retry_delay, MAX_RETRIES,
+    describe_http_error, is_retryable_status, parse_retry_after, retry_delay, MAX_RETRIES,
 };
 use crate::engine::types::*;
 use async_trait::async_trait;
@@ -584,7 +584,7 @@ impl AnthropicProvider {
                 }
                 Err(e) => {
                     ANTHROPIC_CIRCUIT.record_failure();
-                    last_error = format!("HTTP request failed: {}", e);
+                    last_error = describe_http_error(&url, &e);
                     last_status = 0;
                     if attempt < MAX_RETRIES {
                         continue;

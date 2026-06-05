@@ -40,7 +40,7 @@ export function initLockScreen(): Promise<void> {
       return;
     }
 
-    const hasTauri = !!(window as unknown as Record<string, unknown>).__TAURI_INTERNALS__;
+    const hasTauri = await isTauriAvailable();
     if (!hasTauri) {
       hideLockScreen(lockScreen);
       resolve();
@@ -65,6 +65,10 @@ export function initLockScreen(): Promise<void> {
       await showUnlockScreen();
     }
   });
+}
+
+async function isTauriAvailable(): Promise<boolean> {
+  return Boolean((window as unknown as { __TAURI__?: unknown }).__TAURI__);
 }
 
 // ── Wire all listeners once ──────────────────────────────────────────────

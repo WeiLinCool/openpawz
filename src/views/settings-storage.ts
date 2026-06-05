@@ -4,6 +4,7 @@
 import { pawEngine } from '../engine';
 import { $, confirmModal } from '../components/helpers';
 import { getWorkspacePath, setWorkspacePath } from '../workspace';
+import { initStorage } from '../db';
 
 // ── Helpers ───────────────────────────────────────────────────────────
 
@@ -73,8 +74,10 @@ export async function loadStorageSettings() {
         rootSaveBtn.disabled = true;
         rootSaveBtn.textContent = 'Saving…';
         await pawEngine.storageSetDataRoot(val);
-        rootSaveBtn.innerHTML =
-          '<span class="ms ms-sm" style="margin-right:2px">check</span> Saved — restart required';
+        const reconnected = await initStorage({ forceReconnect: true });
+        rootSaveBtn.innerHTML = reconnected
+          ? '<span class="ms ms-sm" style="margin-right:2px">check</span> Saved — database reconnected'
+          : '<span class="ms ms-sm" style="margin-right:2px">warning</span> Saved — restart required';
         setTimeout(() => loadStorageSettings(), 2000);
       } catch (e) {
         rootSaveBtn.textContent = 'Error';
@@ -100,6 +103,7 @@ export async function loadStorageSettings() {
         )
           return;
         await pawEngine.storageSetDataRoot(null);
+        await initStorage({ forceReconnect: true });
         loadStorageSettings();
       });
     }
@@ -108,7 +112,11 @@ export async function loadStorageSettings() {
     const statsSection = document.createElement('div');
     statsSection.className = 'settings-section';
     const totalSize =
-      paths.engine_db_size + paths.workspaces_size + paths.skills_size + paths.browser_size;
+      paths.engine_db_size +
+      paths.frontend_db_size +
+      paths.workspaces_size +
+      paths.skills_size +
+      paths.browser_size;
     statsSection.innerHTML = `
       <h2 class="settings-section-title">Storage Usage</h2>
       <p class="settings-section-desc" style="margin-bottom: 12px">
@@ -116,6 +124,7 @@ export async function loadStorageSettings() {
       </p>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-width: 480px">
         ${storageCard('database', 'Engine Database', paths.engine_db, paths.engine_db_size)}
+        ${storageCard('database', 'App Database', paths.frontend_db, paths.frontend_db_size)}
         ${storageCard('folder', 'Agent Workspaces', paths.workspaces_dir, paths.workspaces_size)}
         ${storageCard('extension', 'Skills', paths.skills_dir, paths.skills_size)}
         ${storageCard('language', 'Browser Profiles', paths.browser_dir, paths.browser_size)}

@@ -6,6 +6,7 @@
 import type { FlowGraph } from './atoms';
 import { formatDate, escAttr } from './molecule-state';
 import { staggerIn } from '../../components/animations';
+import { promptModal } from '../../components/helpers';
 
 // Track which folders are collapsed
 const _collapsedFolders = new Set<string>();
@@ -98,8 +99,8 @@ export function renderFlowList(
   });
 
   // Wire new folder button
-  container.querySelector('[data-action="new-folder"]')?.addEventListener('click', () => {
-    const name = prompt('Folder name:');
+  container.querySelector('[data-action="new-folder"]')?.addEventListener('click', async () => {
+    const name = await promptModal('Folder name:');
     if (!name?.trim()) return;
     onNew();
   });

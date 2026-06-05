@@ -268,7 +268,6 @@ pub enum EngineEvent {
     },
 
     // ── Auth events ─────────────────────────────────────────────────
-
     /// A tool requires credentials that are not available.
     /// The UI layer should present the auth URL to the user.
     /// CLI: print URL + prompt. GUI: show inline auth card.
@@ -764,6 +763,41 @@ pub(crate) fn default_context_window_tokens() -> usize {
     200_000
 }
 
+/// Proxy mode for model/provider requests.
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum ModelProxyMode {
+    /// Read standard proxy environment variables when available.
+    Env,
+    /// Do not use a proxy for model/provider requests.
+    Off,
+    /// Use the explicit proxy URL in `ModelProxyConfig.url`.
+    Custom,
+}
+
+pub(crate) fn default_model_proxy_mode() -> ModelProxyMode {
+    ModelProxyMode::Env
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct ModelProxyConfig {
+    #[serde(default = "default_model_proxy_mode")]
+    pub mode: ModelProxyMode,
+    #[serde(default)]
+    pub url: Option<String>,
+    #[serde(default)]
+    pub no_proxy: Option<String>,
+}
+
+impl Default for ModelProxyConfig {
+    fn default() -> Self {
+        Self {
+            mode: ModelProxyMode::Env,
+            url: None,
+            no_proxy: None,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EngineConfig {
     pub providers: Vec<ProviderConfig>,
@@ -794,6 +828,9 @@ pub struct EngineConfig {
     /// If empty, auto-detected via IP geolocation.
     #[serde(default)]
     pub weather_location: Option<String>,
+    /// Proxy configuration for model/provider HTTP requests.
+    #[serde(default)]
+    pub model_proxy: ModelProxyConfig,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -219,33 +219,92 @@ export function formatMarkdown(text: string): string {
     .replace(/\n/g, '<br>');
 }
 
+export function cleanupTransientModals(): void {
+  for (const id of ['prompt-modal', 'delete-session-modal', 'confirm-modal', 'approval-modal']) {
+    const overlay = $(id);
+    if (overlay && !overlay.dataset.active) overlay.remove();
+  }
+  document
+    .querySelectorAll<HTMLElement>('.modal-overlay, .tasks-modal-overlay, .research-modal')
+    .forEach((overlay) => {
+      if (!overlay.dataset.active) overlay.style.display = 'none';
+    });
+}
+
+function ensureConfirmModal(): {
+  overlay: HTMLElement;
+  titleEl: HTMLElement;
+  messageEl: HTMLElement;
+  okBtn: HTMLElement;
+  cancelBtn: HTMLElement;
+  closeBtn: HTMLElement;
+} {
+  const existing = $('confirm-modal') as HTMLElement | null;
+  if (existing) {
+    const titleEl = $('confirm-modal-title') as HTMLElement | null;
+    const messageEl = $('confirm-modal-message') as HTMLElement | null;
+    const okBtn = $('confirm-modal-ok') as HTMLElement | null;
+    const cancelBtn = $('confirm-modal-cancel') as HTMLElement | null;
+    const closeBtn = $('confirm-modal-close') as HTMLElement | null;
+    if (titleEl && messageEl && okBtn && cancelBtn && closeBtn) {
+      return { overlay: existing, titleEl, messageEl, okBtn, cancelBtn, closeBtn };
+    }
+    existing.remove();
+  }
+
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'confirm-modal';
+  overlay.style.display = 'none';
+  overlay.style.zIndex = '10000';
+  overlay.innerHTML = `
+    <div class="modal-card" style="width: 420px">
+      <div class="modal-header">
+        <h2 class="modal-title" id="confirm-modal-title"></h2>
+        <button class="btn-icon" id="confirm-modal-close" type="button">✕</button>
+      </div>
+      <div class="modal-body">
+        <p id="confirm-modal-message" style="margin: 0; white-space: pre-wrap"></p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="confirm-modal-cancel" type="button">Cancel</button>
+        <button class="btn btn-danger" id="confirm-modal-ok" type="button">Confirm</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  return {
+    overlay,
+    titleEl: overlay.querySelector('#confirm-modal-title') as HTMLElement,
+    messageEl: overlay.querySelector('#confirm-modal-message') as HTMLElement,
+    okBtn: overlay.querySelector('#confirm-modal-ok') as HTMLElement,
+    cancelBtn: overlay.querySelector('#confirm-modal-cancel') as HTMLElement,
+    closeBtn: overlay.querySelector('#confirm-modal-close') as HTMLElement,
+  };
+}
+
 // Tauri 2 WKWebView (macOS) does not support window.confirm() — it may not render.
 // This custom modal replaces all confirm() usage in the app.
 export function confirmModal(message: string, title = 'Confirm'): Promise<boolean> {
   return new Promise((resolve) => {
-    const overlay = $('confirm-modal');
-    const titleEl = $('confirm-modal-title');
-    const messageEl = $('confirm-modal-message');
-    const okBtn = $('confirm-modal-ok');
-    const cancelBtn = $('confirm-modal-cancel');
-    const closeBtn = $('confirm-modal-close');
-    if (!overlay) {
-      resolve(false);
-      return;
-    }
+    const { overlay, titleEl, messageEl, okBtn, cancelBtn, closeBtn } = ensureConfirmModal();
 
-    if (titleEl) titleEl.textContent = title;
-    if (messageEl) messageEl.textContent = message;
+    overlay.dataset.active = 'true';
+    titleEl.textContent = title;
+    messageEl.textContent = message;
     overlay.style.display = 'flex';
     okBtn?.focus();
 
     function cleanup() {
-      overlay!.style.display = 'none';
+      overlay.style.display = 'none';
+      delete overlay.dataset.active;
       okBtn?.removeEventListener('click', onOk);
       cancelBtn?.removeEventListener('click', onCancel);
       closeBtn?.removeEventListener('click', onCancel);
-      overlay?.removeEventListener('click', onBackdrop);
+      overlay.removeEventListener('click', onBackdrop);
       document.removeEventListener('keydown', onKey);
+      overlay.remove();
     }
     function onOk() {
       cleanup();
@@ -276,36 +335,85 @@ export function confirmModal(message: string, title = 'Confirm'): Promise<boolea
   });
 }
 
+function ensureDeleteSessionModal(): {
+  overlay: HTMLElement;
+  checkbox: HTMLInputElement;
+  okBtn: HTMLElement;
+  cancelBtn: HTMLElement;
+  closeBtn: HTMLElement;
+} {
+  const existing = $('delete-session-modal') as HTMLElement | null;
+  if (existing) {
+    const checkbox = $('delete-session-memory-checkbox') as HTMLInputElement | null;
+    const okBtn = $('delete-session-modal-ok') as HTMLElement | null;
+    const cancelBtn = $('delete-session-modal-cancel') as HTMLElement | null;
+    const closeBtn = $('delete-session-modal-close') as HTMLElement | null;
+    if (checkbox && okBtn && cancelBtn && closeBtn) {
+      return { overlay: existing, checkbox, okBtn, cancelBtn, closeBtn };
+    }
+    existing.remove();
+  }
+
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'delete-session-modal';
+  overlay.style.display = 'none';
+  overlay.style.zIndex = '10000';
+  overlay.innerHTML = `
+    <div class="modal-card" style="width: 440px">
+      <div class="modal-header">
+        <h2 class="modal-title">Delete Session</h2>
+        <button class="btn-icon" id="delete-session-modal-close" type="button">✕</button>
+      </div>
+      <div class="modal-body" style="display: flex; flex-direction: column; gap: 12px">
+        <p style="margin: 0">Delete this session? This cannot be undone.</p>
+        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none">
+          <input type="checkbox" id="delete-session-memory-checkbox" />
+          <span>Also delete memories created in this session</span>
+        </label>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="delete-session-modal-cancel" type="button">Cancel</button>
+        <button class="btn btn-danger" id="delete-session-modal-ok" type="button">Delete Session</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  return {
+    overlay,
+    checkbox: overlay.querySelector('#delete-session-memory-checkbox') as HTMLInputElement,
+    okBtn: overlay.querySelector('#delete-session-modal-ok') as HTMLElement,
+    cancelBtn: overlay.querySelector('#delete-session-modal-cancel') as HTMLElement,
+    closeBtn: overlay.querySelector('#delete-session-modal-close') as HTMLElement,
+  };
+}
+
 /** Show a delete-session dialog with a checkbox to optionally delete associated memories. */
 export function confirmDeleteSessionModal(): Promise<{
   confirmed: boolean;
   deleteMemory: boolean;
 }> {
   return new Promise((resolve) => {
-    const overlay = $('delete-session-modal');
-    const checkbox = $('delete-session-memory-checkbox') as HTMLInputElement | null;
-    const okBtn = $('delete-session-modal-ok');
-    const cancelBtn = $('delete-session-modal-cancel');
-    const closeBtn = $('delete-session-modal-close');
-    if (!overlay) {
-      resolve({ confirmed: false, deleteMemory: false });
-      return;
-    }
+    const { overlay, checkbox, okBtn, cancelBtn, closeBtn } = ensureDeleteSessionModal();
 
-    if (checkbox) checkbox.checked = false;
+    overlay.dataset.active = 'true';
+    checkbox.checked = false;
     overlay.style.display = 'flex';
     okBtn?.focus();
 
     function cleanup() {
-      overlay!.style.display = 'none';
+      overlay.style.display = 'none';
+      delete overlay.dataset.active;
       okBtn?.removeEventListener('click', onOk);
       cancelBtn?.removeEventListener('click', onCancel);
       closeBtn?.removeEventListener('click', onCancel);
-      overlay?.removeEventListener('click', onBackdrop);
+      overlay.removeEventListener('click', onBackdrop);
       document.removeEventListener('keydown', onKey);
+      overlay.remove();
     }
     function onOk() {
-      const deleteMemory = checkbox?.checked ?? false;
+      const deleteMemory = checkbox.checked;
       cleanup();
       resolve({ confirmed: true, deleteMemory });
     }
@@ -334,37 +442,91 @@ export function confirmDeleteSessionModal(): Promise<{
   });
 }
 
+function ensurePromptModal(): {
+  overlay: HTMLElement;
+  titleEl: HTMLElement;
+  input: HTMLInputElement;
+  okBtn: HTMLElement;
+  cancelBtn: HTMLElement;
+  closeBtn: HTMLElement;
+} {
+  const existing = $('prompt-modal') as HTMLElement | null;
+  if (existing) {
+    const titleEl = $('prompt-modal-title') as HTMLElement | null;
+    const input = $('prompt-modal-input') as HTMLInputElement | null;
+    const okBtn = $('prompt-modal-ok') as HTMLElement | null;
+    const cancelBtn = $('prompt-modal-cancel') as HTMLElement | null;
+    const closeBtn = $('prompt-modal-close') as HTMLElement | null;
+    if (titleEl && input && okBtn && cancelBtn && closeBtn) {
+      return { overlay: existing, titleEl, input, okBtn, cancelBtn, closeBtn };
+    }
+    existing.remove();
+  }
+
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'prompt-modal';
+  overlay.style.display = 'none';
+  overlay.style.zIndex = '10000';
+  overlay.innerHTML = `
+    <div class="modal-card" style="width: 420px">
+      <div class="modal-header">
+        <h2 class="modal-title" id="prompt-modal-title"></h2>
+        <button class="btn-icon" id="prompt-modal-close" type="button">✕</button>
+      </div>
+      <div class="modal-body">
+        <input
+          type="text"
+          class="form-input"
+          id="prompt-modal-input"
+          placeholder=""
+          autocomplete="off"
+        />
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="prompt-modal-cancel" type="button">Cancel</button>
+        <button class="btn btn-primary" id="prompt-modal-ok" type="button">OK</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  return {
+    overlay,
+    titleEl: overlay.querySelector('#prompt-modal-title') as HTMLElement,
+    input: overlay.querySelector('#prompt-modal-input') as HTMLInputElement,
+    okBtn: overlay.querySelector('#prompt-modal-ok') as HTMLElement,
+    cancelBtn: overlay.querySelector('#prompt-modal-cancel') as HTMLElement,
+    closeBtn: overlay.querySelector('#prompt-modal-close') as HTMLElement,
+  };
+}
+
 // Tauri 2 WKWebView (macOS) does not support window.prompt() — it returns null.
 // This custom modal replaces all prompt() usage in the app.
 export function promptModal(title: string, placeholder?: string): Promise<string | null> {
   return new Promise((resolve) => {
-    const overlay = $('prompt-modal');
-    const titleEl = $('prompt-modal-title');
-    const input = $('prompt-modal-input') as HTMLInputElement | null;
-    const okBtn = $('prompt-modal-ok');
-    const cancelBtn = $('prompt-modal-cancel');
-    const closeBtn = $('prompt-modal-close');
-    if (!overlay || !input) {
-      resolve(null);
-      return;
-    }
+    const { overlay, titleEl, input, okBtn, cancelBtn, closeBtn } = ensurePromptModal();
 
-    if (titleEl) titleEl.textContent = title;
+    console.warn('[promptModal]', title, new Error().stack);
+    overlay.dataset.active = 'true';
+    titleEl.textContent = title;
     input.placeholder = placeholder ?? '';
     input.value = '';
     overlay.style.display = 'flex';
     input.focus();
 
     function cleanup() {
-      overlay!.style.display = 'none';
+      overlay.style.display = 'none';
+      delete overlay.dataset.active;
       okBtn?.removeEventListener('click', onOk);
       cancelBtn?.removeEventListener('click', onCancel);
       closeBtn?.removeEventListener('click', onCancel);
-      input?.removeEventListener('keydown', onKey);
-      overlay?.removeEventListener('click', onBackdrop);
+      input.removeEventListener('keydown', onKey);
+      overlay.removeEventListener('click', onBackdrop);
+      overlay.remove();
     }
     function onOk() {
-      const val = input!.value.trim();
+      const val = input.value.trim();
       cleanup();
       resolve(val || null);
     }

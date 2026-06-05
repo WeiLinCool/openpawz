@@ -477,7 +477,7 @@ pub fn normalize_role_alternation(messages: &mut Vec<Message>) {
         .position(|m| m.role != Role::System)
         .unwrap_or(0);
 
-    let mut i = first_non_sys;
+    let i = first_non_sys;
     while i < messages.len() && messages[i].role != Role::User {
         warn!(
             "[engine] Dropping leading non-user message (role={:?}) to satisfy provider alternation",
@@ -504,9 +504,8 @@ pub fn normalize_role_alternation(messages: &mut Vec<Message>) {
                     .collect::<Vec<_>>()
                     .join("\n"),
             };
-            match &mut messages[i - 1].content {
-                MessageContent::Text(t) => t.push_str(&format!("\n{}", extra)),
-                _ => {}
+            if let MessageContent::Text(t) = &mut messages[i - 1].content {
+                t.push_str(&format!("\n{}", extra));
             }
             warn!("[engine] Merged consecutive user messages to satisfy provider alternation");
             messages.remove(i);
@@ -536,9 +535,8 @@ pub fn normalize_role_alternation(messages: &mut Vec<Message>) {
                 MessageContent::Text(t) => t.clone(),
                 _ => String::new(),
             };
-            match &mut messages[i - 1].content {
-                MessageContent::Text(t) => t.push_str(&format!("\n{}", extra)),
-                _ => {}
+            if let MessageContent::Text(t) = &mut messages[i - 1].content {
+                t.push_str(&format!("\n{}", extra));
             }
             warn!("[engine] Merged consecutive assistant messages to satisfy provider alternation");
             messages.remove(i);

@@ -1,0 +1,259 @@
+---
+title: "技能"
+description: "技能是 Pawz 可扩展性系统的基石 —— 400+ 个内置集成的组成部分，通过 MCP Bridge 扩展至 25,000+。"
+---
+
+# 技能
+
+技能是 Pawz 可扩展性系统的基础 —— 使 Pawz 无限可定制的三个层级中的第一层。
+
+```mermaid actions={false}
+graph LR
+    S["技能\n仅限提示\nSKILL.md"]:::blue --> I["集成\n凭据 + 工具\nTOML"]:::purple --> E["扩展\n自定义视图 + 存储\nTOML"]:::gold
+    classDef blue fill:#3b82f6,color:#fff,stroke:#3b82f6
+    classDef purple fill:#a855f7,color:#fff,stroke:#a855f7
+    classDef gold fill:#eab308,color:#000,stroke:#eab308
+    style S stroke-width:3px
+```
+
+**技能**（本页）仅使用提示——它们将专家知识注入您的智能体系统提示中而无需任何配置。有关基于凭据的 API/CLI 连接，请查看[集成](/docs/guides/integrations)。有关自定义侧边栏视图和持久化数据，请查阅[扩展](/docs/guides/extensions)。
+
+---
+
+## 内置技能
+
+Pawz 预装了 **400+ 内置集成和技能**，编译到了二进制文件中，通过 [MCP 桥](/guides/mcp-bridge)扩展到 **25,000+** 连接到 n8n。这包括基于凭证的保险库技能、CLI 工具、API 集成和跨 12 个类别的指令技能。
+
+### 内置技能如何工作
+
+1. **启用** **技能** 标签（自己的侧边栏视图）中的一个技能
+2. **提供凭据**（API 密钥、令牌）（如需要）
+3. **安装二进制文件**（CLI 工具）（如需要）
+4. 启用的技能会自动将其工具和说明注入智能体提示中
+
+### 技能架构
+
+技能是在 `skills/` 模块目录中注册的 Rust 函数，智能体可以像工具一样调用。架构如下：
+
+- **注册**：每个技能在 `skills/builtins.rs` 中定义为 `SkillDefinition` 结构体，指定其 ID、名称、类别、必需的凭据、工具名称、必需的二进制文件和智能体指令。
+- **逐智能体切换**：每个技能都被逐智能体的启用/禁用切换控制。禁用时，技能的工具和说明不会被注入到智能体提示中。
+- **类别**：技能分为 12 个类别以供 UI 使用。每个技能属于一个类别，并可以单独切换开启或关闭。
+- **保险库技能** 具有专用的工具函数（如 `email_send`, `coinbase_trade`），使用加密的凭据存储。引擎直接执行这些工具——凭据从未出现在智能体提示中。
+- **指令技能** 向智能体系统提示注入 CLI/API 知识。然后智能体使用其内置的 `exec`（shell）和 `fetch`（HTTP）工具与 CLI 和 API 进行交互。
+- **凭据加密**：凭据存储在 SQLite 中进行加密。加密密钥保存在 OS 密钥链中，与数据库分开。
+
+## 内置技能类别
+
+Pawz 预装了 **400+ 内置集成和技能** 分布在 **12 个类别**：
+
+| # | 类别 | 描述 | 集成数量 |
+|---|----------|-------------|-------------------|
+| 1 | **生产力** | 笔记、项目管理、文档、任务跟踪 | 40+ |
+| 2 | **通信** | 消息、电子邮件、团队聊天、通知 | 30+ |
+| 3 | **开发** | Git、CI/CD、容器、部署、终端 | 50+ |
+| 4 | **数据与分析** | 数据库、数据仓库、搜索引擎 | 35+ |
+| 5 | **媒体与内容** | 音频、视频、图像生成、音乐、流媒体 | 25+ |
+| 6 | **智能家居与物联网** | 家庭自动化、物联网设备、传感器 | 20+ |
+| 7 | **金融与交易** | 交易所、去中心化交易所、支付、会计 | 30+ |
+| 8 | **云与基础设施** | 云提供商、CDN、DNS、IaC | 40+ |
+| 9 | **安全与监控** | 密码管理器、可观测性、警报 | 25+ |
+| 10 | **AI 与 ML** | 模型托管、向量数据库、AI API | 20+ |
+| 11 | **客户关系管理与营销** | 销售、电子邮件营销、客户服务 | 30+ |
+| 12 | **杂项** | 天气、RSS、抓取、PDF、OCR、地图 | 55+ |
+
+### 保险库（基于凭据）
+
+| 技能 | 凭据 | 工具 |
+|-------|------------|-------|
+| **电子邮件** | SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, IMAP_HOST, IMAP_USER, IMAP_PASS | `email_send`, `email_read` |
+| **Slack** | SLACK_BOT_TOKEN | `slack_send`, `slack_read` |
+| **Telegram** | （使用频道桥接令牌） | `telegram_send`, `telegram_read` |
+| **GitHub** | GITHUB_TOKEN (+ `gh` CLI) | `github_api` |
+| **REST API** | REST_API_BASE_URL, REST_API_KEY | `rest_api_call` |
+| **Webhooks** | WEBHOOK_URL, WEBHOOK_SECRET | `webhook_send` |
+| **Discord** | DISCORD_BOT_TOKEN, DISCORD_DEFAULT_CHANNEL | `discord_send` （通过 Discord REST API） |
+| **Coinbase** | COINBASE_API_KEY, COINBASE_API_SECRET | `coinbase_balance`, `coinbase_price`, `coinbase_buy`, `coinbase_sell`, `coinbase_send` |
+| **去中心化交易所交易** | DEX_RPC_URL, DEX_PRIVATE_KEY, DEX_WALLET_ADDRESS | 13 个 `dex_*` 工具 |
+| **Solana DEX** | JUPITER_API_KEY, SOLANA_RPC_URL, SOLANA_PRIVATE_KEY, SOLANA_WALLET_ADDRESS | 7 个 `sol_*` 工具 |
+
+### API 集成
+
+| 技能 | 凭据 | 必需的二进制文件 |
+|-------|------------|-----------------|
+| **Notion** | NOTION_TOKEN | — |
+| **Trello** | TRELLO_API_KEY, TRELLO_TOKEN | — |
+| **Google Workspace** | — | `gog` |
+| **Google 地点** | GOOGLE_PLACES_API_KEY | `goplaces` |
+
+### 生产力
+
+| 技能 | 必需的二进制文件 |
+|-------|-----------------|
+| **Apple Notes** | `memo` |
+| **Apple 提醒事项** | `remindctl` |
+| **Things 3** | `things-cli` |
+| ** Obsidian** | `obsidian-cli` |
+| **Bear 笔记** | `grizzly` |
+
+### 媒体
+
+| 技能 | 凭据 | 必需的二进制文件 |
+|-------|------------|-----------------|
+| **Whisper 本地** | — | `whisper` |
+| **Whisper API** | OPENAI_API_KEY | — |
+| **图像生成** | GEMINI_API_KEY | — |
+| **视频帧** | — | `ffmpeg` |
+| **ElevenLabs TTS** | ELEVENLABS_API_KEY | `sag` |
+| **Spotify** | — | `spotify_player` |
+| ** GIF 搜索** | — | `gifgrep` |
+
+> **图像生成** 使用 `image_generate` 工具通过 Gemini（Google AI）从文本提示创建图像。请提供详细的描述，包括风格、光线、构图和情绪，以获得最佳效果。
+
+### 智能家居
+
+| 技能 | 必需的二进制文件 | 描述 |
+|-------|-----------------|-------------|
+| **飞利浦 Hue** | `openhue` | 控制灯光、房间和场景 |
+| **Sonos** | `sonoscli` | 控制扬声器、播放和音量 |
+| **Eight Sleep** | `eightctl` | 控制度Pod温度和闹钟 |
+| **摄像头捕捉** | `camsnap` | 从 RTSP/ONVIF/网络摄像头捕捉帧用于视觉分析 |
+
+> **摄像头捕捉**（`camsnap`）可以从 IP 摄像头捕捉图像，在网络上发现摄像头，并捕捉定时帧序列。用于安全管理、宠物观看或任何视觉分析工作流。命令：`camsnap snap <url>`，`camsnap discover`，`camsnap stream <url> --frames 10 --interval 1s`。
+
+### 通信
+
+| 技能 | 必需的二进制文件 |
+|-------|-----------------|
+| **WhatsApp** | `wacli` |
+| **iMessage** | `imsg` |
+
+### CLI 工具
+
+| 技能 | 描述 |
+|-------|-------------|
+| **天气** | 天气信息 |
+| **博客监视器** | 监控博客更新 |
+| **总结** | 文本摘要（`summarize` 二进制文件） |
+
+### 开发
+
+| 技能 | 必需的二进制文件 |
+|-------|-----------------|
+| **tmux** | `tmux` |
+| **会话日志** | `rg`（ripgrep） |
+
+### 系统
+
+| 技能 | 必需的二进制文件 |
+|-------|-----------------|
+| **1Password** | `op` |
+| **Peekaboo** | `peekaboo` |
+| **安全审计** | — |
+
+## 社区技能（层级 1 — skills.sh 生态系统）
+
+社区技能是 Pawz 可扩展性系统的第一层级 —— 仅提示的知识包，教授您的智能体新能力而无需任何配置。它们使用开源的 [skills.sh](https://skills.sh) 生态系统。
+
+:::tip 晋升到更高层级
+需要凭据、API 密钥或仪表板组件？创建一个[第 2 层集成](/docs/guides/integrations)。需要带有持久数据的自定义侧边栏视图？创建一个[第 3 层扩展](/docs/guides/extensions)。社区技能是起点 —— 您可以随时升级到更高层次。
+:::
+
+### 社区技能如何运作
+
+社区技能使用**SKILL.md**格式：一个包含技能的`name`和`description`的 YAML frontmatter 的 Markdown 文件，跟随的是关于智能体指令的 markdown 正文。当安装时，指令与您的内置技能一起注入到每个智能体提示中——跨越所有渠道（WhatsApp、Telegram、Discord 等）。
+
+```markdown
+---
+name: Python 专家
+description: 深入 Python 知识和最佳实践
+---
+
+你是位经验丰富的 Python 开发者。在编写 Python 时：
+- 为所有函数签名使用类型提示
+- 遵循 PEP 8 命名规范
+- 优先使用 pathlib 而非 os.path
+...
+```
+
+### 搜索技能
+
+社区技能部分位于**技能**视图顶部，带有关键字搜索栏和流行类别标签。
+
+1. 在侧边栏中打开**技能**标签 —— 社区技能英雄部分在顶部
+2. **按关键词搜索**：在搜索栏中输入任何词（例如"营销"、"supabase"、"交易"），然后按下回车或单击搜索
+3. Pawz 查询 [skills.sh](https://skills.sh) 目录 API（`/api/search?q=`）并显示匹配的技能及其**安装次数**（例如"22.9K"，"151.3K"）
+4. **流行标签**：点击任意快速标签按钮（编码、营销、DevOps 等）即时搜索该类别
+5. 每个技能卡片显示技能名称、安装次数、源代码库和**在 skills.sh 上查看**链接
+
+无需身份验证 —— skills.sh API 是公开的。
+
+### 浏览特定存储库
+
+您也可以直接浏览特定的 GitHub 存储库：
+
+1. 滚动到搜索区域下方的**浏览存储库**区域
+2. 以 `owner/repo` 格式输入 GitHub 存储库（例如 `vercel-labs/agent-skills`）
+3. Pawz 扫描存储库树以查找 SKILL.md 文件并显示所有可用技能
+4. 在单个技能上点击**安装**或点击**安装全部**来抓取所有内容
+
+### 安装技能
+
+1. 点击任意技能卡片上的**安装** —— Pawz 从源 GitHub 存储库获取 SKILL.md
+2. 从 Markdown 正文解析技能说明，并本地存储
+3. 已安装的技能会自动启用，并包含在每个渠道的智能体提示中
+
+### 智能体技能工具
+
+智能体在对话期间处理社区技能时有三种内置工具：
+
+| 工具 | 描述 |
+|------|-------------|
+| `skill_search` | 通过关键字搜索 skills.sh 目录（例如"给我找一个营销技能"） |
+| `skill_install` | 安装技能（通过源码和路径，例如搜索后） |
+| `skill_list` | 列出所有当前安装的社区技能及其启用/停用状态 |
+
+这意味着您可以要求您的智能体对话式地查找和安装技能 —— 无需访问技能标签。
+
+### 管理社区技能
+
+- **启用/禁用**：切换单个社区技能的开关，而无需移除它们
+- **移除**：完全卸载一个社区技能（稍后可以重新安装）
+- **预览**：展开指令预览，准确查看注入到提示中的内容
+
+### 兼容的存储库
+
+任何包含 [skills.sh](https://skills.sh) 格式的 SKILL.md 文件的公共 GitHub 存储库均可使用。请访问 [skills.sh](https://skills.sh) 的完整目录，以发现数千个由社区创建的技能，具有安装次数和类别。
+
+您也可以创建自己的技能存储库——只需在存储库树中的任何地方添加 SKILL.md 文件。
+
+## 凭据安全
+
+凭据存储在 SQLite 中，并使用存储在您的统一 OS 密钥链保险库（服务: `openpawz`）中的 32 字节随机密钥进行 AES-256-GCM 加密。
+
+高风险凭据（Coinbase, DEX）仅供服务器端使用——它们绝不会注入智能体提示中。当执行交易时，引擎直接使用它们。
+
+## 自定义指令
+
+每个技能可以具有覆盖默认值的自定义指令。当技能启用时，它们被注入到智能体的系统提示中。
+
+## 智能提示预算
+
+当智能体启用了许多技能时，它们的组合说明可能会占用大量的上下文窗口。Rust 引擎通过**令牌预算系统**进行管理：
+
+1. **优先级技能**得到全部指令——智能体正在积极使用或匹配当前任务的技能
+2. **普通技能**压缩到约 300 个字符——智能体仍可使用的紧凑参考
+3. **低优先级技能**在预算耗尽时完全删除
+
+这在每个智能体回合之前自动发生。结果：智能体可以访问数百个工具，而无需为与无关的文档相关的上下文浪费资源。您永远不会为未使用技能指令的令牌膨胀付费。
+
+:::tip
+如果您注意到智能体忘记了如何使用某个特定工具，它可能是由于预算限制被压缩或删除了。要么增加智能体的上下文窗口，要么禁用智能体不需要的技能。
+:::
+
+## 就绪检查
+
+技能状态指示器显示：
+- **就绪** —— 所有凭据和二进制文件齐全
+- **缺少凭据** —— 需要 API 密钥
+- **缺少二进制文件** —— CLI 工具未安装
+- **已禁用** —— 智能体已关闭

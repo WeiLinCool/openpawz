@@ -9,6 +9,7 @@ import { findLastIndex } from '../atoms/chat';
 import { tesseractPlaceholder, activateTesseracts } from '../../components/tesseract';
 import type { Message } from '../../types';
 import type { MessageWithAttachments } from '../../state/index';
+import { t } from '../../i18n';
 
 // ── Render options ───────────────────────────────────────────────────────
 
@@ -153,8 +154,7 @@ export function renderScreenshotCard(msgContent: string): HTMLElement | null {
         });
       }
     } catch {
-      ssCard.innerHTML =
-        '<div style="padding:8px;color:var(--text-muted);font-size:12px">Screenshot unavailable</div>';
+      ssCard.innerHTML = `<div style="padding:8px;color:var(--text-muted);font-size:12px">${t('Screenshot unavailable')}</div>`;
     }
   })();
   return ssCard;
@@ -229,7 +229,7 @@ export function renderSingleMessage(
     const thinkingEl = document.createElement('details');
     thinkingEl.className = 'thinking-block';
     const summary = document.createElement('summary');
-    summary.textContent = 'Thinking';
+    summary.textContent = t('Thinking');
     thinkingEl.appendChild(summary);
     const thinkingDiv = document.createElement('div');
     thinkingDiv.className = 'thinking-content';
@@ -251,10 +251,10 @@ export function renderSingleMessage(
         prefix.textContent = agentInfo.name ?? msg.agentId;
         if (agentInfo.color) prefix.style.color = agentInfo.color;
       } else {
-        prefix.textContent = msg.agentName ?? opts.agentName ?? 'Agent';
+        prefix.textContent = msg.agentName ?? opts.agentName ?? t('Agent');
       }
     } else {
-      prefix.textContent = 'System';
+      prefix.textContent = t('System');
     }
     div.appendChild(prefix);
   }
@@ -290,7 +290,7 @@ export function renderSingleMessage(
   if (msg.toolCalls?.length) {
     const badge = document.createElement('div');
     badge.className = 'tool-calls-badge';
-    badge.innerHTML = `${icon('wrench')} ${msg.toolCalls.length} tool call${msg.toolCalls.length > 1 ? 's' : ''}`;
+    badge.innerHTML = `${icon('wrench')} ${msg.toolCalls.length} ${t('tool call')}${msg.toolCalls.length > 1 ? 's' : ''}`;
     div.appendChild(badge);
   }
 
@@ -301,7 +301,7 @@ export function renderSingleMessage(
     const retryBtn = document.createElement('button');
     retryBtn.className = 'message-retry-btn';
     retryBtn.title = 'Retry';
-    retryBtn.innerHTML = `${icon('rotate-ccw')} Retry`;
+    retryBtn.innerHTML = `${icon('rotate-ccw')} ${t('Retry')}`;
     const retryContent = msg.content;
     retryBtn.addEventListener('click', () => opts.onRetry!(retryContent));
     div.appendChild(retryBtn);
@@ -324,10 +324,10 @@ export function renderSingleMessage(
       editActions.className = 'message-edit-actions';
       const saveBtn = document.createElement('button');
       saveBtn.className = 'btn btn-primary btn-sm';
-      saveBtn.textContent = 'Send';
+      saveBtn.textContent = t('Send');
       const cancelBtn = document.createElement('button');
       cancelBtn.className = 'btn btn-ghost btn-sm';
-      cancelBtn.textContent = 'Cancel';
+      cancelBtn.textContent = t('Cancel');
       editActions.appendChild(saveBtn);
       editActions.appendChild(cancelBtn);
       contentEl.style.display = 'none';
@@ -420,7 +420,7 @@ export function renderSingleMessage(
       thumbUp.disabled = true;
       thumbDown.disabled = true;
       opts.onFeedback!(msgId, true);
-      feedbackRow.innerHTML = '<span class="chat-fb-done">👍 Thanks!</span>';
+      feedbackRow.innerHTML = `<span class="chat-fb-done">👍 ${t('Thanks!')}</span>`;
     });
 
     const thumbDown = document.createElement('button');
@@ -431,7 +431,7 @@ export function renderSingleMessage(
       thumbUp.disabled = true;
       thumbDown.disabled = true;
       opts.onFeedback!(msgId, false);
-      feedbackRow.innerHTML = '<span class="chat-fb-done">👎 Noted</span>';
+      feedbackRow.innerHTML = `<span class="chat-fb-done">👎 ${t('Noted')}</span>`;
     });
 
     feedbackRow.appendChild(thumbUp);
@@ -451,7 +451,7 @@ export function renderSingleMessage(
       const reconnectBtn = document.createElement('button');
       reconnectBtn.className = 'oauth-reconnect-btn';
       const displayName = detected.charAt(0).toUpperCase() + detected.slice(1);
-      reconnectBtn.innerHTML = `<span class="ms" style="font-size:16px">link</span> Reconnect ${escHtml(displayName)}`;
+      reconnectBtn.innerHTML = `<span class="ms" style="font-size:16px">link</span> ${t('Reconnect')} ${escHtml(displayName)}`;
       reconnectBtn.addEventListener('click', () => {
         reconnectBtn.disabled = true;
         reconnectBtn.innerHTML =
@@ -565,7 +565,7 @@ export function showStreamingMessage(container: HTMLElement, agentName: string):
   // Agent name prefix above content
   const prefix = document.createElement('span');
   prefix.className = 'message-prefix';
-  prefix.textContent = agentName ?? 'Agent';
+  prefix.textContent = agentName ?? t('Agent');
   div.appendChild(prefix);
 
   const streamSpan = document.createElement('span');
@@ -602,7 +602,7 @@ export function appendThinkingDelta(streamingMsg: HTMLElement, thinkingContent: 
     thinkingEl.className = 'thinking-block';
     thinkingEl.setAttribute('open', '');
     const summary = document.createElement('summary');
-    summary.textContent = 'Thinking\u2026';
+    summary.textContent = t('Thinking...');
     thinkingEl.appendChild(summary);
     const content = document.createElement('div');
     content.className = 'thinking-content';

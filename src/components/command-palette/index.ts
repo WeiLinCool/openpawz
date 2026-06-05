@@ -3,6 +3,7 @@
 
 import { openPalette, closePalette, isPaletteOpen } from './molecules';
 import type { PaletteItem, SkillInfo } from './atoms';
+import { t } from '../../i18n';
 
 export { openPalette, closePalette, isPaletteOpen } from './molecules';
 export { destroyPalette } from './molecules';
@@ -93,13 +94,13 @@ function openShortcutsOverlay() {
   const sections = SHORTCUT_SECTIONS.map(
     (s) => `
     <div class="shortcuts-section">
-      <div class="shortcuts-section-title">${s.title}</div>
+      <div class="shortcuts-section-title">${t(s.title)}</div>
       ${s.items
         .map(
           (item) => `
         <div class="shortcuts-row">
           <span class="shortcuts-keys">${item.keys.map((k) => `<kbd>${k}</kbd>`).join(' ')}</span>
-          <span class="shortcuts-desc">${item.desc}</span>
+          <span class="shortcuts-desc">${t(item.desc)}</span>
         </div>`,
         )
         .join('')}
@@ -109,12 +110,12 @@ function openShortcutsOverlay() {
   overlay.innerHTML = `
     <div class="shortcuts-dialog">
       <div class="shortcuts-header">
-        <span class="shortcuts-title">Keyboard Shortcuts</span>
+        <span class="shortcuts-title">${t('Keyboard Shortcuts')}</span>
         <button class="btn-icon shortcuts-close">×</button>
       </div>
       <div class="shortcuts-body">${sections}</div>
       <div class="shortcuts-footer">
-        Press <kbd>?</kbd> to toggle · <kbd>Esc</kbd> to close
+        ${t('Press ? to toggle · Esc to close')}
       </div>
     </div>
   `;

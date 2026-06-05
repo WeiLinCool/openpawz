@@ -39,6 +39,7 @@ type VaultMap = HashMap<String, Zeroizing<String>>;
 /// None = not yet loaded, Some = loaded (possibly empty on fresh install).
 /// Values are `Zeroizing<String>` — zeroed on drop.
 static VAULT_CACHE: RwLock<Option<VaultMap>> = RwLock::new(None);
+static VAULT_LAST_ERROR: RwLock<Option<String>> = RwLock::new(None);
 
 // ── Lock helpers ───────────────────────────────────────────────────────────
 // Recover from a poisoned RwLock (another thread panicked while holding it)
@@ -79,10 +80,14 @@ pub const PURPOSE_SCC_SIGNING: &str = "scc-signing";
 /// subsequent `get()` calls are pure in-memory lookups.
 /// Call this early in app startup (before subsystems initialise).
 pub fn prefetch() {
-    ensure_loaded();
+    let loaded = ensure_loaded();
     let guard = read_lock(&VAULT_CACHE);
     let count = guard.as_ref().map_or(0, |m| m.len());
-    info!("[key-vault] Prefetch complete — {} keys available", count);
+    if loaded {
+        info!("[key-vault] Prefetch complete — {} keys available", count);
+    } else if let Some(err) = last_error() {
+        warn!("[key-vault] Prefetch failed — {}", err);
+    }
 }
 
 /// Check whether the vault was successfully loaded.
@@ -92,13 +97,35 @@ pub fn is_loaded() -> bool {
     read_lock(&VAULT_CACHE).is_some()
 }
 
+pub fn last_error() -> Option<String> {
+    VAULT_LAST_ERROR
+        .read()
+        .unwrap_or_else(|poisoned| {
+            warn!("[key-vault] RwLock was poisoned (last_error read) — recovering");
+            poisoned.into_inner()
+        })
+        .clone()
+}
+
+/// Clear the cached vault state and force the next access to re-read the OS keychain.
+/// Used by UI retry flows after the user unlocks or repairs the system keychain.
+pub fn reload() -> bool {
+    {
+        let mut guard = write_lock(&VAULT_CACHE);
+        *guard = None;
+    }
+    ensure_loaded()
+}
+
 /// Get a value from the vault by purpose key.
 /// Returns `None` if the key has never been stored.
 ///
 /// The returned `Zeroizing<String>` is securely zeroed when dropped,
 /// preventing key material from lingering in freed heap memory.
 pub fn get(purpose: &str) -> Option<Zeroizing<String>> {
-    ensure_loaded();
+    if !ensure_loaded() {
+        return None;
+    }
     let guard = read_lock(&VAULT_CACHE);
     guard.as_ref().and_then(|map| map.get(purpose)).cloned()
 }
@@ -108,14 +135,43 @@ pub fn get(purpose: &str) -> Option<Zeroizing<String>> {
 ///
 /// Thread-safe: holds the write lock across read-check + insert + persist
 /// to prevent TOCTOU races between concurrent callers.
-pub fn set(purpose: &str, value: &str) {
+pub fn set(purpose: &str, value: &str) -> bool {
+    match try_set(purpose, value) {
+        Ok(()) => true,
+        Err(e) => {
+            error!("[key-vault] Failed to store '{}': {}", purpose, e);
+            false
+        }
+    }
+}
+
+pub fn try_set(purpose: &str, value: &str) -> Result<(), String> {
     let mut guard = write_lock(&VAULT_CACHE);
     if guard.is_none() {
-        *guard = Some(read_vault());
+        match read_vault() {
+            Ok(map) => {
+                *guard = Some(map);
+                set_last_error(None);
+            }
+            Err(e) => {
+                set_last_error(Some(e.clone()));
+                return Err(e);
+            }
+        }
     }
     let map = guard.get_or_insert_with(VaultMap::new);
-    map.insert(purpose.to_string(), Zeroizing::new(value.to_string()));
-    persist_vault(map);
+    let previous = map.insert(purpose.to_string(), Zeroizing::new(value.to_string()));
+    if let Err(e) = persist_vault(map) {
+        if let Some(previous) = previous {
+            map.insert(purpose.to_string(), previous);
+        } else {
+            map.remove(purpose);
+        }
+        set_last_error(Some(e.clone()));
+        return Err(e);
+    }
+    set_last_error(None);
+    Ok(())
 }
 
 /// Remove a value from the vault and persist.
@@ -123,12 +179,26 @@ pub fn set(purpose: &str, value: &str) {
 pub fn remove(purpose: &str) {
     let mut guard = write_lock(&VAULT_CACHE);
     if guard.is_none() {
-        *guard = Some(read_vault());
+        match read_vault() {
+            Ok(map) => *guard = Some(map),
+            Err(e) => {
+                set_last_error(Some(e));
+                return;
+            }
+        }
     }
     if let Some(map) = guard.as_mut() {
         if map.remove(purpose).is_some() {
-            persist_vault(map);
-            info!("[key-vault] Removed '{}' from vault", purpose);
+            match persist_vault(map) {
+                Ok(()) => {
+                    set_last_error(None);
+                    info!("[key-vault] Removed '{}' from vault", purpose);
+                }
+                Err(e) => {
+                    set_last_error(Some(e.clone()));
+                    error!("[key-vault] Failed to remove '{}': {}", purpose, e);
+                }
+            }
         }
     }
 }
@@ -138,24 +208,34 @@ pub fn remove(purpose: &str) {
 /// Ensure the vault is loaded into memory (double-checked lock pattern).
 /// On first call, reads the unified keychain entry (1 OS prompt max).
 /// If no vault exists yet, creates an empty in-memory map (no prompt).
-fn ensure_loaded() {
+fn ensure_loaded() -> bool {
     // Fast path: already cached
     {
         if read_lock(&VAULT_CACHE).is_some() {
-            return;
+            return true;
         }
     }
     // Slow path: acquire write lock and double-check
     let mut guard = write_lock(&VAULT_CACHE);
     if guard.is_some() {
-        return;
+        return true;
     }
-    *guard = Some(read_vault());
+    match read_vault() {
+        Ok(map) => {
+            *guard = Some(map);
+            set_last_error(None);
+            true
+        }
+        Err(e) => {
+            set_last_error(Some(e));
+            false
+        }
+    }
 }
 
 /// Read the unified vault JSON from the keychain.
 /// If no vault exists yet, returns an empty map.
-fn read_vault() -> VaultMap {
+fn read_vault() -> Result<VaultMap, String> {
     match keyring::Entry::new(VAULT_SERVICE, VAULT_USER) {
         Ok(entry) => match entry.get_password() {
             Ok(json_str) => {
@@ -168,26 +248,29 @@ fn read_vault() -> VaultMap {
                             .map(|(k, v)| (k, Zeroizing::new(v)))
                             .collect();
                         info!("[key-vault] Loaded unified vault ({} keys)", count);
-                        map
+                        Ok(map)
                     }
                     Err(e) => {
-                        error!("[key-vault] Corrupt vault JSON: {} — starting fresh", e);
-                        VaultMap::new()
+                        let msg = format!("Corrupt vault JSON: {}", e);
+                        error!("[key-vault] {}", msg);
+                        Err(msg)
                     }
                 }
             }
             Err(keyring::Error::NoEntry) => {
                 info!("[key-vault] No unified vault found — will create on first write");
-                VaultMap::new()
+                Ok(VaultMap::new())
             }
             Err(e) => {
-                warn!("[key-vault] Keychain read error: {} — starting fresh", e);
-                VaultMap::new()
+                let msg = format!("Keychain read error: {}", e);
+                warn!("[key-vault] {}", msg);
+                Err(msg)
             }
         },
         Err(e) => {
-            error!("[key-vault] Keyring init failed: {}", e);
-            VaultMap::new()
+            let msg = format!("Keyring init failed: {}", e);
+            error!("[key-vault] {}", msg);
+            Err(msg)
         }
     }
 }
@@ -195,23 +278,33 @@ fn read_vault() -> VaultMap {
 /// Serialise the vault map to JSON and write to the single keychain entry.
 /// Accepts `VaultMap` (Zeroizing values) — unwraps to plain strings for
 /// JSON serialisation only; the serialised JSON lives briefly on the stack.
-fn persist_vault(map: &VaultMap) {
+fn persist_vault(map: &VaultMap) -> Result<(), String> {
     // Build a plain HashMap for serde (Zeroizing<String> doesn't impl Serialize)
     let plain: HashMap<&str, &str> = map.iter().map(|(k, v)| (k.as_str(), v.as_str())).collect();
 
     let json = match serde_json::to_string(&plain) {
         Ok(j) => Zeroizing::new(j),
         Err(e) => {
-            error!("[key-vault] Failed to serialise vault: {}", e);
-            return;
+            return Err(format!("Failed to serialise vault: {}", e));
         }
     };
 
     match keyring::Entry::new(VAULT_SERVICE, VAULT_USER) {
         Ok(entry) => match entry.set_password(&json) {
-            Ok(()) => debug!("[key-vault] Persisted unified vault ({} keys)", map.len()),
-            Err(e) => error!("[key-vault] Failed to persist vault: {}", e),
+            Ok(()) => {
+                debug!("[key-vault] Persisted unified vault ({} keys)", map.len());
+                Ok(())
+            }
+            Err(e) => Err(format!("Failed to persist vault: {}", e)),
         },
-        Err(e) => error!("[key-vault] Keyring init failed on persist: {}", e),
+        Err(e) => Err(format!("Keyring init failed on persist: {}", e)),
     }
+}
+
+fn set_last_error(error: Option<String>) {
+    let mut guard = VAULT_LAST_ERROR.write().unwrap_or_else(|poisoned| {
+        warn!("[key-vault] RwLock was poisoned (last_error write) — recovering");
+        poisoned.into_inner()
+    });
+    *guard = error;
 }

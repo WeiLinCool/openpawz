@@ -9,6 +9,8 @@
 // so existing setups keep working without configuration changes.
 
 use crate::atoms::error::EngineResult;
+use crate::engine::http::pinned_client;
+use crate::engine::providers::openai::describe_http_error;
 use crate::engine::types::*;
 use log::{info, warn};
 use reqwest::Client;
@@ -48,7 +50,7 @@ pub struct EmbeddingClient {
 impl EmbeddingClient {
     pub fn new(config: &MemoryConfig) -> Self {
         EmbeddingClient {
-            client: Client::new(),
+            client: pinned_client(),
             provider: config.embedding_provider.clone(),
             base_url: config.embedding_base_url.clone(),
             model: config.embedding_model.clone(),
@@ -439,7 +441,7 @@ impl EmbeddingClient {
         let resp = req
             .send()
             .await
-            .map_err(|e| format!("OpenAI provider embed request failed: {}", e))?;
+            .map_err(|e| describe_http_error(&url, &e))?;
 
         if !resp.status().is_success() {
             let status = resp.status();
@@ -490,7 +492,7 @@ impl EmbeddingClient {
             .timeout(std::time::Duration::from_secs(30))
             .send()
             .await
-            .map_err(|e| format!("Google embed request failed: {}", e))?;
+            .map_err(|e| describe_http_error(&url, &e))?;
 
         if !resp.status().is_success() {
             let status = resp.status();
@@ -626,7 +628,7 @@ impl EmbeddingClient {
         let resp = req
             .send()
             .await
-            .map_err(|e| format!("OpenAI provider classify failed: {}", e))?;
+            .map_err(|e| describe_http_error(&url, &e))?;
 
         if !resp.status().is_success() {
             let status = resp.status();

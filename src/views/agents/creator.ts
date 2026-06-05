@@ -26,48 +26,48 @@ export function openAgentCreator(cbs: EditorCallbacks) {
   modal.innerHTML = `
     <div class="agent-modal-dialog">
       <div class="agent-modal-header">
-        <span>New Agent</span>
+        <span>新建智能体</span>
         <button class="btn-icon agent-modal-close">×</button>
       </div>
       <div class="agent-modal-body">
         <div class="agent-templates">
-          <div class="agent-template-label">Start from a template</div>
+          <div class="agent-template-label">从模板开始</div>
           <div class="agent-template-grid">
             <div class="agent-template-card selected" data-template="general">
               <div class="agent-template-icon"><span class="ms">smart_toy</span></div>
-              <div class="agent-template-name">General</div>
-              <div class="agent-template-desc">All-purpose assistant</div>
+              <div class="agent-template-name">通用</div>
+              <div class="agent-template-desc">全能助手</div>
             </div>
             <div class="agent-template-card" data-template="research">
               <div class="agent-template-icon"><span class="ms">biotech</span></div>
-              <div class="agent-template-name">Research</div>
-              <div class="agent-template-desc">Deep analysis</div>
+              <div class="agent-template-name">研究</div>
+              <div class="agent-template-desc">深度分析</div>
             </div>
             <div class="agent-template-card" data-template="creative">
               <div class="agent-template-icon"><span class="ms">palette</span></div>
-              <div class="agent-template-name">Creative</div>
-              <div class="agent-template-desc">Writing & ideas</div>
+              <div class="agent-template-name">创意</div>
+              <div class="agent-template-desc">写作与想法</div>
             </div>
             <div class="agent-template-card" data-template="technical">
               <div class="agent-template-icon"><span class="ms">code</span></div>
-              <div class="agent-template-name">Technical</div>
-              <div class="agent-template-desc">Code & debugging</div>
+              <div class="agent-template-name">技术</div>
+              <div class="agent-template-desc">代码与调试</div>
             </div>
           </div>
         </div>
 
         <div class="form-group">
-          <label class="form-label">Name</label>
-          <input type="text" class="form-input" id="agent-create-name" placeholder="Give your agent a name">
+          <label class="form-label">名称</label>
+          <input type="text" class="form-input" id="agent-create-name" placeholder="给智能体起个名字">
         </div>
 
         <div class="form-group">
-          <label class="form-label">Bio</label>
-          <input type="text" class="form-input" id="agent-create-bio" placeholder="What is this agent for?">
+          <label class="form-label">简介</label>
+          <input type="text" class="form-input" id="agent-create-bio" placeholder="这个智能体用来做什么？">
         </div>
 
         <div class="form-group">
-          <label class="form-label">Avatar</label>
+          <label class="form-label">头像</label>
           <div class="agent-avatar-picker" id="agent-avatar-picker">
             ${SPRITE_AVATARS.map(
               (s, i) =>
@@ -77,8 +77,8 @@ export function openAgentCreator(cbs: EditorCallbacks) {
         </div>
       </div>
       <div class="agent-modal-footer">
-        <button class="btn btn-ghost agent-modal-cancel">Cancel</button>
-        <button class="btn btn-primary" id="agent-create-submit">Create Agent</button>
+        <button class="btn btn-ghost agent-modal-cancel">取消</button>
+        <button class="btn btn-primary" id="agent-create-submit">创建智能体</button>
       </div>
     </div>
   `;
@@ -122,7 +122,7 @@ export function openAgentCreator(cbs: EditorCallbacks) {
     const bio = (modal.querySelector('#agent-create-bio') as HTMLInputElement)?.value.trim();
 
     if (!name) {
-      showToast('Please enter a name', 'error');
+      showToast('请输入名称', 'error');
       return;
     }
 

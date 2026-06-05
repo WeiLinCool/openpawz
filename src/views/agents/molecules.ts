@@ -30,18 +30,18 @@ export function renderAgents(agents: Agent[], cbs: RenderAgentsCallbacks) {
     grid.innerHTML = `
       <div class="empty-state" style="grid-column:1/-1">
         <div class="empty-icon"><span class="ms" style="font-size:48px">smart_toy</span></div>
-        <div class="empty-title">Create your first AI agent</div>
-        <div class="empty-subtitle">Agents are AI personas you configure with a model, personality, skills, and boundaries. Each agent can handle different tasks.</div>
+        <div class="empty-title">创建你的第一个 AI 智能体</div>
+        <div class="empty-subtitle">智能体是可配置模型、人格、技能和边界的 AI 角色。每个智能体都可以处理不同任务。</div>
         <div class="empty-features">
-          <div class="empty-feature-item"><span class="ms ms-sm">check_circle</span> Choose from templates: general, research, creative, technical</div>
-          <div class="empty-feature-item"><span class="ms ms-sm">check_circle</span> Assign tools and skills per agent</div>
-          <div class="empty-feature-item"><span class="ms ms-sm">check_circle</span> Set personality and communication style</div>
-          <div class="empty-feature-item"><span class="ms ms-sm">check_circle</span> Add boundaries and safety rules</div>
+          <div class="empty-feature-item"><span class="ms ms-sm">check_circle</span> 可选择通用、研究、创意、技术等模板</div>
+          <div class="empty-feature-item"><span class="ms ms-sm">check_circle</span> 为每个智能体分配工具和技能</div>
+          <div class="empty-feature-item"><span class="ms ms-sm">check_circle</span> 设置人格和沟通风格</div>
+          <div class="empty-feature-item"><span class="ms ms-sm">check_circle</span> 添加边界和安全规则</div>
         </div>
         <div class="empty-actions">
-          <button class="btn btn-primary" id="agents-empty-create"><span class="ms ms-sm">add</span> Create Agent</button>
+          <button class="btn btn-primary" id="agents-empty-create"><span class="ms ms-sm">add</span> 创建智能体</button>
         </div>
-        <div class="empty-hint">You'll need an AI provider configured in Settings first</div>
+        <div class="empty-hint">需要先在设置中配置 AI 提供商</div>
       </div>
     `;
     grid.querySelector('#agents-empty-create')?.addEventListener('click', () => cbs.onCreate());
@@ -52,8 +52,8 @@ export function renderAgents(agents: Agent[], cbs: RenderAgentsCallbacks) {
   const toggleSlot = document.getElementById('agents-toggle-btns');
   if (toggleSlot) {
     toggleSlot.innerHTML = `
-      <button class="agents-toggle-btn${_viewMode === 'roster' ? ' active' : ''}" data-mode="roster">Roster</button>
-      <button class="agents-toggle-btn${_viewMode === 'grid' ? ' active' : ''}" data-mode="grid">Grid</button>
+      <button class="agents-toggle-btn${_viewMode === 'roster' ? ' active' : ''}" data-mode="roster">名单</button>
+      <button class="agents-toggle-btn${_viewMode === 'grid' ? ' active' : ''}" data-mode="grid">网格</button>
     `;
   }
 
@@ -65,11 +65,11 @@ export function renderAgents(agents: Agent[], cbs: RenderAgentsCallbacks) {
     <table class="agents-roster">
       <thead>
         <tr>
-          <th>STAT</th>
-          <th>AGENT</th>
-          <th>MODEL</th>
-          <th>TOOLS</th>
-          <th>LAST ACTIVE</th>
+          <th>状态</th>
+          <th>智能体</th>
+          <th>模型</th>
+          <th>工具</th>
+          <th>最近活跃</th>
           <th></th>
         </tr>
       </thead>
@@ -77,7 +77,7 @@ export function renderAgents(agents: Agent[], cbs: RenderAgentsCallbacks) {
         ${agents
           .map((agent) => {
             const p = getAgentPolicy(agent.id);
-            const toolCount = p.mode === 'unrestricted' ? 'All' : String(p.allowed.length);
+            const toolCount = p.mode === 'unrestricted' ? '全部' : String(p.allowed.length);
             const lastUsed = agent.lastUsed ? _timeAgo(new Date(agent.lastUsed)) : '—';
             const isActive =
               agent.lastUsed && Date.now() - new Date(agent.lastUsed).getTime() < 600000;
@@ -88,8 +88,8 @@ export function renderAgents(agents: Agent[], cbs: RenderAgentsCallbacks) {
             <td class="roster-tools">${toolCount}</td>
             <td class="roster-time">${lastUsed}</td>
             <td class="roster-actions">
-              <button class="btn btn-primary btn-sm agent-chat-btn">Chat</button>
-              <button class="btn btn-ghost btn-sm agent-edit-btn">Edit</button>
+              <button class="btn btn-primary btn-sm agent-chat-btn">聊天</button>
+              <button class="btn btn-ghost btn-sm agent-edit-btn">编辑</button>
             </td>
           </tr>`;
           })
@@ -99,7 +99,7 @@ export function renderAgents(agents: Agent[], cbs: RenderAgentsCallbacks) {
         <tr class="agents-roster-footer-row">
           <td colspan="6">
             <button class="btn btn-ghost btn-sm" id="agent-card-new">
-              <span class="ms ms-sm">add</span> New Agent
+              <span class="ms ms-sm">add</span> 新建智能体
             </button>
           </td>
         </tr>
@@ -117,14 +117,14 @@ export function renderAgents(agents: Agent[], cbs: RenderAgentsCallbacks) {
           <div class="agent-avatar" style="background:${escHtml(agent.color)}">${spriteAvatar(agent.avatar, 48)}</div>
           <div class="agent-info">
             <div class="agent-name">${escHtml(agent.name)}</div>
-            <div class="agent-template">${escHtml(agent.model || (agent.source === 'backend' ? 'AI-Created' : agent.template.charAt(0).toUpperCase() + agent.template.slice(1)))}</div>
+            <div class="agent-template">${escHtml(agent.model || (agent.source === 'backend' ? 'AI 创建' : agent.template.charAt(0).toUpperCase() + agent.template.slice(1)))}</div>
           </div>
-          <button class="btn-icon agent-menu-btn" title="Options">⋮</button>
+          <button class="btn-icon agent-menu-btn" title="选项">⋮</button>
         </div>
         <div class="agent-actions">
-          <button class="btn btn-primary btn-sm agent-chat-btn">Chat</button>
-          <button class="btn btn-ghost btn-sm agent-minichat-btn" title="Open mini chat window"><span class="ms ms-sm">chat</span></button>
-          <button class="btn btn-ghost btn-sm agent-edit-btn">Edit</button>
+          <button class="btn btn-primary btn-sm agent-chat-btn">聊天</button>
+          <button class="btn btn-ghost btn-sm agent-minichat-btn" title="打开迷你聊天窗口"><span class="ms ms-sm">chat</span></button>
+          <button class="btn btn-ghost btn-sm agent-edit-btn">编辑</button>
         </div>
       </div>
     `,
@@ -132,7 +132,7 @@ export function renderAgents(agents: Agent[], cbs: RenderAgentsCallbacks) {
       .join('')}
       <div class="agent-card agent-card-new" id="agent-card-new">
         <div class="agent-card-new-icon">+</div>
-        <div class="agent-card-new-label">Create Agent</div>
+        <div class="agent-card-new-label">创建智能体</div>
       </div>
     `;
   }
@@ -199,13 +199,13 @@ export function renderAgents(agents: Agent[], cbs: RenderAgentsCallbacks) {
 function _timeAgo(d: Date): string {
   const diff = Date.now() - d.getTime();
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
+  if (mins < 1) return '刚刚';
+  if (mins < 60) return `${mins} 分钟前`;
   const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
+  if (hrs < 24) return `${hrs} 小时前`;
   const days = Math.floor(hrs / 24);
-  if (days === 1) return 'yesterday';
-  return `${days}d ago`;
+  if (days === 1) return '昨天';
+  return `${days} 天前`;
 }
 
 // ── Dock badge / active helpers (exported so mini-chat.ts can call them) ────

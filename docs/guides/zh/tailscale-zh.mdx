@@ -1,0 +1,104 @@
+---
+title: "Tailscale"
+description: "Tailscale 集成使您可以远程访问 Pawz 并通过您的 tailnet 暴露智能体服务。"
+---
+
+# Tailscale
+
+Tailscale 集成使您可以远程访问 Pawz 并通过您的 tailnet 暴露智能体服务。
+
+## 什么是 Tailscale？
+
+[Tailscale](https://tailscale.com/) 在您的设备之间创建一个私有的网状 VPN。使用 Pawz + Tailscale，您可以：
+
+- 从您 tailnet 上的任何设备访问 Pawz
+- 向您的其他机器暴露智能体服务（webhook、API）
+- 使用 Tailscale Funnel 让服务可在公共互联网上访问
+
+## 安装设置
+
+1. 安装 [Tailscale](https://tailscale.com/download)
+2. 认证: `tailscale up`
+3. 在 Pawz 中启用 **设置 → 高级**
+
+## Tailscale 服务
+
+向您的 tailnet 暴露本地服务：
+
+```bash
+# 在您的 tailnet 上暴露 Pawz 网页聊天
+tailscale serve https / http://localhost:3000
+```
+
+您尾网上的其他设备现在可以在 `https://your-machine.tail-net.ts.net/` 访问 Pawz。
+
+## Tailscale Funnel
+
+向公共互联网暴露服务：
+
+```bash
+# 让网页聊天公开访问
+tailscale funnel 443 http://localhost:3000
+```
+
+:::warning
+Funnel 使您的服务可以被互联网上的任何人访问。仅在您希望公开访问时使用此功能。
+:::
+
+## 使用场景
+
+- **远程访问** — 从您的手机或其他计算机使用 Pawz
+- **Webhook 接收器** — 让外部服务（GitHub、Stripe）向您的智能体发送事件
+- **网页聊天** — 运行由您的 Pawz 智能体驱动的面向公众的聊天机器人
+- **API网关** — 暴露智能体 API 供其他应用调用
+
+## Webhook 服务器
+
+Pawz 包含一个内置的 webhook 服务器，用于接收外部事件并将其路由到智能体。结合 Tailscale，您可以从 GitHub、Stripe 或 n8n 等服务接收 webhook，而无需将您的机器暴露给公共互联网。
+
+### 工作原理
+
+1. 外部服务向您的 webhook 端点发送 HTTP POST 请求
+2. Pawz 验证请求（认证令牌，速率限制）
+3. 根据 webhook 路由规则，有效载荷被路由到指定的智能体
+4. 智能体处理事件并可触发任务、发送消息或执行操作
+
+### 配置
+
+在 **设置 → 高级 → Webhooks** 中配置 webhooks：
+
+| 设置项 | 描述 |
+|---------|-------------|
+| Webhook 端口 | webhook 服务器的本地端口（默认: 3001） |
+| 认证令牌 | `Authorization` 头中的必需令牌 |
+| 速率限制 | 每分钟最大请求数（默认: 60） |
+| 智能体路由 | 哪个智能体处理哪个 webhook 路径 |
+
+### 与 Tailscale 结合使用
+
+```bash
+# 在您的 tailnet 上暴露 webhook 服务器
+tailscale serve https /webhooks http://localhost:3001
+
+# 或通过 Funnel 公开暴露（谨慎使用）
+tailscale funnel 443 http://localhost:3001
+```
+
+### 示例: GitHub webhook
+
+1. 在 GitHub 仓库设置 → **Webhooks** → **添加 webhook**
+2. 将 URL 设置为 `https://your-machine.tail-net.ts.net/webhooks/github`
+3. 设置密钥以匹配 Pawz webhook 认证令牌
+4. 选择事件（push, PR, issues）
+5. 在 Pawz 中，将 `/webhooks/github` 路由到您的开发智能体
+
+该智能体接收到 webhook 有效载荷并可以创建任务、更新项目状态或通过频道桥接通知您。
+
+## 故障排除
+
+| 问题 | 解决方法 |
+|---------|-----|
+| Tailscale 未连接 | 运行 `tailscale status` 验证身份验证。使用 `tailscale up` 重新身份验证。 |
+| Serve 不工作 | 在运行 `tailscale serve` 之前，请确保本地服务正在指定端口上运行。 |
+| Funnel 不可用 | Funnel 需要 Tailscale v1.40+ 并且必须在您的 Tailscale 管理控制台中，在 **DNS → Funnel** 下启用。 |
+| 未接收到 webhooks | 检查认证令牌是否匹配且 webhook 端口正确。使用 `curl -X POST -H "Authorization: Bearer <token>" http://localhost:3001/test` 进行验证。 |

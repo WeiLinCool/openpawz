@@ -1,0 +1,65 @@
+---
+title: "WebChat 频道"
+description: "WebChat 是一个内置的 HTTP/WebSocket 聊天界面，您可以将其嵌入到自己的网站上或直接访问。"
+---
+
+# WebChat 频道
+
+WebChat 是一个内置的 HTTP/WebSocket 聊天界面，您可以将其嵌入到自己的网站上或直接访问。
+
+## 设置
+
+1. 在 Pawz 中，转到 **设置 → 频道**
+2. 选择 **WebChat**
+3. 配置：
+   - **端口** — 监听的本地端口(默认: 3000)
+   - **私信策略** — 开放 / 允许列表 / 配对
+4. 启动频道
+
+## 配置
+
+| 字段 | 必需 | 说明 |
+|-------|----------|-------------|
+| 端口 | 是 | HTTP 服务器端口 |
+| 私信策略 | 是 | 谁可以聊天 |
+| 允许用户 | 适用于允许列表 | 用户名或 IP 地址 |
+
+## 功能
+
+- 内置聊天 UI 可通过 `http://localhost:<port>` 访问
+- WebSocket 用于实时流式传输
+- 每个用户的会话带记忆功能
+- 提示注入扫描
+- 通过频道路由规则进行代理路由
+
+## 公共访问
+
+要使 WebChat 在您的计算机外部可访问：
+
+### 通过 Tailscale
+
+```bash
+tailscale serve https / http://localhost:3000
+```
+
+### 通过 Tailscale Funnel(公共互联网)
+
+```bash
+tailscale funnel 443 http://localhost:3000
+```
+
+详细信息请参见 [Tailscale 指南](/guides/tailscale)。
+
+## 嵌入
+
+您可以使用 iframe 将 WebChat 嵌入到您的网站中：
+
+```html
+<iframe src="http://localhost:3000" width="400" height="600"></iframe>
+```
+
+## 提示
+
+- 使用配对模式要求用户使用代码进行身份验证
+- WebChat 是最简单的入门频道 - 不需要外部账户
+- 结合 Tailscale 以获得安全的远程访问

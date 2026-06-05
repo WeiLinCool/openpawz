@@ -1,0 +1,608 @@
+---
+title: "功能"
+description: "有史以来构建的最全面的 AI 智能体平台 — 通过 MCP 桥接拥有 25,000+ 集成，多智能体，多通道，语音，交易，内存和安全性。"
+sidebarTitle: "功能"
+---
+
+## 平台功能
+
+OpenPawz 附带**比任何其他 AI 智能体平台更多的功能** — 开源或商业版。没有任何其他工具能结合 25,000+ 集成（通过 MCP 桥接 n8n），多智能体编排，11 个同时聊天频道，多链 DeFi 交易，具有混合检索的语义内存，语音，可视化流程构建器和三级扩展市场 — 所有这些都在您的桌面上本地运行而无需任何云依赖。
+
+这是完整的功能清单。
+
+---
+
+## 智能体
+
+<Columns cols={2}>
+  <Card title="自定义个性">
+    每个智能体都有姓名、简介、系统提示、表情符号和头像。三个性格轴 — **语调**（随意 → 正式）、**主动性**（被动 → 主动）和**细节**（简洁 → 详尽）— 让您无需进行提示词工程即可精细调整行为。
+  </Card>
+  <Card title="智能体模板">
+    预构建原型 — 通用、研究、创意、技术、自定义 — 让您立即投入使用。模板自动设置个性、系统提示和工具访问权限。
+  </Card>
+  <Card title="25,000+ 集成">
+    400+ 原生集成编译到二进制文件中，另有 25,000+ 社区集成通过 MCP 桥接到 n8n。智能体发现并在运行时按需自动部署工作流。
+  </Card>
+  <Card title="灵魂文件">
+    每个智能体的持久身份文档。灵魂文件存储个性注释、自定义指令和跨会话持久的身份数据。您的智能体会随着时间演进。
+  </Card>
+  <Card title="每智能体工作区">
+    每个智能体都获得一个独立的文件系统工作空间，具有文件列表、浏览和清理功能。智能体不会意外干扰彼此的文件。
+  </Card>
+  <Card title="智能体边界">
+    定义每个智能体应该和不应该做什么。边界规则约束了行为，无需复杂的提示工程 — 只需普通语言规则。
+  </Card>
+  <Card title="每智能体模型覆盖">
+    每个智能体可以使用不同的 AI 模型，覆盖全局默认值。在 Claude 上运行您的研究智能体，在 GPT-5.1 上运行您的编码智能体，并在本地 Ollama 模型上运行您的助手 — 同时运行。
+  </Card>
+  <Card title="自动批准模式">
+    受信任的智能体可以完全跳过人工循环批准提示。针对每个智能体切换 — 对您信任的智能体实行完全自主，对新的智能体实行严格监督。
+  </Card>
+</Columns>
+
+→ 深入介绍：[智能体指南](/guides/agents)
+
+---
+
+## 11 个同时渠道
+
+**没有其他 AI 智能体平台能同时连接这么多平台。** 一个应用，一组智能体，11 个实时桥接 — 同时运行。在 Telegram 上有一个用户联系您，另一个在 Discord 上，还有一个在 Slack 上 — 相同的智能体（或不同的智能体）立即在每个平台上回应。
+
+| 渠道 | 类型 | 主要功能 |
+|---|---|---|
+| Telegram | 机器人 API | 私信政策、用户白名单、配对审批 |
+| Discord | 机器人 | @ 回复模式、私信政策、用户审批 |
+| Slack | Socket 模式 | 应用 + 机器人令牌、@ 回复、私信政策 |
+| Matrix | 客户端 | 主服务器认证、房间响应、私信政策 |
+| IRC | TLS 客户端 | 多频道加入、频道响应切换 |
+| WhatsApp | 网页桥接 | Evolution API、Docker 管理、二维码配对、群组响应 |
+| Twitch | 聊天 | OAuth 机器人、多频道、@ 要求切换 |
+| Mattermost | 机器人 | 服务器 + 令牌认证、@ 回复、私信政策 |
+| Nextcloud Talk | 机器人 | 用户名/密码认证、群组响应切换 |
+| Nostr | 中继 | NIP-04 加密私信、Ed25519 签名、多中继 WebSocket |
+| Webchat | 内建 | TLS WebSocket、Cookie 认证、内联 HTML/JS/CSS、会话管理 |
+
+<Columns cols={2}>
+  <Card title="统一访问控制">
+    每个渠道都有相同的接口：启动/停止、配置获取/设定、状态、批准/拒绝/移除用户。在所有 11 个平台上保持一致的行为。
+  </Card>
+  <Card title="每渠道智能体路由">
+    为每个渠道分配特定智能体。您的支持机器人为 Discord 提供服务，您的研究智能体处理 Slack，您的个人助理处理 Telegram — 全部来自一个应用。
+  </Card>
+  <Card title="渠道路由规则">
+    基于规则的路由引擎，采用首次匹配逻辑。基于渠道、用户、关键词或自定义条件将消息路由到特定智能体。
+  </Card>
+  <Card title="智能消息分割">
+    长响应自动在适当的平台边界处分割。Discord 的 2000 字符限制，Telegram 的 4096 字符限制 — 处理透明。
+  </Card>
+</Columns>
+
+→ 深入介绍：[渠道概述](/channels/overview)
+
+---
+
+## AI 提供商
+
+使用您自己的模型。OpenPawz 支持**10 个提供商** — 本地和云端 — 您可以随时为智能体、任务或对话切换它们。
+
+| 提供商 | 类型 | 模型 |
+|---|---|---|
+| Ollama | 本地 | Llama、Mistral、Gemma、Phi、Qwen 和数百种更多 |
+| OpenAI | 云端 | GPT-5.1、GPT-4.1、o3、o4-mini |
+| Anthropic | 云端 | Claude 4、Sonnet、Haiku |
+| Google | 云端 | Gemini 2.x |
+| DeepSeek | 云端 | DeepSeek V3、R1 |
+| Grok | 云端 | Grok 3 |
+| Mistral | 云端 | Mistral Large、Codestral |
+| OpenRouter | 云端 | 多模型网关 |
+| Moonshot | 云端 | Kimi |
+| 自定义 | 任意 | 任何兼容 OpenAI 的端点 |
+
+<Columns cols={2}>
+  <Card title="模型路由">
+    老板模型 vs 工人模型分配。OpenPawz 自动将简单查询路由到更便宜的模型，将复杂任务路由到强大的模型 — **为您节省资金，同时不牺牲质量**。
+  </Card>
+  <Card title="SSE 流">
+    所有提供商都通过 Server-Sent Events 以实时差异流式传输响应。您可以看到模型思考时令牌的出现 — 无需等待完整响应。
+  </Card>
+  <Card title="思维与推理块">
+    完全支持 Anthropic 思考块和 Google 思考处理。实时查看模型的推理过程。
+  </Card>
+  <Card title="每日预算执行">
+    设定每日美元硬性消费上限。达到预算时，API 调用被阻止。再也不会收到意外账单。**没有其他平台具有此功能。**
+  </Card>
+</Columns>
+
+→ 深入介绍：[提供商概述](/docs/providers/overview)
+
+---
+
+## 集成 — 25,000+ 通过 MCP 桥接
+
+**400+ 集成编译到 Rust 二进制文件** — 无需安装插件，无需浏览市场。只需配置凭据并分配给智能体。
+
+加上通过嵌入式 n8n 引擎和 MCP 桥接的**25,000+ 社区集成**。智能体发现、自动安装社区包并为每个服务自动部署工作流 — 零配置和低成本（或使用本地 Ollama 工作者的零成本）。
+
+→ 深入介绍：[MCP 桥接指南](/guides/mcp-bridge)
+
+| 分类 | 数量 | 示例 |
+|----------|-------|----------|
+| 生产力 | 40+ | Notion、Trello、Obsidian、Linear、Jira、Asana、Todoist、Google Workspace |
+| 通信 | 30+ | Slack、Discord、Telegram、WhatsApp、Teams、电子邮件（IMAP/SMTP） |
+| 开发 | 50+ | GitHub、GitLab、Bitbucket、Docker、Kubernetes、Vercel、Netlify、AWS |
+| 数据与分析 | 35+ | PostgreSQL、MongoDB、Redis、Elasticsearch、BigQuery、Snowflake |
+| 媒体与内容 | 25+ | Spotify、YouTube、Whisper、ElevenLabs、图像生成、DALL-E |
+| 智能家居与物联网 | 20+ | 飞利浦 Hue、Sonos、Home Assistant、MQTT、Zigbee |
+| 金融与交易 | 30+ | Coinbase、Solana DEX、以太坊 DEX、Stripe、PayPal、QuickBooks |
+| 云与基础设施 | 40+ | AWS、GCP、Azure、Cloudflare、DigitalOcean、Terraform |
+| 安全与监控 | 25+ | 1Password、Vault、Datadog、PagerDuty、Sentry、Grafana |
+| AI 与 ML | 20+ | Hugging Face、Replicate、Stability AI、Pinecone、Weaviate |
+| CRM 与营销 | 30+ | Salesforce、HubSpot、Mailchimp、SendGrid、Intercom |
+| 杂项 | 55+ | 天气、RSS、网络抓取、PDF、OCR、二维码、地图 |
+
+<Tabs>
+  <Tab title="核心工具">
+    | 工具 | 实现功能 |
+    |---|---|
+    | Shell 执行 | 运行任意命令并进行风险分类 |
+    | 文件操作 | 在智能体工作区中读取、写入、追加、删除、列取文件 |
+    | 网页获取 | HTTP 获取，配置允许/阻止域名列表 |
+    | 浏览器自动化 | 头less Chrome — 导航、截图、提取、点击、填写表单 |
+    | 电子邮件 | 完整的 IMAP/SMTP：读取、发送、搜索、文件夹管理、AI 草稿生成 |
+    | GitHub | 存储库操作、问题、PR、代码搜索 |
+    | 内存 | 存储、搜索、列取、删除语义记忆 |
+    | 任务 | 在看板上创建、更新、移动任务 |
+  </Tab>
+  <Tab title="智能体工具">
+    | 工具 | 实现功能 |
+    |---|---|
+    | 智能体间消息 | 在智能体之间直接消息和广播 |
+    | 智能体管理 | 智能体可以以编程方式创建、配置和管理其他智能体 |
+    | 智能体团队 | 创建和管理带有协调员/成员角色的持久智能体群组 |
+    | 灵魂/人格文件 | 读取和写入持久的人格和身份数据 |
+    | 技能输出 | 将结构化的 JSON 数据保留在仪表板小部件中 |
+    | 技能存储 | 扩展的持久键值存储 — 获取、设置、查询、删除 |
+  </Tab>
+  <Tab title="交易工具">
+    | 工具 | 实现功能 |
+    |---|---|
+    | Coinbase | 交易所交易：订单、余额、蜡烛数据 |
+    | Solana DEX | Jupiter 聚合器交换，Pump.fun，SOL/代币转账，投资组合跟踪 |
+    | 以太坊 DEX | Uniswap V2/V3 交换，ERC-20 操作，HD 钱包（BIP-39/44），代币发现 |
+    | 职位监控 | 具有止损、止盈和最新价格跟踪的开放仓位 |
+    | 价格播报 | 跨链的实时代币价格数据 |
+  </Tab>
+  <Tab title="语音工具">
+    | 工具 | 实现功能 |
+    |---|---|
+    | 文本转语音 | 三种提供商：Google、OpenAI、ElevenLabs。可配置的声音、速度、语言 |
+    | 语音识别 | 通过 whisper 兼容引擎进行音频转录 |
+    | 自动朗读 | 自动朗读所有新的智能体响应。可在会话中切换 |
+  </Tab>
+  <Tab title="社区工具">
+    | 工具 | 实现功能 |
+    |---|---|
+    | 技能搜索 | 智能体在 PawzHub 市场中搜索新功能 |
+    | 技能安装 | 智能体为自身安装技能 — 在运行时、互动中 |
+    | 技能列表 | 列出所有已安装技能及其状态和功能 |
+    | 图像生成 | 通过 AI 生成图像并自动批准 |
+  </Tab>
+</Tabs>
+
+---
+
+## 可扩展性 — 三级 + 市场
+
+OpenPawz 拥有任何智能体平台中最复杂的扩展系统。**三级**让您从简单入手，逐步过渡到完整应用 — 再加上社区市场。
+
+<Tabs>
+  <Tab title="技能 (第一级)">
+    **放置一个 markdown 文件。** 就这样。`SKILL.md` 文件将专家知识注入智能体的系统提示中。无需编码，无需配置，无需 API — 只需 markdown 文件。从 `~/.paw/skills/` 热重载，无需重启。
+  </Tab>
+  <Tab title="集成 (第二级)">
+    **自定义工具 + 命令。** `pawz-skill.toml` 清单添加凭据、二进制检测、智能体工具和仪表板小部件。完整 Tauri API 访问权限。
+  </Tab>
+  <Tab title="扩展 (第三级)">
+    **完整的侧边栏应用程序。** 构建具有持久键值存储、自定义 UI 面板和仪表板小部件的完整侧边栏视图。最强大的层级。
+  </Tab>
+  <Tab title="MCP">
+    **模型上下文协议。** 连接到任何 MCP 服务器 — stdio 或流式 HTTP 传输 — 用于无限的外部工具。数据库、API、文件系统等。
+  </Tab>
+  <Tab title="PawzHub 市场">
+    **发现和分享。** 浏览社区构建的技能、集成和扩展。按关键字搜索，按层级筛选。直观徽章系统：蓝色（技能），紫色（集成），金色（扩展），以及官方、验证和热门标签。
+  </Tab>
+</Tabs>
+
+<Columns cols={2}>
+  <Card title="智能体可安装的技能">
+    **没有其他平台有这个功能。** 智能体可以互动式地搜索 PawzHub，发现新功能，并为自己安装技能 — 在运行时。您的 AI 智能体实际上是在自我提升。
+  </Card>
+  <Card title="技能向导">
+    AI 辅助 TOML 清单生成。粘贴 API 的文档，向导自动生成完整的集成清单。
+  </Card>
+  <Card title="TOML 热重载">
+    将新的 `.toml` 文件放到 `~/.paw/skills/` 中，立即可用。无需重启、重建或部署。文件系统就是您的包管理器。
+  </Card>
+  <Card title="每智能体技能作用域">
+    技能、集成和扩展只能为特定智能体启用。您的研究智能体获得网络工具，您的支持智能体获得邮件工具 — 没有重叠。
+  </Card>
+</Columns>
+
+→ 深入介绍：[技能](/guides/skills) · [集成](/guides/integrations) · [扩展](/guides/extensions)
+
+---
+
+## 多智能体编排
+
+<Columns cols={2}>
+  <Card title="老板/工人委托">
+    老板智能体计划一个项目并将任务委派给专门的工人。工人们并行运行，报告结果，老板综合输出。完整的生命周期：规划 → 运行 → 暂停 → 完成 → 失败。
+  </Card>
+  <Card title="智能体团队">
+    **OpenPawz 独有。** 持久的智能体群组，具有协调员和成员角色。创建一个"研究团队"或"内容团队"并在整个项目中重复使用。团队自动协调。
+  </Card>
+  <Card title="智能体专长">
+    分配工人的专长 — 编码、研究、设计、沟通、安全、通用。每个工人可以在项目中有自己的模型和系统提示。
+  </Card>
+  <Card title="智能体间消息">
+    智能体向特定智能体发送直接消息或广播给所有人。老板和工人之间的完整委托、进度、结果和错误消息流。
+  </Card>
+</Columns>
+
+<Columns cols={2}>
+  <Card title="任务管理">
+    完整的看板，包含列：收件箱、分配、进行中、审核、受阻、完成。任务有优先级（低 → 紧急）、多智能体分配与负责人/协作者角色，以及每任务模型覆盖。
+  </Card>
+  <Card title="自动化">
+    定时调度，带 60 秒心跳，事件驱动触发器，持久执行模式和完整的 cron 运行日志与审计轨迹。安排智能体在凌晨 2 点运行研究，上午 9 点发布更新，午夜清理。
+  </Card>
+</Columns>
+
+→ 深入介绍：[编排器](/guides/orchestrator) · [自动化](/guides/automations)
+
+---
+
+## 内存 — 任何智能体平台中最先进的检索系统
+
+大多数 AI 工具在对话之间忘记所有内容。OpenPawz 拥有最复杂的内存系统可供使用 — **四种检索策略相结合**。
+
+<Columns cols={2}>
+  <Card title="混合检索">
+    **没有其他平台这样做。** BM25 全文搜索 + 向量相似度（余弦）结合加权合并。您会得到关键词搜索的精度和语义搜索的灵活性 — 齐备。
+  </Card>
+  <Card title="MMR 重新排序">
+    基于 Jaccard 多样性的最大边际相关性确保回想的记忆既相关又多样。不再获得五份相同记忆的副本。
+  </Card>
+  <Card title="时间衰减">
+    带有 30 天半衰期的指数衰减。近期记忆排名高于旧记忆。您的智能体优先考虑当前信息，同时不丢失长期知识。
+  </Card>
+  <Card title="自动捕获与自动召回">
+    关键事实会自动从每次对话中提取并存储向量嵌入。当上下文相关时，在智能体回应前注入记忆 — 零手动工作。
+  </Card>
+</Columns>
+
+<Columns cols={2}>
+  <Card title="记忆宫殿">
+    专用界面用于浏览、搜索、编辑和删除记忆。按智能体、主题、日期、类别或相关性分数筛选。关于 AI 知识的完全透明。
+  </Card>
+  <Card title="重要性评分">
+    每个记忆获得一个重要性分数（0-1）。关键事实排名高于随便观察到的信息。系统学会什么是重要的。
+  </Card>
+  <Card title="记忆回填">
+    回顾性地为现有记忆生成向量嵌入。升级您的记忆系统，无需从头开始。
+  </Card>
+  <Card title="共享与隔离命名空间">
+    在默认情况下，所有智能体共享记忆 — 由一个捕获的知识对所有智能体可用。当您需要边界时，隔离每个智能体或每个工作区。
+  </Card>
+</Columns>
+
+→ 深入介绍：[内存指南](/guides/memory)
+
+---
+
+## 会话管理与令牌节省
+
+<Columns cols={2}>
+  <Card title="自动会话压缩">
+    当对话接近上下文限制时，OpenPawz 会汇总较旧的消息，保留记忆中的关键事实，归档完整会话，并无缝继续。智能体运行**无限长对话** — 您支付了 40-60% 更少的令牌费用。
+  </Card>
+  <Card title="思考级别控制">
+    **OpenPawz 独有。** 调节每个会话的推理深度 — 无、低、中、高级。需要快速回答？使用低级。复杂分析？调高它。您控制计算。
+  </Card>
+  <Card title="可配置上下文窗口">
+    以令牌设置上下文窗口大小（默认 32,000）。用于复杂任务的较大窗口，用于节省成本的较小窗口。每次会话控制。
+  </Card>
+  <Card title="最大并发运行">
+    限制在聊天、定时任务和任务中同时智能体运行。聊天始终优先。防止并行自动化导致的额外费用。
+  </Card>
+</Columns>
+
+→ 深入介绍：[会话指南](/guides/sessions)
+
+---
+
+## DeFi 交易 — 多链、内置
+
+**没有其他 AI 智能体平台内置多链加密货币交易。** OpenPawz 智能体可以在 Coinbase、Solana（通过 Jupiter/Pump.fun）和以太坊（通过 Uniswap）上交易 — 自主，配有可配置的安全守护程序。
+
+<Columns cols={2}>
+  <Card title="Coinbase 交易所">
+    通过 Coinbase API 的完整交易所交易：限价/市价订单、账户余额、蜡烛数据、交易历史记录。
+  </Card>
+  <Card title="Solana DEX">
+    Jupiter 聚合器实现最佳价格交换，Pump.fun 集成用于 Memecoin，Ed25519 钱包管理，SOL/SPL 代币转移，投资组合跟踪。
+  </Card>
+  <Card title="以太坊 DEX">
+    Uniswap V2/V3 交换，完整 ABI/RLP 编码，HD 钱包（BIP-39/44），ERC-20 操作，代币发现，流动性分析。
+  </Card>
+  <Card title="仓位监控">
+    跟踪带有止损和止盈目标的开放仓位。跨链实时价格播报。聚合投资组合视图。
+  </Card>
+</Columns>
+
+<Columns cols={2}>
+  <Card title="交易政策引擎">
+    **OpenPawz 独有。** 可配置的自动批准规则，含最高交易规模（USD）、每日亏损限制、允许币对白名单和转账限额。智能体在您设定的限制范围内自主交易。
+  </Card>
+  <Card title="交易审计追踪">
+    每次交易都会记录：类型、方向、数量、USD 价值、原因、智能体、会话、时间戳。为自动交易决策承担完全责任。
+  </Card>
+</Columns>
+
+→ 深入介绍：[交易指南](/guides/trading)
+
+---
+
+## 语音 — 文本转语音与语音识别
+
+<Columns cols={2}>
+  <Card title="三个 TTS 提供商">
+    选择 Google TTS、OpenAI TTS 或 ElevenLabs。为每个智能体配置声音选择、速度和语言。
+  </Card>
+  <Card title="语音识别">
+    通过 Whisper 兼容引擎进行音频转录。对您的智能体说话，他们能理解。
+  </Card>
+  <Card title="ElevenLabs 集成">
+    高级语音控制：模型选择、稳定性滑块、相似度增强。专业级语音输出。
+  </Card>
+  <Card title="自动朗读">
+    切换自动播放所有新的智能体响应。您的智能体成为语音助手 — 响应到达时即大声朗读。
+  </Card>
+</Columns>
+
+→ 深入介绍：[语音指南](/guides/voice)
+
+---
+
+## 安全性 — 零信任、本地优先
+
+OpenPawz 从零开始设计了**零信任、本地优先的安全模型**。这不是后来加的功能 — 这是架构的一部分。
+
+<Columns cols={2}>
+  <Card title="100% 本地 — 无云">
+    所有数据保持在您的硬件上。无云同步，无遥测，无分析，无远程上报。唯一的出站流量是您显式配置的 AI 提供商。
+  </Card>
+  <Card title="OS 密钥链凭证">
+    API 密钥存储在 macOS 密钥链、Windows 凭据管理器或 Linux 保密服务中。从不清明文本存储。从不存储在配置文件中。
+  </Card>
+  <Card title="AES-256-GCM 加密">
+    数据库字段使用 AES-256-GCM 加密，采用 12 字节随机非重复数。从旧加密自动迁移。您的数据在静态时被加密。
+  </Card>
+  <Card title="命令风险分类">
+    每个工具和 Shell 命令评为 1-5 风险等级。30 多种危险模式检测：权限提升、破坏性删除、远程代码执行、网络窃取。
+  </Card>
+  <Card title="人工介入">
+    为所有副效果工具采用模态批准。颜色编码的风险级别。在没有您的明确确认的情况下，不会发生危险的事。
+  </Card>
+  <Card title="限时会话覆盖">
+    **OpenPawz 独有。** 为受信任会话（30 分钟/1 小时/2 小时）的 "允许全部" 模式，可自动到期。即使在覆盖模式下，权限提升也被阻止。
+  </Card>
+</Columns>
+
+<Columns cols={2}>
+  <Card title="容器沙盒">
+    在 Docker 容器中运行智能体 Shell 命令 — cap_drop ALL、内存/CPU 限制、可配置网络隔离。智能体无法触及您的主机系统。
+  </Card>
+  <Card title="每智能体策略">
+    精细化控制各智能体可访问的工具、渠道和风险级别。
+  </Card>
+  <Card title="提示注入防护">
+    双实现（TypeScript + Rust）、30 多种检测模式、4 个严重级别。传入消息会在到达智能体之前分析。
+  </Card>
+  <Card title="文件系统沙盒化">
+    采用 Tauri 作用域强制，具有 20 多个敏感路径阻挡 — `~/.ssh`、`~/.aws`、`~/.gnupg` 等。可选的全局只读模式阻止所有智能体写入。
+  </Card>
+  <Card title="出站域名控制">
+    可配置的域名允许列表和阻止列表，带有通配符子域名匹配。测试 URL 按钮可验证规则。出站请求会接受窃取模式检查。
+  </Card>
+  <Card title="凭证审计追踪">
+    **OpenPawz 独有。** 每次凭证访问都会记录：操作、工具、允许/阻止、时间戳。完整的安全审计仪表板，带有 JSON/CSV 导出功能。
+  </Card>
+</Columns>
+
+<Columns cols={2}>
+  <Card title="技能验证管道">
+    **OpenPawz 独有。** 社区技能会经过安全模式、已知安全列表检查、npm 注册仓库风险情报扫描和安装后沙盒验证。
+  </Card>
+  <Card title="CSP 实施">
+    内容安全策略：`default-src 'self'`，`script-src 'self'`，`object-src 'none'`，`frame-ancestors 'none'`。在平台层面防止 XSS 和注入。
+  </Card>
+</Columns>
+
+<Columns cols={2}>
+  <Card title="TLS 证书固定">
+    **OpenPawz 独有。** 自定义 `rustls` 配置仅固定于 Mozilla 根 CAs — 明确排除操作系统信任存储。即使用户机器上的 CA 被妥协也无法劫持提供商流量。
+  </Card>
+  <Card title="出站请求签名">
+    每个 AI 提供商请求在传输前都将通过 SHA-256 签名。`provider ‖ model ‖ timestamp ‖ body` 哈希记录到 500 条目审计环形缓冲区中用于防篡改检测和合规。
+  </Card>
+  <Card title="内存加密（RAM 清零）">
+    API 密钥以 `Zeroizing<String>` 包装 — 通过 `write_volatile` 在丢弃时自动用零覆盖内存。防止内存转储、交换文件和使用释放后漏洞提取密钥。
+  </Card>
+  <Card title="共享固定 HTTP 客户端">
+    跨所有提供商共享带有固定 TLS 配置的单一 `reqwest::Client`。连接池，10 秒连接超时，120 秒请求超时。无每次请求的客户端创建开销。
+  </Card>
+</Columns>
+
+→ 深入介绍：[安全参考](/reference/security)
+
+---
+
+## 流程 — 可视化工作流构建器
+
+**OpenPawz 独有。** 拖放可视化工作流引擎，用于构建多步 AI 管道。在线上 SVG 画布上将集成连接在一起 — 触发器、智能体、工具、条件、代码、数据转换和输出 — 带有实时执行反馈。
+
+<Columns cols={2}>
+  <Card title="10 种集成类型">
+    触发器、智能体、工具、条件、数据、代码、输出、错误、分组和**事件视界**（tesseract 同步屏障）。每种都拥有其独特的图标、颜色和配置面板。
+  </Card>
+  <Card title="指挥官协议">
+    **OpenPawz 独有。** 自动化图形优化，检测并行性，折叠序列，并编译执行策略 — 5 种原语，包括用于 4D 细胞化编排的 Tesseract。
+  </Card>
+  <Card title="Tesseract 流程">
+    **OpenPawz 独有。** 将复杂图形分区为独立运行的单元，通过事件视界同步。每单元内存隔离，每单元超时和优雅降级。
+  </Card>
+  <Card title="流程内存集成">
+    智能体节点自动接收来自 Engram 的相关长期记忆。在 tesseract 流程中，每个单元获得其专属的内存上下文 — 无共享状态竞争。
+  </Card>
+  <Card title="文本转流程">
+    键入自然语言描述 — `webhook → agent → send email` — 解析器自动构建流程，使用正确的集成类型和边缘连接。
+  </Card>
+  <Card title="调试模式">
+    逐步执行流程，每次一个整合。设置断点，检查边缘的中间数据，观看执行光标在画布上移动。
+  </Card>
+  <Card title="代码集成">
+    运行沙盒 JavaScript 代码。访问从上一步获取的 `input` 和流量元数据的 `context`。返回值沿下游流动。
+  </Card>
+  <Card title="4 种边缘类型">
+    前向、反向、双向和错误边缘控制数据流向。在画布上连线复杂的握手和回退路径。
+  </Card>
+  <Card title="模板">
+    跨 10 个类别的 30 多种预构建流程模式 — AI、通讯、DevOps、生产力、数据、研究、社交、金融、支持和自定义。
+  </Card>
+  <Card title="计划与 cron">
+    将 cron 表达式附加到任何流程。调度程序每 30 秒触发一次。英雄统计显示活动计划计数。
+  </Card>
+  <Card title="文件夹组织">
+    将流程组织到文件夹中，带有可折叠的侧边栏组。可在文件夹之间拖放。
+  </Card>
+  <Card title="聊天报告器">
+    每次执行都会将实时流程报告发布到聊天中 — 进度条、每步状态、计时和最终摘要。
+  </Card>
+</Columns>
+
+→ 深入介绍：[流程指南](/guides/flows)
+
+---
+
+## Foundry — 技能创建工作坊
+
+Foundry 是用于创建和测试技能、集成和扩展的专用工作空间。AI 辅助清单生成、实时预览以及一键发布到 PawzHub。
+
+→ 深入介绍：[Foundry 指南](/guides/foundry)
+
+---
+
+## 今日视图 — 您的 AI 仪表板
+
+每日活动仪表板，显示您的智能体所做的一切。活动提要、快捷操作、收件箱以及所有智能体、频道和自动化 — 一目了然地展示状态。
+
+→ 深入介绍：[仪表板指南](/guides/dashboard)
+
+---
+
+## 电子邮件 — 完整的 IMAP/SMTP 客户端
+
+不仅仅是一个玩具集成 — 一个完整的邮件客户端。通过 himalaya 桥接的 IMAP/SMTP：读取、发送、搜索、文件夹管理、AI 驱动草稿生成。多个账户、文件夹操作和应用中的专用邮件视图。
+
+→ 深入介绍：[邮件指南](/guides/email)
+
+---
+
+## 远程访问
+
+<Columns cols={2}>
+  <Card title="Tailscale 集成">
+    **OpenPawz 独有。** 通过 Tailscale 网格 VPN 远程暴露您的智能体。通过 Serve 和 Funnel 随时可以安全远程访问 — 不需要端口转发，不需要云中继。随地连接。
+  </Card>
+  <Card title="Webhook 服务器">
+    内置 HTTP webhook 端点，具备认证令牌、速率限制和可配置智能体路由。通过 GitHub Actions、Zapier、IFTTT 或任何 HTTP 客户端触发智能体。
+  </Card>
+</Columns>
+
+→ 深入介绍：[Tailscale 指南](/guides/tailscale)
+
+---
+
+## 开发者体验
+
+<Columns cols={2}>
+  <Card title="20 个斜杠命令">
+    具有实时自动补全的内置斜杠命令。无需离开聊天即可快速访问常用操作。
+  </Card>
+  <Card title="模块化工作区">
+    启用/禁用 UI 视图显示的网格切换。社区扩展增加到该网格中。为您的工作流程自定义界面。
+  </Card>
+  <Card title="14 个设置选项卡">
+    智能体默认值、提供商、会话、技能、MCP、浏览器、引擎、环境、日志、语音、webhook、Tailscale 等。一切都可配置。
+  </Card>
+  <Card title="持久结构化日志">
+    七天修剪的每日日志轮换和带有过滤器的应用内日志查看器。无需深挖文件便可调试任何内容。
+  </Card>
+</Columns>
+
+---
+
+## 架构与质量
+
+<Columns cols={2}>
+  <Card title="原生 Tauri v2">
+    Rust 后端 + TypeScript 前端。不是 Electron — 快速、精简、原生。158 个 IPC 命令涵盖每一个引擎操作。
+  </Card>
+  <Card title="无框架前端">
+    采用原子设计（原子 → 分子 → 有机体）的纯 TypeScript。没有 React、没有 Vue、没有 Angular。最小的包，最大的性能。
+  </Card>
+  <Card title="2,816 个自动化测试">
+    650 个 Rust + 2,166 个 TypeScript 测试涵盖了涵盖所有关键路径，包括指挥官协议、tesseract 流程和内存集成。每次推送的 3 工作流 CI 流水线（Rust + TypeScript + 安全审计）。
+  </Card>
+  <Card title="零已知 CVE">
+    CI 中实施 `cargo audit` + `npm audit`。零 Clippy 警告。Dependabot 用于自动化依赖更新。
+  </Card>
+  <Card title="21 张 SQLite 表">
+    智能体、会话、内存、任务、交易、技能、渠道等的完整关系模式。全部本地化，全部快速。
+  </Card>
+  <Card title="具备断路器的重试">
+    指数退避（1s → 30s，3 次重试），`Retry-After` 标头支持，5 次失败断路器带 60 秒冷却。默认具备韧性。
+  </Card>
+</Columns>
+
+→ 深入介绍：[架构参考](/reference/architecture) · [质量参考](/reference/quality)
+
+---
+
+## 有什么类似的产品吗？没有。
+
+| 能力 | **OpenPawz** | **OpenClaw** | **AutoGPT** | **CrewAI** | **LangChain** |
+|---|---|---|---|---|---|
+| **桌面原生应用** | Tauri/Rust | Electron | 否 — CLI/网页 | 否 — Python 库 | 否 — Python 库 |
+| **聊天通道** | 11 个并发 | 1-2 | 0 | 0 | 0 |
+| **多智能体编排** | 老板/工人 + 队伍 | 基础 | 单智能体 | 是 | 是（框架） |
+| **语义内存** | 混合 BM25+向量+MMR+衰减 | 基础 | 基础 | 无内置 | 仅框架 |
+| **内置集成** | 25,000+（400 本土 + MCP 桥接） | ~20 | ~15 | 代码定义 | 仅框架 |
+| **DeFi 交易** | 3 链 | 无 | 无 | 无 | 无 |
+| **语音（TTS/STT）** | 3 个提供商 | 无 | 无 | 无 | 无 |
+| **扩展市场** | 3 层 + PawzHub | 无 | 插件商店 | 无 | LangSmith |
+| **自安装技能** | 智能体自行安装 | 否 | 否 | 否 | 否 |
+| **可视化流程构建器** | 内置（10 种类型，指挥官协议，Tesseract，调试，模板） | 无 | 无 | 无 | LangGraph Studio |
+| **会话压缩** | 自动，40-60% 节省 | 无 | 无 | 无 | 无 |
+| **每日预算上限** | 内置美元上限 | 无 | 无 | 无 | 无 |
+| **安全审计轨迹** | 完整 + 导出 | 基础 | 无 | 无 | 无 |
+| **TLS 证书固定** | ✓ 仅 Mozilla | × OS 默认 | × | × | × |
+| **请求签名** | ✓ SHA-256 审计 | × | × | × | × |
+| **内存清零** | ✓ 删除时清零 | × | × | × | × |
+| **Webhooks + Tailscale** | 内置 | 无 | 无 | 无 | 无 |
+| **凭证安全** | OS 密钥链 + AES-256 | 配置文件 | 配置文件 | 环境变量 | 环境变量 |
+| **开源** | MIT | MIT | MIT | MIT | MIT |
+
+**OpenPawz 是第一个 AI 智能体操作系统**，它集成了 25,000+ 集成（通过 MCP 桥接）、多智能体编排、11 个渠道、DeFi 交易、内存、语音、可视化流程构建器和三级市场在一个单个的、原生的、开源的桌面应用程序中。没有其他产品能相提并论。

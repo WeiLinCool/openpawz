@@ -84,7 +84,7 @@ pub async fn run_consolidation(
         candidates.len()
     );
 
-    // ── SAVEPOINT: baseline NDCG for transactional forgetting (§ ENGRAM.md) ─
+    // ── SAVEPOINT: baseline NDCG for transactional forgetting (§ docs/research/engram.md) ─
     // Measure retrieval quality before mutations. If quality drops >5% after
     // consolidation, the entire cycle rolls back — no memories are lost.
     let baseline_ndcg = measure_sample_ndcg(store);

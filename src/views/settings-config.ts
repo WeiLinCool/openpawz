@@ -7,6 +7,7 @@
 
 import { pawEngine, type EngineConfig } from '../engine';
 import { showToast } from '../components/toast';
+import { t } from '../i18n';
 
 // ── Config Cache ───────────────────────────────────────────────────────────
 
@@ -44,7 +45,9 @@ export async function setEngineConfig(config: EngineConfig, silent = false): Pro
     _configLoading = null;
     if (!silent) {
       const modelName = config.default_model;
-      const toastMsg = modelName ? `Settings saved — active model: ${modelName}` : 'Settings saved';
+      const toastMsg = modelName
+        ? `${t('Settings saved')} — active model: ${modelName}`
+        : t('Settings saved');
       showToast(toastMsg, 'success');
     }
     // Refresh the chat header model label
@@ -55,7 +58,7 @@ export async function setEngineConfig(config: EngineConfig, silent = false): Pro
     return true;
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
-    showToast(`Save failed: ${msg}`, 'error');
+    showToast(`${t('Save failed')}: ${msg}`, 'error');
     return false;
   }
 }
@@ -92,11 +95,11 @@ export async function patchConfig(
     await pawEngine.setConfig(merged as unknown as EngineConfig);
     _configCache = null;
     _configLoading = null;
-    if (!silent) showToast('Settings saved', 'success');
+    if (!silent) showToast(t('Settings saved'), 'success');
     return true;
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
-    showToast(`Save failed: ${msg}`, 'error');
+    showToast(`${t('Save failed')}: ${msg}`, 'error');
     return false;
   }
 }
@@ -168,13 +171,13 @@ export function formRow(label: string, description?: string): HTMLDivElement {
   row.className = 'form-group';
   const lbl = document.createElement('label');
   lbl.className = 'form-label';
-  lbl.textContent = label;
+  lbl.textContent = t(label);
   row.appendChild(lbl);
   if (description) {
     const desc = document.createElement('p');
     desc.className = 'form-hint';
     desc.style.cssText = 'margin:0 0 4px 0;font-size:11px;color:var(--text-muted)';
-    desc.textContent = description;
+    desc.textContent = t(description);
     row.appendChild(desc);
   }
   return row;
@@ -190,7 +193,7 @@ export function selectInput(
   for (const opt of options) {
     const o = document.createElement('option');
     o.value = opt.value;
-    o.textContent = opt.label;
+    o.textContent = t(opt.label);
     if (opt.value === currentValue) o.selected = true;
     sel.appendChild(o);
   }
@@ -203,7 +206,7 @@ export function textInput(value?: string, placeholder?: string, type = 'text'): 
   inp.type = type;
   inp.className = 'form-input';
   if (value != null) inp.value = String(value);
-  if (placeholder) inp.placeholder = placeholder;
+  if (placeholder) inp.placeholder = t(placeholder);
   return inp;
 }
 
@@ -219,7 +222,7 @@ export function numberInput(
   if (opts?.min != null) inp.min = String(opts.min);
   if (opts?.max != null) inp.max = String(opts.max);
   if (opts?.step != null) inp.step = String(opts.step);
-  if (opts?.placeholder) inp.placeholder = opts.placeholder;
+  if (opts?.placeholder) inp.placeholder = t(opts.placeholder);
   return inp;
 }
 
@@ -240,7 +243,7 @@ export function toggleSwitch(
     info.className = 'security-toggle-info';
     const lbl = document.createElement('div');
     lbl.className = 'security-toggle-label';
-    lbl.textContent = label;
+    lbl.textContent = t(label);
     info.appendChild(lbl);
     container.appendChild(info);
   }
@@ -253,11 +256,11 @@ export function saveReloadButtons(onSave: () => void, onReload: () => void): HTM
   row.style.cssText = 'display:flex;gap:8px;margin-top:16px';
   const save = document.createElement('button');
   save.className = 'btn btn-primary';
-  save.textContent = 'Save';
+  save.textContent = t('Save');
   save.addEventListener('click', onSave);
   const reload = document.createElement('button');
   reload.className = 'btn btn-ghost btn-sm';
-  reload.textContent = 'Reload';
+  reload.textContent = t('Reload');
   reload.addEventListener('click', onReload);
   row.appendChild(save);
   row.appendChild(reload);

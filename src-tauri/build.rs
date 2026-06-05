@@ -42,6 +42,20 @@ fn main() {
         }
     }
     println!("cargo:rerun-if-changed=tauri.conf.json");
+    for key in [
+        "OPENPAWZ_BUILD_EDITION",
+        "OPENPAWZ_ENTERPRISE_ISSUER_URL",
+        "OPENPAWZ_ENTERPRISE_AUTH_URL",
+        "OPENPAWZ_ENTERPRISE_TOKEN_URL",
+        "OPENPAWZ_ENTERPRISE_USERINFO_URL",
+        "OPENPAWZ_ENTERPRISE_ENTITLEMENTS_URL",
+        "OPENPAWZ_ENTERPRISE_GATEWAY_URL",
+        "OPENPAWZ_ENTERPRISE_CLIENT_ID",
+        "OPENPAWZ_ENTERPRISE_DEFAULT_MODEL",
+        "OPENPAWZ_ENTERPRISE_SCOPES",
+    ] {
+        println!("cargo:rerun-if-env-changed={}", key);
+    }
 
     tauri_build::build()
 }

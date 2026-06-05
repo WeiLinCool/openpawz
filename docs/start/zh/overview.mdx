@@ -1,0 +1,146 @@
+---
+title: "概述"
+description: "开源 AI 智能体操作系统 — 通过 MCP 桥接可获得 25,000+ 集成，多智能体，多频道，完全本地化，无限可扩展。"
+sidebarTitle: "概述"
+---
+
+<Note>
+**OpenPawz 不是一个聊天机器人。** 它是运行在您桌面的 AI 智能体操作系统 — 具有通过 MCP 桥接的 25,000+ 集成，11 个聊天频道，多智能体编排，零云端依赖。
+</Note>
+
+## 您真正拥有的 AI 智能体操作系统
+
+基于 [Tauri v2](https://v2.tauri.app/) 和 Rust 后端构建。当其他工具为您提供文本框和 API 账单时，OpenPawz 提供给您一个完整的智能体运行环境：
+
+<Columns cols={3}>
+  <Card title="25,000+ 集成" icon="puzzle">
+    400+ 本地集成 + 25,000+ 社区集成，通过嵌入式 n8n 和 MCP 桥接。智能体会在运行时发现、安装并执行工作流。
+  </Card>
+  <Card title="11 个频道" icon="message-lines">
+    Telegram, Discord, Slack, WhatsApp, Matrix, IRC, Twitch, Mattermost, Nextcloud, Nostr, Webchat — 同时运行。
+  </Card>
+  <Card title="多智能体" icon="users">
+    老板/工作者委托，持久智能体小队，智能体间消息传递，平行工作流。您的 AI 大军。
+  </Card>
+</Columns>
+
+<Columns cols={3}>
+  <Card title="3 条链 DeFi" icon="bitcoin-sign">
+    Coinbase + Solana (Jupiter/Pump.fun) + Ethereum (Uniswap)。带防护功能的交易策略引擎。
+  </Card>
+  <Card title="语义内存" icon="brain">
+    BM25 + 向量 + MMR 重排序 + 时间衰减。目前任何智能体平台中最先进的检索功能。
+  </Card>
+  <Card title="语音" icon="microphone">
+    三种 TTS 提供商 + 语音转文字。智能体可以说话和收听。自动朗读模式会大声读出响应。
+  </Card>
+</Columns>
+
+<Columns cols={3}>
+  <Card title="可视化编辑器" icon="diagram-project">
+    拖放式工作流构建器。连接触发器 → 智能体 → 工具 → 输出。无需编码。
+  </Card>
+  <Card title="10 个 AI 提供商" icon="server">
+    Ollama（本地），OpenAI，Anthropic，Google，DeepSeek，Grok，Mistral，OpenRouter，Moonshot，还包括自定义端点。
+  </Card>
+  <Card title="自我改进" icon="wand-magic-sparkles">
+    智能体在运行时自主搜索 PawzHub 并安装新技能——通过对话完成。无需重启。
+  </Card>
+</Columns>
+
+---
+
+## 适用于谁？
+
+<Columns cols={3}>
+  <Card title="开发者" icon="code">
+    完整源码访问，MIT 授权。构建自定义工具、集成和扩展。Rust + TypeScript 堆栈，配合 Tauri IPC。
+  </Card>
+  <Card title="高端用户" icon="rocket">
+    在您使用的每一个平台上运行个人 AI 机群。一次设置，可随时随地向智能体发送消息。初始设置后不再需要编码。
+  </Card>
+  <Card title="团队" icon="building">
+    私有的、可审核的 AI，从不上报数据。多智能体工作流涵盖研究、内容创作、支持、交易、DevOps — 全部现场部署。
+  </Card>
+</Columns>
+
+---
+
+## 功能对比
+
+| | **OpenPawz** | **ChatGPT / Claude** | **AutoGPT / CrewAI** |
+|---|---|---|---|
+| **本地运行** | 100% — 您的硬件 | 否 — 仅云端 | CLI / Python 库 |
+| **桌面原生** | Tauri/Rust | 否 | 否 |
+| **聊天频道** | 11 个同时 | 仅网页/移动端 | 0 |
+| **多智能体** | 老板/工作者 + 智能体小队 | 单助手 | 是（框架） |
+| **内存** | 混合 BM25+向量+MMR+衰变 | 按对话 | 无 / 基础 |
+| **内置集成** | 社区节点（400 原生 + MCP 桥接） | 有限插件 | ~15 / 代码定义 |
+| **DeFi 交易** | 3 条链 | 无 | 无 |
+| **语音 (TTS/STT)** | 3 个提供商 | 仅语音模式 | 无 |
+| **扩展市场** | 3 层 + PawzHub | 无 | 插件商店 / 无 |
+| **自我安装技能** | 智能体自行安装 | 否 | 否 |
+| **会话压缩** | 自动，节省 40–60% | 否 | 否 |
+| **模型路由** | 自动复杂性路由 | 不适用 | 否 |
+| **开源** | MIT | 否 | MIT |
+
+---
+
+## 三大支柱
+
+<Tabs>
+  <Tab title="内存">
+    您的智能体**永远不会忘记**。每个重要事实都会自动捕获到向量嵌入并在相关时回忆。
+
+    - **自动捕获** — 智能体从每次对话中提取关键信息
+    - **自动回忆** — 相关记忆在智能体回复前注入上下文
+    - **记忆宫殿** — 浏览、搜索、编辑关于智能体所知的一切
+    - **混合检索** — BM25 + 向量 + MMR + 时间衰减
+  </Tab>
+  <Tab title="令牌节省">
+    **自动会话压缩** — 当对话接近上下文限制时，旧的部分会被摘要。关键事实保存在内存中。完整会话被归档。在长会话中节省 40–60% 令牌。
+  </Tab>
+  <Tab title="安全">
+    零信任，本地优先 — **10 层安全**：
+    - **100% 本地** — 没有数据离开您的机器
+    - **OS 密钥链** — 凭据存储在 macOS 密钥链 / Windows 凭据管理器 / Linux 密钥服务
+    - **风险分类** — 每个工具评级 1-5 分。危险操作需确认
+    - **容器沙盒** — 通过资源限制的 Docker 隔离
+    - **提示词注入防御** — 双重实施，30+ 检测模式
+    - **TLS 证书绑定** — 仅允许 Mozilla 根 CA，排除 OS 信任存储
+    - **请求签名** — 每个外发 AI 请求的 SHA-256 哈希用于篡改检测
+    - **内存清零** — 删除提供商时，API 密钥会自动从 RAM 中清零
+  </Tab>
+</Tabs>
+
+---
+
+## 核心哲学
+
+<Columns cols={2}>
+  <Card title="隐私优先" icon="shield-halved">
+    所有数据保留在您的设备上。凭据存储在操作系统密钥链中。无遥测，无分析，不上报。唯一的网络流量是您明确配置的 AI 提供商。
+  </Card>
+  <Card title="智能体原生" icon="robot">
+    不是聊天机器人包装器 — 而是完整的智能体运行环境，从第一天起就内置了工具使用、内存、任务、压缩、交易、语音和多智能体委托功能。
+  </Card>
+  <Card title="开放且可扩展" icon="code-branch">
+    MIT 许可。三层可扩展性 — 技能、集成、扩展 — 加上 MCP 和 PawzHub。智能体在运行时自行安装技能。
+  </Card>
+  <Card title="桌面级" icon="desktop">
+    Tauri v2 实现原生性能。Rust 后端，纯 TypeScript 前端，SQLite 存储。530 个测试。零 CVE。macOS，Linux，Windows。
+  </Card>
+</Columns>
+
+---
+
+## 下一步
+
+<Columns cols={2}>
+  <Card title="观看演示" href="/docs/start/showcase" icon="eye">
+    功能亮点和用例。
+  </Card>
+  <Card title="安装" href="/docs/start/installation" icon="download">
+    5 分钟内运行 OpenPawz。
+  </Card>
+</Columns>

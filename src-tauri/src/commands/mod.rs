@@ -15,6 +15,7 @@ pub mod chat;
 pub mod config;
 pub mod dashboard_tabs;
 pub mod dashboards;
+pub mod enterprise;
 pub mod export;
 pub mod flows;
 pub mod forge;

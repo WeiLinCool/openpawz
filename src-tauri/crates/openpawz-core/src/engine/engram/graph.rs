@@ -731,7 +731,7 @@ const DEMOTE_THRESHOLD: f64 = 0.3;
 ///
 /// Returns the number of memories updated.
 pub fn apply_decay(store: &SessionStore, _half_life_days: f32) -> EngineResult<usize> {
-    let lambda_base: f64 = 0.1; // base decay rate (from ENGRAM.md)
+    let lambda_base: f64 = 0.1; // base decay rate (from docs/research/engram.md)
     let lambda_fast = (2.0_f64.ln()) / FAST_HALF_LIFE_HOURS;
     let now = chrono::Utc::now();
 
@@ -779,7 +779,7 @@ pub fn apply_decay(store: &SessionStore, _half_life_days: f32) -> EngineResult<u
                 }
             };
 
-            // 2. Per-type decay modulation (§ ENGRAM.md: Adaptive Forgetting)
+            // 2. Per-type decay modulation (§ docs/research/engram.md: Adaptive Forgetting)
             let type_modifier = match category.as_str() {
                 "procedure" | "skill" | "workflow" => 0.5, // skills persist longer
                 "knowledge" | "preference" | "fact" => 0.7, // knowledge decays slower

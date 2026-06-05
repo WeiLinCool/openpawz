@@ -401,6 +401,18 @@ impl EngineState {
             _ => MemoryConfig::default(),
         };
 
+        // Enterprise build artifacts start in platform-license mode. This does
+        // not authenticate the user; it seeds the OAuth/gateway endpoints so
+        // enterprise-gated features can prompt for remote login immediately.
+        if let Some(enterprise_config) = crate::commands::enterprise::enterprise_build_config() {
+            if let Ok(json) = serde_json::to_string(&enterprise_config) {
+                store
+                    .set_config(crate::commands::enterprise::ENTERPRISE_CONFIG_KEY, &json)
+                    .ok();
+                info!("[engine] Enterprise build mode enabled");
+            }
+        }
+
         // Read max_concurrent_runs from config (default 4)
         let max_concurrent = config.max_concurrent_runs;
 

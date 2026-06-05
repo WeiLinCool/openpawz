@@ -75,3 +75,5 @@ nohup.out
 website/
 # Private planning docs
 .oauth-implementation.md
+# codegraph
+.codegraph

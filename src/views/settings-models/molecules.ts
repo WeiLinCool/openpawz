@@ -28,9 +28,14 @@ import {
   buildAllKnownModels,
   getAvailableModelsList,
 } from './atoms';
+import { t } from '../../i18n';
 
 // Re-export for external consumers
 export { getAvailableModelsList };
+
+function localizedProviderKinds(): Array<{ value: string; label: string }> {
+  return PROVIDER_KINDS.map((kind) => ({ ...kind, label: t(kind.label) }));
+}
 
 // ── Render ──────────────────────────────────────────────────────────────────
 
@@ -38,7 +43,7 @@ export async function loadModelsSettings() {
   if (!isConnected()) return;
   const container = $('settings-models-content');
   if (!container) return;
-  container.innerHTML = '<p style="color:var(--text-muted)">Loading…</p>';
+  container.innerHTML = `<p style="color:var(--text-muted)">${t('Loading…')}</p>`;
 
   try {
     const config = await getEngineConfig();
@@ -49,15 +54,16 @@ export async function loadModelsSettings() {
     // ── Provider Overview ────────────────────────────────────────────────
     const overviewSection = document.createElement('div');
     overviewSection.className = 'settings-subsection';
-    overviewSection.innerHTML = `<h3 class="settings-subsection-title">Configured Providers</h3>
-      <p class="settings-section-desc">All your AI providers. Agents can use any of these — add as many as you need.</p>`;
+    overviewSection.innerHTML = `<h3 class="settings-subsection-title">${t('Configured Providers')}</h3>
+      <p class="settings-section-desc">${t('All your AI providers. Agents can use any of these — add as many as you need.')}</p>
+      <p class="settings-section-desc" style="margin-top:6px">${t('For OpenAI-compatible custom providers, choose OpenAI-compatible / Custom and enter the provider base URL ending in /v1.')}</p>`;
 
     if (providers.length === 0) {
       const empty = document.createElement('div');
       empty.style.cssText =
         'padding:24px;text-align:center;border:1px dashed var(--border);border-radius:8px;margin:12px 0';
-      empty.innerHTML = `<p style="color:var(--text-muted);margin:0 0 8px 0">No providers configured yet.</p>
-        <p style="color:var(--text-muted);font-size:12px;margin:0">Add Ollama for local models, or connect OpenAI, Anthropic, Google, OpenRouter, and more.</p>`;
+      empty.innerHTML = `<p style="color:var(--text-muted);margin:0 0 8px 0">${t('No providers configured yet.')}</p>
+        <p style="color:var(--text-muted);font-size:12px;margin:0">${t('Add Ollama for local models, connect OpenAI, or use any OpenAI-compatible custom endpoint.')}</p>`;
       overviewSection.appendChild(empty);
     } else {
       // Provider status table
@@ -65,11 +71,11 @@ export async function loadModelsSettings() {
       table.style.cssText =
         'width:100%;border-collapse:collapse;font-size:13px;margin:8px 0 16px 0';
       table.innerHTML = `<thead><tr style="text-align:left;border-bottom:1px solid var(--border)">
-        <th style="padding:6px 12px 6px 0">Provider</th>
-        <th style="padding:6px 12px">Type</th>
-        <th style="padding:6px 12px">Endpoint</th>
-        <th style="padding:6px 12px">Default Model</th>
-        <th style="padding:6px 12px">Status</th>
+        <th style="padding:6px 12px 6px 0">${t('Provider')}</th>
+        <th style="padding:6px 12px">${t('Type')}</th>
+        <th style="padding:6px 12px">${t('Endpoint')}</th>
+        <th style="padding:6px 12px">${t('Default Model')}</th>
+        <th style="padding:6px 12px">${t('Status')}</th>
       </tr></thead>`;
       const tbody = document.createElement('tbody');
 
@@ -81,14 +87,14 @@ export async function loadModelsSettings() {
         const isLocal = p.kind === 'ollama';
         const isDefault = p.id === config.default_provider;
         const statusBadge = hasKey
-          ? '<span style="color:var(--status-success)">● Key set</span>'
+          ? `<span style="color:var(--status-success)">● ${t('Key set')}</span>`
           : isLocal
-            ? '<span style="color:var(--status-info)">● Local</span>'
-            : '<span style="color:var(--status-warning)">● No key</span>';
+            ? `<span style="color:var(--status-info)">● ${t('Local')}</span>`
+            : `<span style="color:var(--status-warning)">● ${t('No key')}</span>`;
 
         const row = document.createElement('tr');
         row.style.borderBottom = '1px solid var(--border-light, rgba(255,255,255,0.06))';
-        row.innerHTML = `<td style="padding:6px 12px 6px 0;font-weight:600">${iconHtml} ${esc(p.id)}${isDefault ? ' <span style="font-size:10px;color:var(--accent);font-weight:normal">\u2605 default</span>' : ''}</td>
+        row.innerHTML = `<td style="padding:6px 12px 6px 0;font-weight:600">${iconHtml} ${esc(p.id)}${isDefault ? ` <span style="font-size:10px;color:var(--accent);font-weight:normal">\u2605 ${t('default')}</span>` : ''}</td>
           <td style="padding:6px 12px;color:var(--text-muted)">${esc(kindLabel)}</td>
           <td style="padding:6px 12px;font-family:monospace;font-size:11px">${esc(String(endpoint))}</td>
           <td style="padding:6px 12px;font-family:monospace;font-size:11px">${esc(p.default_model ?? '—')}</td>
@@ -106,15 +112,15 @@ export async function loadModelsSettings() {
     const defaultSection = document.createElement('div');
     defaultSection.className = 'settings-subsection';
     defaultSection.style.marginTop = '20px';
-    defaultSection.innerHTML = `<h3 class="settings-subsection-title">Default Model & Provider</h3>
-      <p class="settings-section-desc">The model and provider used for conversations unless overridden per-agent.</p>`;
+    defaultSection.innerHTML = `<h3 class="settings-subsection-title">${t('Default Model & Provider')}</h3>
+      <p class="settings-section-desc">${t('The model and provider used for conversations unless overridden per-agent.')}</p>`;
 
     // Default provider dropdown
     const providerOpts = [
-      { value: '', label: '— auto (first available) —' },
+      { value: '', label: t('— auto (first available) —') },
       ...providers.map((p) => ({ value: p.id, label: `${KIND_ICONS[p.kind] ?? ''} ${p.id}` })),
     ];
-    const defProvRow = formRow('Default Provider', 'Which provider to use by default');
+    const defProvRow = formRow(t('Default Provider'), t('Which provider to use by default'));
     const defProvSel = selectInput(providerOpts, config.default_provider ?? '');
     defProvSel.style.maxWidth = '320px';
     defProvRow.appendChild(defProvSel);
@@ -122,7 +128,7 @@ export async function loadModelsSettings() {
 
     // Default model — build list from popular models of all providers
     const allModelOpts: Array<{ value: string; label: string }> = [
-      { value: '', label: '— use provider default —' },
+      { value: '', label: t('— use provider default —') },
     ];
     for (const p of providers) {
       if (p.default_model) {
@@ -140,7 +146,7 @@ export async function loadModelsSettings() {
       allModelOpts.splice(1, 0, { value: config.default_model, label: config.default_model });
     }
 
-    const defModelRow = formRow('Default Model', 'Model ID to use — or type a custom one');
+    const defModelRow = formRow(t('Default Model'), t('Model ID to use — or type a custom one'));
     const defModelInp = textInput(
       config.default_model ?? '',
       'gpt-4o, claude-sonnet-4-6, llama3.1:8b …',
@@ -176,6 +182,9 @@ export async function loadModelsSettings() {
     );
     container.appendChild(defaultSection);
 
+    // ── Model Request Proxy ─────────────────────────────────────────────
+    container.appendChild(buildModelProxySection(config));
+
     // ── Model Routing (Multi-Agent) ──────────────────────────────────────
     container.appendChild(buildModelRoutingSection(config, allModelOpts));
 
@@ -186,10 +195,10 @@ export async function loadModelsSettings() {
     const provHeader = document.createElement('div');
     provHeader.style.cssText =
       'display:flex;justify-content:space-between;align-items:center;margin-top:24px';
-    provHeader.innerHTML = `<h3 class="settings-subsection-title" style="margin:0">Manage Providers</h3>`;
+    provHeader.innerHTML = `<h3 class="settings-subsection-title" style="margin:0">${t('Manage Providers')}</h3>`;
     const addBtn = document.createElement('button');
     addBtn.className = 'btn btn-primary btn-sm';
-    addBtn.textContent = '+ Add Provider';
+    addBtn.textContent = `+ ${t('Add Provider')}`;
     addBtn.addEventListener('click', () => toggleAddProviderForm());
     provHeader.appendChild(addBtn);
     container.appendChild(provHeader);
@@ -202,8 +211,76 @@ export async function loadModelsSettings() {
       container.appendChild(renderProviderCard(p, config));
     }
   } catch (e) {
-    container.innerHTML = `<p style="color:var(--danger)">Failed to load: ${esc(String(e))}</p>`;
+    container.innerHTML = `<p style="color:var(--danger)">${t('Failed to load')}: ${esc(String(e))}</p>`;
   }
+}
+
+function buildModelProxySection(config: EngineConfig): HTMLDivElement {
+  const section = document.createElement('div');
+  section.className = 'settings-subsection';
+  section.style.marginTop = '20px';
+  section.innerHTML = `<h3 class="settings-subsection-title">${t('Model Request Proxy')}</h3>
+    <p class="settings-section-desc">${t('Proxy used only for model provider requests, including custom OpenAI-compatible endpoints and model discovery.')}</p>`;
+
+  const proxy = config.model_proxy ?? { mode: 'env' as const };
+  const modeRow = formRow(t('Proxy Mode'));
+  const modeSel = selectInput(
+    [
+      { value: 'env', label: t('Auto from environment') },
+      { value: 'custom', label: t('Custom proxy') },
+      { value: 'off', label: t('Direct connection') },
+    ],
+    proxy.mode ?? 'env',
+  );
+  modeSel.style.maxWidth = '260px';
+  modeRow.appendChild(modeSel);
+  section.appendChild(modeRow);
+
+  const urlRow = formRow(
+    t('Proxy URL'),
+    t('Example: http://127.0.0.1:7890. Leave empty unless Proxy Mode is Custom proxy.'),
+  );
+  const urlInp = textInput(proxy.url ?? '', 'http://127.0.0.1:7890');
+  urlInp.style.maxWidth = '400px';
+  urlRow.appendChild(urlInp);
+  section.appendChild(urlRow);
+
+  const noProxyRow = formRow(
+    t('Proxy Bypass'),
+    t('Comma-separated hosts that should not use the proxy, for example localhost,127.0.0.1'),
+  );
+  const noProxyInp = textInput(proxy.no_proxy ?? '', 'localhost,127.0.0.1');
+  noProxyInp.style.maxWidth = '400px';
+  noProxyRow.appendChild(noProxyInp);
+  section.appendChild(noProxyRow);
+
+  const syncVisibility = () => {
+    const custom = modeSel.value === 'custom';
+    urlRow.style.display = custom ? '' : 'none';
+    noProxyRow.style.display = modeSel.value === 'off' ? 'none' : '';
+  };
+  modeSel.addEventListener('change', syncVisibility);
+  syncVisibility();
+
+  section.appendChild(
+    saveReloadButtons(
+      async () => {
+        const updated: EngineConfig = {
+          ...config,
+          model_proxy: {
+            mode: modeSel.value as 'env' | 'custom' | 'off',
+            url: urlInp.value.trim() || undefined,
+            no_proxy: noProxyInp.value.trim() || undefined,
+          },
+        };
+        const ok = await setEngineConfig(updated);
+        if (ok) loadModelsSettings();
+      },
+      () => loadModelsSettings(),
+    ),
+  );
+
+  return section;
 }
 
 // ── Model Routing Section ───────────────────────────────────────────────────
@@ -480,40 +557,63 @@ function buildAddProviderForm(config: EngineConfig): HTMLDivElement {
   form.id = 'add-provider-form';
   form.style.cssText =
     'display:none;margin-top:12px;padding:16px;border:1px solid var(--accent);border-radius:8px;background:var(--bg-secondary, rgba(255,255,255,0.03))';
-  form.innerHTML = `<h4 style="margin:0 0 12px 0;font-size:14px">New Provider</h4>`;
+  form.innerHTML = `<h4 style="margin:0 0 12px 0;font-size:14px">${t('New Provider')}</h4>`;
 
   const idRow = formRow(
-    'Provider ID',
-    'Unique lowercase identifier (e.g. my-openai, ollama-local)',
+    t('Provider ID'),
+    t('Unique lowercase identifier (e.g. my-openai, ollama-local)'),
   );
   const idInp = textInput('', 'ollama');
   idInp.style.maxWidth = '240px';
   idRow.appendChild(idInp);
   form.appendChild(idRow);
 
-  const kindRow = formRow('Provider Type');
-  const kindSel = selectInput(PROVIDER_KINDS, 'ollama');
+  const kindRow = formRow(t('Provider Type'));
+  const kindSel = selectInput(localizedProviderKinds(), 'ollama');
   kindSel.style.maxWidth = '260px';
   kindRow.appendChild(kindSel);
   form.appendChild(kindRow);
 
-  const urlRow = formRow('Base URL', 'Leave blank for default');
+  const urlRow = formRow(t('Base URL'), t('Leave blank for default'));
   const urlInp = textInput('', 'http://localhost:11434');
   urlInp.style.maxWidth = '400px';
   urlRow.appendChild(urlInp);
   form.appendChild(urlRow);
 
-  const keyRow = formRow('API Key', 'Leave blank for local providers like Ollama');
+  const keyRow = formRow(t('API Key'), t('Leave blank for local providers like Ollama'));
   const keyInp = textInput('', 'sk-…', 'password');
   keyInp.style.maxWidth = '320px';
   keyRow.appendChild(keyInp);
   form.appendChild(keyRow);
 
-  const modelRow = formRow('Default Model', 'Optional default model for this provider');
+  const modelRow = formRow(t('Default Model'), t('Optional default model for this provider'));
   const modelInp = textInput('', 'gpt-4o');
   modelInp.style.maxWidth = '320px';
   modelRow.appendChild(modelInp);
   form.appendChild(modelRow);
+
+  const compatiblePresets = document.createElement('div');
+  compatiblePresets.style.cssText = 'display:none;flex-wrap:wrap;gap:6px;margin:6px 0 12px 0';
+  const presetEndpoints = [
+    { label: 'OpenRouter', url: 'https://openrouter.ai/api/v1', model: 'openai/gpt-4o-mini' },
+    { label: 'DeepSeek', url: 'https://api.deepseek.com/v1', model: 'deepseek-chat' },
+    { label: 'Moonshot', url: 'https://api.moonshot.cn/v1', model: 'moonshot-v1-8k' },
+    { label: 'LocalAI', url: 'http://localhost:8080/v1', model: 'gpt-4o-mini' },
+  ];
+  for (const preset of presetEndpoints) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn btn-ghost btn-sm';
+    btn.textContent = preset.label;
+    btn.title = preset.url;
+    btn.addEventListener('click', () => {
+      urlInp.value = preset.url;
+      if (!modelInp.value) modelInp.value = preset.model;
+      if (!idInp.value) idInp.value = preset.label.toLowerCase();
+    });
+    compatiblePresets.appendChild(btn);
+  }
+  form.appendChild(compatiblePresets);
 
   kindSel.addEventListener('change', () => {
     const kind = kindSel.value;
@@ -523,16 +623,27 @@ function buildAddProviderForm(config: EngineConfig): HTMLDivElement {
     // Azure AI Foundry needs a resource-specific URL — show a helpful placeholder
     if (kind === 'azurefoundry') {
       urlInp.placeholder = 'Paste the full Target URI from Foundry';
-      const sub = urlRow.querySelector('small');
-      if (sub) sub.textContent = 'Paste the exact Target URI from your Foundry deployment';
+      const sub = urlRow.querySelector('.form-hint');
+      if (sub) sub.textContent = t('Paste the exact Target URI from your Foundry deployment');
       // For Azure Foundry: ID = model name, auto-sync
       idInp.placeholder = 'grok-4-1-fast-reasoning';
-      const idSub = idRow.querySelector('small');
-      if (idSub) idSub.textContent = 'Use the model name as the ID (e.g. grok-4-1-fast-reasoning)';
+      const idSub = idRow.querySelector('.form-hint');
+      if (idSub)
+        idSub.textContent = t('Use the model name as the ID (e.g. grok-4-1-fast-reasoning)');
+    } else if (kind === 'custom') {
+      urlInp.placeholder = 'https://api.your-provider.com/v1';
+      const sub = urlRow.querySelector('.form-hint');
+      if (sub)
+        sub.textContent = t('OpenAI-compatible endpoint, for example https://api.example.com/v1');
+      idInp.placeholder = 'my-openai-compatible';
+      const idSub = idRow.querySelector('.form-hint');
+      if (idSub) idSub.textContent = t('Use a short ID for this custom provider');
+      compatiblePresets.style.display = 'flex';
     } else {
       urlInp.placeholder = DEFAULT_BASE_URLS[kind] ?? '';
-      const sub = urlRow.querySelector('small');
-      if (sub) sub.textContent = 'Leave blank for default';
+      const sub = urlRow.querySelector('.form-hint');
+      if (sub) sub.textContent = t('Leave blank for default');
+      compatiblePresets.style.display = 'none';
     }
     if (!idInp.value) {
       idInp.value = kind === 'azurefoundry' ? '' : kind;
@@ -556,19 +667,22 @@ function buildAddProviderForm(config: EngineConfig): HTMLDivElement {
   formBtns.style.cssText = 'display:flex;gap:8px;margin-top:16px';
   const createBtn = document.createElement('button');
   createBtn.className = 'btn btn-primary';
-  createBtn.textContent = 'Add Provider';
+  createBtn.textContent = t('Add Provider');
   createBtn.addEventListener('click', async () => {
     const id = idInp.value.trim();
     if (!id) {
-      showToast('Enter a provider ID', 'error');
+      showToast(t('Enter a provider ID'), 'error');
       return;
     }
     if (!/^[a-zA-Z0-9][a-zA-Z0-9._-]*$/.test(id)) {
-      showToast('ID must start with a letter or number (letters, numbers, dots, hyphens)', 'error');
+      showToast(
+        t('ID must start with a letter or number (letters, numbers, dots, hyphens)'),
+        'error',
+      );
       return;
     }
     if (config.providers.some((p) => p.id === id)) {
-      showToast(`Provider "${id}" already exists`, 'error');
+      showToast(`${t('Provider')} "${id}" ${t('already exists')}`, 'error');
       return;
     }
     const provider: EngineProviderConfig = {
@@ -580,19 +694,19 @@ function buildAddProviderForm(config: EngineConfig): HTMLDivElement {
     };
     try {
       createBtn.disabled = true;
-      createBtn.textContent = 'Adding…';
+      createBtn.textContent = t('Adding…');
       await pawEngine.upsertProvider(provider);
-      showToast(`Provider "${id}" added`, 'success');
+      showToast(`${t('Provider')} "${id}" ${t('added')}`, 'success');
       loadModelsSettings();
     } catch (e) {
-      showToast(`Failed: ${e instanceof Error ? e.message : e}`, 'error');
+      showToast(`${t('Failed')}: ${e instanceof Error ? e.message : e}`, 'error');
       createBtn.disabled = false;
-      createBtn.textContent = 'Add Provider';
+      createBtn.textContent = t('Add Provider');
     }
   });
   const cancelBtn = document.createElement('button');
   cancelBtn.className = 'btn btn-ghost';
-  cancelBtn.textContent = 'Cancel';
+  cancelBtn.textContent = t('Cancel');
   cancelBtn.addEventListener('click', () => {
     form.style.display = 'none';
   });
@@ -633,7 +747,7 @@ function renderProviderCard(provider: EngineProviderConfig, config: EngineConfig
   titleWrap.innerHTML = `${iconHtml3}
     <strong style="font-size:14px">${esc(provider.id)}</strong>
     <span style="font-size:11px;color:var(--text-muted);background:var(--bg-tertiary,rgba(255,255,255,0.06));padding:2px 8px;border-radius:4px">${esc(provider.kind)}</span>
-    ${isDefault ? '<span style="font-size:10px;color:var(--accent);background:rgba(var(--accent-rgb,99,102,241),0.15);padding:2px 8px;border-radius:4px">★ default</span>' : ''}`;
+    ${isDefault ? `<span style="font-size:10px;color:var(--accent);background:rgba(var(--accent-rgb,99,102,241),0.15);padding:2px 8px;border-radius:4px">★ ${t('default')}</span>` : ''}`;
   header.appendChild(titleWrap);
 
   const actions = document.createElement('div');
@@ -642,15 +756,15 @@ function renderProviderCard(provider: EngineProviderConfig, config: EngineConfig
   if (!isDefault) {
     const defBtn = document.createElement('button');
     defBtn.className = 'btn btn-ghost btn-sm';
-    defBtn.textContent = 'Set Default';
+    defBtn.textContent = t('Set Default');
     defBtn.addEventListener('click', async () => {
       try {
         const updated: EngineConfig = { ...config, default_provider: provider.id };
         await setEngineConfig(updated, true);
-        showToast(`${provider.id} set as default provider`, 'success');
+        showToast(`${provider.id} ${t('set as default provider')}`, 'success');
         loadModelsSettings();
       } catch (e) {
-        showToast(`Failed: ${e instanceof Error ? e.message : e}`, 'error');
+        showToast(`${t('Failed')}: ${e instanceof Error ? e.message : e}`, 'error');
       }
     });
     actions.appendChild(defBtn);
@@ -658,32 +772,32 @@ function renderProviderCard(provider: EngineProviderConfig, config: EngineConfig
 
   const delBtn = document.createElement('button');
   delBtn.className = 'btn btn-danger btn-sm';
-  delBtn.textContent = 'Remove';
+  delBtn.textContent = t('Remove');
   let confirmPending = false;
   delBtn.addEventListener('click', async () => {
     if (!confirmPending) {
       confirmPending = true;
-      delBtn.textContent = 'Confirm Remove?';
+      delBtn.textContent = t('Confirm Remove?');
       delBtn.style.fontWeight = 'bold';
       setTimeout(() => {
         if (confirmPending) {
           confirmPending = false;
-          delBtn.textContent = 'Remove';
+          delBtn.textContent = t('Remove');
           delBtn.style.fontWeight = '';
         }
       }, 4000);
       return;
     }
     confirmPending = false;
-    delBtn.textContent = 'Removing…';
+    delBtn.textContent = t('Removing…');
     delBtn.disabled = true;
     try {
       await pawEngine.removeProvider(provider.id);
-      showToast(`Provider "${provider.id}" removed`, 'success');
+      showToast(`${t('Provider')} "${provider.id}" ${t('removed')}`, 'success');
       loadModelsSettings();
     } catch (e) {
-      showToast(`Remove failed: ${e instanceof Error ? e.message : e}`, 'error');
-      delBtn.textContent = 'Remove';
+      showToast(`${t('Remove failed')}: ${e instanceof Error ? e.message : e}`, 'error');
+      delBtn.textContent = t('Remove');
       delBtn.disabled = false;
     }
   });
@@ -691,13 +805,18 @@ function renderProviderCard(provider: EngineProviderConfig, config: EngineConfig
   header.appendChild(actions);
   card.appendChild(header);
 
-  const kindRow = formRow('Provider Type');
-  const kindSel = selectInput(PROVIDER_KINDS, provider.kind);
+  const kindRow = formRow(t('Provider Type'));
+  const kindSel = selectInput(localizedProviderKinds(), provider.kind);
   kindSel.style.maxWidth = '260px';
   kindRow.appendChild(kindSel);
   card.appendChild(kindRow);
 
-  const urlRow = formRow('Base URL');
+  const urlRow = formRow(
+    t('Base URL'),
+    provider.kind === 'custom'
+      ? t('OpenAI-compatible endpoint, for example https://api.example.com/v1')
+      : undefined,
+  );
   const urlInp = textInput(
     provider.base_url ?? '',
     DEFAULT_BASE_URLS[provider.kind] ?? 'https://api.example.com/v1',
@@ -706,13 +825,13 @@ function renderProviderCard(provider: EngineProviderConfig, config: EngineConfig
   urlRow.appendChild(urlInp);
   card.appendChild(urlRow);
 
-  const keyRow = formRow('API Key');
+  const keyRow = formRow(t('API Key'));
   const keyInp = textInput(provider.api_key ?? '', 'sk-…', 'password');
   keyInp.style.maxWidth = '320px';
   keyRow.appendChild(keyInp);
   card.appendChild(keyRow);
 
-  const modelRow = formRow('Default Model', 'Model used when no specific model is requested');
+  const modelRow = formRow(t('Default Model'), t('Model used when no specific model is requested'));
   const modelInp = textInput(provider.default_model ?? '', '');
   modelInp.style.maxWidth = '320px';
   const popular = POPULAR_MODELS[provider.kind] ?? [];
@@ -755,15 +874,14 @@ function renderProviderCard(provider: EngineProviderConfig, config: EngineConfig
     const discoverBtn = document.createElement('button');
     discoverBtn.className = 'btn btn-ghost btn-sm';
     discoverBtn.style.cssText = 'font-size:12px;display:inline-flex;align-items:center;gap:4px';
-    discoverBtn.innerHTML =
-      '<span class="material-symbols-rounded" style="font-size:16px">travel_explore</span> Discover Models';
+    discoverBtn.innerHTML = `<span class="material-symbols-rounded" style="font-size:16px">travel_explore</span> ${t('Discover Models')}`;
     discoverBtn.addEventListener('click', async () => {
       discoverBtn.disabled = true;
-      discoverBtn.textContent = 'Discovering…';
+      discoverBtn.textContent = t('Discovering…');
       try {
         const models = await pawEngine.listProviderModels(provider.id);
         if (!models.length) {
-          showToast('No models found — check URL and API key', 'error');
+          showToast(t('No models found — check URL and API key'), 'error');
           return;
         }
         // Show discovered models as clickable chips
@@ -785,13 +903,12 @@ function renderProviderCard(provider: EngineProviderConfig, config: EngineConfig
           chips.appendChild(chip);
         }
         discoverWrap.appendChild(chips);
-        showToast(`Found ${models.length} model(s)`, 'success');
+        showToast(`${t('Found')} ${models.length} ${t('model(s)')}`, 'success');
       } catch (e) {
-        showToast(`Discovery failed: ${e instanceof Error ? e.message : e}`, 'error');
+        showToast(`${t('Discovery failed')}: ${e instanceof Error ? e.message : e}`, 'error');
       } finally {
         discoverBtn.disabled = false;
-        discoverBtn.innerHTML =
-          '<span class="material-symbols-rounded" style="font-size:16px">travel_explore</span> Discover Models';
+        discoverBtn.innerHTML = `<span class="material-symbols-rounded" style="font-size:16px">travel_explore</span> ${t('Discover Models')}`;
       }
     });
     discoverWrap.appendChild(discoverBtn);
@@ -811,14 +928,14 @@ function renderProviderCard(provider: EngineProviderConfig, config: EngineConfig
         try {
           await pawEngine.upsertProvider(updated);
           const modelMsg = updated.default_model ? ` — model: ${updated.default_model}` : '';
-          showToast(`Provider "${provider.id}" updated${modelMsg}`, 'success');
+          showToast(`${t('Provider')} "${provider.id}" ${t('updated')}${modelMsg}`, 'success');
           const refreshFn = (window as unknown as Record<string, unknown>).__refreshModelLabel as
             | (() => void)
             | undefined;
           if (refreshFn) refreshFn();
           loadModelsSettings();
         } catch (e) {
-          showToast(`Save failed: ${e instanceof Error ? e.message : e}`, 'error');
+          showToast(`${t('Save failed')}: ${e instanceof Error ? e.message : e}`, 'error');
         }
       },
       () => loadModelsSettings(),

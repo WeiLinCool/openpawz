@@ -15,7 +15,7 @@ export const PROVIDER_KINDS: Array<{ value: string; label: string }> = [
   { value: 'mistral', label: 'Mistral' },
   { value: 'moonshot', label: 'Moonshot / Kimi' },
   { value: 'openrouter', label: 'OpenRouter' },
-  { value: 'custom', label: 'Custom / Compatible' },
+  { value: 'custom', label: 'OpenAI-compatible / Custom' },
 ];
 
 export const DEFAULT_BASE_URLS: Record<string, string> = {
@@ -29,7 +29,7 @@ export const DEFAULT_BASE_URLS: Record<string, string> = {
   mistral: 'https://api.mistral.ai/v1',
   moonshot: 'https://api.moonshot.cn/v1',
   openrouter: 'https://openrouter.ai/api/v1',
-  custom: '',
+  custom: 'https://api.example.com/v1',
 };
 
 export const POPULAR_MODELS: Record<string, string[]> = {
@@ -127,7 +127,7 @@ export const POPULAR_MODELS: Record<string, string[]> = {
     'Cohere-command-r-plus',
     'AI21-Jamba-1.5-Large',
   ],
-  custom: ['deepseek-chat', 'deepseek-reasoner'],
+  custom: ['gpt-4o', 'gpt-4o-mini', 'deepseek-chat', 'deepseek-reasoner'],
 };
 
 export const KIND_ICONS: Record<string, string> = {

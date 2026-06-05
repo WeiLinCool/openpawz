@@ -1,4 +1,4 @@
-// ── Engram: Self-Tuning Recall Threshold (§5 ENGRAM.md) ─────────────────────
+// ── Engram: Self-Tuning Recall Threshold (§5 docs/research/engram.md) ─────────────────────
 //
 // Adaptive similarity threshold based on rolling NDCG quality metrics.
 //

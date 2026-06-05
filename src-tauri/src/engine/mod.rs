@@ -7,6 +7,7 @@ pub mod audit;
 pub mod binary_ipc;
 pub mod http;
 pub mod paths;
+pub mod platform;
 pub mod pricing;
 pub mod providers;
 pub mod sessions;

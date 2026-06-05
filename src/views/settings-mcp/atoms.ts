@@ -1,5 +1,7 @@
 // Settings: MCP Servers — Pure helpers (no DOM, no IPC)
 
+import { t } from '../../i18n';
+
 /** HTML-escape a string */
 export function esc(s: string): string {
   return s
@@ -14,7 +16,7 @@ export function esc(s: string): string {
 export function makeBtn(label: string, cls: string, handler: () => void): HTMLButtonElement {
   const btn = document.createElement('button');
   btn.className = `btn ${cls} btn-sm`;
-  btn.textContent = label;
+  btn.textContent = t(label);
   btn.addEventListener('click', handler);
   return btn;
 }

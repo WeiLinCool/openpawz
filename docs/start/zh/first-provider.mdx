@@ -1,0 +1,61 @@
+---
+title: "连接您的第一个提供商"
+description: "OpenPawz 需要至少一个 AI 提供商来驱动您的智能体。使用本地模型（Ollama — 免费）或云端 API。"
+---
+
+# 连接您的第一个提供商
+
+OpenPawz 需要至少一个 AI 提供商来驱动您的智能体。您可以使用本地模型（Ollama — 免费）或云端 API。
+
+## 选项 A：Ollama（本地，免费）
+
+最简单的入门方法 — 完全在您的机器上运行。
+
+1. 安装 Ollama: [ollama.com](https://ollama.com/)
+2. 拉取模型：
+   ```bash
+   ollama pull llama3.1
+   ```
+3. 启动 Pawz — 它自动检测 `localhost:11434` 上的 Ollama
+
+就是这样。Pawz 还将自动拉取 `nomic-embed-text` 嵌入模型用于记忆系统。
+
+## 选项 B：云端提供商
+
+### OpenAI
+
+1. 访问 [platform.openai.com/api-keys](https://platform.openai.com/api-keys) 并创建一个 API 密钥
+2. 在 Pawz 中，转到 **设置 → 提供商**
+3. 点击 **添加提供商**
+4. 选择 **OpenAI**，粘贴您的 API 密钥
+5. 选择默认模型（推荐 GPT-5.1）
+
+### Anthropic
+
+1. 访问 [console.anthropic.com/settings/keys](https://console.anthropic.com/settings/keys) 并创建一个 API 密钥
+2. 在 Pawz 中，转到 **设置 → 提供商**
+3. 点击 **添加提供商**
+4. 选择 **Anthropic**，粘贴您的 API 密钥
+5. 选择默认模型（推荐 Claude Sonnet 4）
+
+### Google Gemini
+
+1. 访问 [aistudio.google.com/apikey](https://aistudio.google.com/apikey) 并创建一个 API 密钥
+2. 在 Pawz 中，转到 **设置 → 提供商**
+3. 点击 **添加提供商**
+4. 选择 **Google**，粘贴您的 API 密钥
+5. 选择默认模型（推荐 Gemini 2.5 Pro）
+
+## 验证
+
+添加提供商后，前往任何智能体聊天并发送消息。如果收到回复，则表明您的提供商正常工作。
+
+聊天标题中带有复选标记（✓）的模型名称确认实际使用的模型。
+
+## 多个提供商
+
+您可以添加任意数量的提供商。每个智能体可以使用不同的模型 — 只需在智能体设置中更改即可。
+
+## 下一步
+
+查看完整的[提供商指南](/docs/providers/overview)，了解所有 10 个支持的提供商、模型路由和高级配置。

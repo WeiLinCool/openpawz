@@ -30,6 +30,7 @@ use crate::engine::http::{
     pinned_client, sign_and_log_request, update_last_audit_status, CircuitBreaker,
 };
 use std::collections::HashMap;
+use std::error::Error;
 use std::sync::{Arc, LazyLock, Mutex};
 
 /// Per-endpoint circuit breakers so failures from one provider/model
@@ -44,6 +45,38 @@ fn get_circuit(base_url: &str) -> Arc<CircuitBreaker> {
     map.entry(base_url.to_string())
         .or_insert_with(|| Arc::new(CircuitBreaker::new(5, 60)))
         .clone()
+}
+
+pub(crate) fn describe_http_error(url: &str, error: &reqwest::Error) -> String {
+    let mut detail = error.to_string();
+    let mut source = error.source();
+    while let Some(err) = source {
+        let next = err.to_string();
+        if !detail.contains(&next) {
+            detail.push_str(": ");
+            detail.push_str(&next);
+        }
+        source = err.source();
+    }
+
+    let category = if error.is_timeout() {
+        "request timed out"
+    } else if error.is_connect() {
+        "connection failed"
+    } else if detail.to_lowercase().contains("certificate")
+        || detail.to_lowercase().contains("tls")
+        || detail.to_lowercase().contains("ssl")
+    {
+        "TLS/certificate failure"
+    } else if detail.to_lowercase().contains("dns") || detail.to_lowercase().contains("resolve") {
+        "DNS resolution failed"
+    } else if detail.to_lowercase().contains("connection reset") {
+        "connection reset by peer"
+    } else {
+        "HTTP transport failure"
+    };
+
+    format!("{} for {} ({})", category, url, detail)
 }
 
 /// Returns true for OpenAI models that reject non-default `temperature`.
@@ -441,7 +474,7 @@ impl OpenAiProvider {
                 }
                 Err(e) => {
                     self.circuit.record_failure();
-                    last_error = format!("HTTP request failed: {}", e);
+                    last_error = describe_http_error(url, &e);
                     last_status = 0;
                     if attempt < MAX_RETRIES {
                         continue;
@@ -903,7 +936,7 @@ impl AiProvider for OpenAiProvider {
                 }
                 Err(e) => {
                     self.circuit.record_failure();
-                    last_error = format!("HTTP request failed: {}", e);
+                    last_error = describe_http_error(&url, &e);
                     last_status = 0;
                     if attempt < MAX_RETRIES {
                         continue;
@@ -1106,7 +1139,7 @@ impl AiProvider for OpenAiProvider {
         let response = req
             .send()
             .await
-            .map_err(|e| ProviderError::Transport(format!("list_models request failed: {}", e)))?;
+            .map_err(|e| ProviderError::Transport(describe_http_error(&url, &e)))?;
 
         if !response.status().is_success() {
             let status = response.status().as_u16();

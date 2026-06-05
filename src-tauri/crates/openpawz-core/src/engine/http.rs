@@ -12,6 +12,7 @@
 //   • SHA-256 request signing for outbound API call tamper detection
 //   • Audit log of hashed outbound requests
 
+use crate::atoms::types::{ModelProxyConfig, ModelProxyMode};
 use log::{info, warn};
 use parking_lot::Mutex;
 use sha2::{Digest, Sha256};
@@ -197,7 +198,7 @@ impl CircuitBreaker {
 //   (b) add per-domain SPKI fingerprint pinning later without restructuring
 //   (c) share a single Client across all providers (connection pooling)
 
-use reqwest::Client;
+use reqwest::{Client, Proxy};
 use rustls::ClientConfig;
 use std::sync::LazyLock;
 
@@ -219,22 +220,130 @@ fn pinned_tls_config() -> ClientConfig {
         .with_no_client_auth()
 }
 
-/// A singleton certificate-pinned `reqwest::Client` for AI provider calls.
-/// Shared across all provider instances — one connection pool, one TLS config.
-static PINNED_CLIENT: LazyLock<Client> = LazyLock::new(|| {
+#[derive(Clone)]
+struct PinnedClientState {
+    proxy: ModelProxyConfig,
+    client: Client,
+}
+
+/// A cached certificate-pinned `reqwest::Client` for AI provider calls.
+/// The client is rebuilt when the model proxy config changes.
+static PINNED_CLIENT: LazyLock<Mutex<PinnedClientState>> = LazyLock::new(|| {
+    let proxy = ModelProxyConfig::default();
+    Mutex::new(PinnedClientState {
+        client: build_pinned_client(&proxy),
+        proxy,
+    })
+});
+
+fn build_pinned_client(proxy_config: &ModelProxyConfig) -> Client {
     let tls = pinned_tls_config();
-    Client::builder()
+    let mut builder = Client::builder()
         .use_preconfigured_tls(tls)
         .connect_timeout(Duration::from_secs(10))
-        .timeout(Duration::from_secs(120))
+        .timeout(Duration::from_secs(120));
+
+    if let Some(proxy_url) = resolve_proxy_url(proxy_config) {
+        match Proxy::all(&proxy_url) {
+            Ok(mut proxy) => {
+                if let Some(no_proxy) = effective_no_proxy(proxy_config) {
+                    proxy = proxy.no_proxy(reqwest::NoProxy::from_string(&no_proxy));
+                }
+                info!(
+                    "[http] Model/provider requests using proxy {}",
+                    redact_proxy_url(&proxy_url)
+                );
+                builder = builder.proxy(proxy);
+            }
+            Err(e) => {
+                warn!(
+                    "[http] Ignoring invalid model proxy URL {}: {}",
+                    redact_proxy_url(&proxy_url),
+                    e
+                );
+            }
+        }
+    }
+
+    builder
         .build()
         .expect("Failed to build certificate-pinned reqwest::Client")
-});
+}
+
+fn resolve_proxy_url(config: &ModelProxyConfig) -> Option<String> {
+    match config.mode {
+        ModelProxyMode::Off => None,
+        ModelProxyMode::Custom => config
+            .url
+            .as_deref()
+            .map(str::trim)
+            .filter(|s| !s.is_empty())
+            .map(ToOwned::to_owned),
+        ModelProxyMode::Env => proxy_from_env(),
+    }
+}
+
+fn proxy_from_env() -> Option<String> {
+    [
+        "HTTPS_PROXY",
+        "https_proxy",
+        "ALL_PROXY",
+        "all_proxy",
+        "HTTP_PROXY",
+        "http_proxy",
+    ]
+    .iter()
+    .find_map(|key| {
+        std::env::var(key)
+            .ok()
+            .map(|v| v.trim().to_string())
+            .filter(|v| !v.is_empty())
+    })
+}
+
+fn effective_no_proxy(config: &ModelProxyConfig) -> Option<String> {
+    config
+        .no_proxy
+        .as_deref()
+        .map(str::trim)
+        .filter(|s| !s.is_empty())
+        .map(ToOwned::to_owned)
+        .or_else(|| {
+            ["NO_PROXY", "no_proxy"].iter().find_map(|key| {
+                std::env::var(key)
+                    .ok()
+                    .map(|v| v.trim().to_string())
+                    .filter(|v| !v.is_empty())
+            })
+        })
+}
+
+fn redact_proxy_url(url: &str) -> String {
+    let Some(scheme_end) = url.find("://") else {
+        return url.to_string();
+    };
+    let auth_start = scheme_end + 3;
+    let Some(at_offset) = url[auth_start..].find('@') else {
+        return url.to_string();
+    };
+    let at = auth_start + at_offset;
+    format!("{}***{}", &url[..auth_start], &url[at..])
+}
+
+/// Update the proxy used by model/provider HTTP requests.
+pub fn set_model_proxy_config(proxy: ModelProxyConfig) {
+    let mut state = PINNED_CLIENT.lock();
+    if state.proxy == proxy {
+        return;
+    }
+    state.client = build_pinned_client(&proxy);
+    state.proxy = proxy;
+}
 
 /// Get the shared certificate-pinned HTTP client.
 /// Providers should call this instead of `Client::builder().build()`.
 pub fn pinned_client() -> Client {
-    PINNED_CLIENT.clone()
+    PINNED_CLIENT.lock().client.clone()
 }
 
 // ── Outbound Request Signing & Audit ───────────────────────────────────────

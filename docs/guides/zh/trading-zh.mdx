@@ -1,0 +1,320 @@
+---
+title: "交易"
+description: "Pawz 包含一个用于加密货币操作的交易仪表板，支持 Coinbase、以太坊 DEX（Uniswap V3）和 Solana DEX（Jupiter + PumpPortal）。"
+---
+
+# 交易
+
+Pawz 包含一个交易仪表板，可通过 Coinbase、以太坊 DEX（Uniswap V3）和 Solana DEX（Jupiter + PumpPortal）进行加密货币操作。
+
+:::warning
+交易涉及真实资金。启用前配置安全保障限制。
+:::
+
+## 交易政策
+
+转到 **设置 → 高级** 来配置安全限制：
+
+| 设置 | 默认值 | 描述 |
+|---------|---------|-------------|
+| **自动批准** | 关闭 | 允许无需人工批准的交易 |
+| **最大交易金额（USD）** | $100 | 单次交易最大限额 |
+| **每日最大亏损（USD）** | $500 | 如果当日亏损超过此金额则停止交易 |
+| **允许交易对** | [] | 限制为特定的交易对 |
+| **允许转账** | 关闭 | 允许向外部钱包发送加密货币 |
+| **最大转账金额（USD）** | $0 | 单次转账最大限额 |
+
+## 仪表板
+
+交易视图显示：
+
+| 卡片 | 描述 |
+|------|-------------|
+| **今日盈亏** | 当日盈利/亏损 |
+| **今天买入** | 买入总量 |
+| **今天卖出** | 卖出总量 |
+| **转账** | 转账总量 |
+| **DEX兑换** | DEX兑换总量 |
+| **总操作数** | 今天交易次数 |
+| **当日消费** | 针对每日限额的累计总额 |
+
+## Coinbase（CDP 智能体钱包）
+
+在 **技能** 标签页中启用 **Coinbase** 技能并配置：
+
+| 凭证 | 是否必需 | 描述 |
+|-----------|----------|-------------|
+| `CDP_API_KEY_NAME` | **是** | `cdp_api_key.json` 中的 `name` 字段 |
+| `CDP_API_KEY_SECRET` | **是** | `cdp_api_key.json` 中的 `privateKey` 字段 |
+
+### 获取您的 CDP API 密钥
+
+1. 访问 [Coinbase 开发平台](https://portal.cdp.coinbase.com/) 并登录
+2. 导航至 **API密钥** → **创建API密钥**
+3. 下载 `cdp_api_key.json` 文件
+4. 打开文件 — 它包含两个您需要的字段：
+   - `"name"` → 粘贴到 **API Key 名称**（像 `organizations/abc123/apiKeys/xyz789`）
+   - `"privateKey"` → 粘贴到 **API 密钥**（base64 字符串或 PEM 块）
+5. 在 Pawz 中: 打开 **技能 → Coinbase → 配置** 并粘贴两个值
+
+**工具:** `coinbase_balance`, `coinbase_price`, `coinbase_buy`, `coinbase_sell`, `coinbase_send`, `coinbase_wallet_create`
+
+### 自托管钱包
+
+Coinbase 钱包是通过 MPC（多方计算）的**自托管** — 私钥被分割，永远不会在单一设备上完整存在。Pawz 使用您的 API 凭证与 Coinbase 的 CDP API 通信，但钱包密钥本身由 Coinbase 的 MPC 基础设施保护。
+
+## 以太坊 DEX（Uniswap V3）
+
+在 **技能** 标签页中启用 **DEX 交易** 技能并配置您的 RPC 端点：
+
+| 凭证 | 是否必需 | 描述 |
+|-----------|----------|-------------|
+| `DEX_RPC_URL` | **是** | 节点提供商提供的以太坊 JSON-RPC 端点 |
+| `DEX_PRIVATE_KEY` | 自动 | 由 `dex_wallet_create` 生成 — 留空 |
+| `DEX_WALLET_ADDRESS` | 自动 | 由 `dex_wallet_create` 生成 — 留空 |
+
+:::info
+当您让您的智能体创建钱包（运行 `dex_wallet_create`）时，`DEX_PRIVATE_KEY` 和 `DEX_WALLET_ADDRESS` 是**自动生成**的。除非您导入现有钱包，否则不需要手动填写这些信息。
+:::
+
+### 获取您的 RPC 端点
+
+您需要来自节点提供商的 JSON-RPC 端点。免费套餐足以满足个人使用。
+
+**选项 1: Alchemy（推荐）**
+1. 在 [alchemy.com](https://www.alchemy.com/) 注册
+2. 创建新应用 → 选择 **以太坊**（或您的目标链）
+3. 复制 **HTTPS** URL（像 `https://eth-mainnet.g.alchemy.com/v2/YOUR_KEY`）
+4. 粘贴到 `DEX_RPC_URL`
+
+**选项 2: Infura**
+1. 在 [infura.io](https://www.infura.io/) 注册
+2. 创建新API密钥
+3. 复制端点 URL（像 `https://mainnet.infura.io/v3/YOUR_KEY`）
+4. 粘贴到 `DEX_RPC_URL`
+
+**选项 3: 您自己的节点**
+如果您运行自己的以太坊节点（Geth, Nethermind 等），使用其 HTTP JSON-RPC URL（例如 `http://localhost:8545`）。
+
+:::warning
+RPC URL 必须是 **HTTP/HTTPS** 端点，而不是 WebSocket（`wss://`）。Pawz 对所有区块链调用均使用 HTTP 上的 JSON-RPC。
+:::
+
+### 设置您的第一个 EVM 钱包
+
+1. 启用 **DEX 交易** 技能并配置 `DEX_RPC_URL`（见上文）
+2. 告诉您的智能体："创建一个新的 DEX 钱包"
+3. 智能体运行 `dex_wallet_create`，它：
+   - 在本地生成一个 secp256k1 密钥对
+   - 使用 AES-256 加密私钥并存储在您的操作系统密钥库中
+   - 保存钱包地址
+   - 从 RPC 端点检测连接的链
+4. **资助钱包** — 从另一个钱包或交易所向显示的地址发送 ETH
+5. 开始交易："用 0.1 ETH 购买 PEPE"
+
+### 支持的 EVM 链
+
+| 链 | 类型 |
+|-------|------|
+| **以太坊** | 主网 |
+| **Goerli** | 测试网 |
+| **Sepolia** | 测试网 |
+| **Polygon** | L2 |
+| **Arbitrum** | L2 |
+| **Optimism** | L2 |
+| **Base** | L2 |
+
+### 已知 EVM 代币
+
+以下 12 种代币被默认识别（无需地址查询）：
+
+`ETH` · `WETH` · `USDC` · `USDT` · `DAI` · `WBTC` · `UNI` · `LINK` · `PEPE` · `SHIB` · `ARB` · `AAVE`
+
+可以通过提供合约地址交易其他任何 ERC-20 代币。
+
+### 费率层级
+
+Uniswap V3 池使用离散费率层级。路由器会自动选择流动性最佳的层级，但您可以使用 `dex_quote` 进行覆盖:
+
+| 层级 | 典型用途 |
+|------|-------------|
+| **0.01%** | 稳定换稳定对（例如 USDC/USDT） |
+| **0.05%** | 相关对（例如 ETH/WETH） |
+| **0.3%** | 大多数配对（默认） |
+| **1%** | 异域/低流动性对 |
+
+### 滑点（EVM）
+
+默认滑点容忍度是**0.5%**。最大滑点允许**5%**。您可以通过 `dex_swap` 的 `slippage` 参数覆盖每次交易。
+
+### 价格馈送
+
+产品组合和 P&L 卡片的美元估值来自 **DexScreener** 价格馈送，它实时聚合所有主要去中心化交易所的价格。
+
+**工具 (14):**
+
+| 工具 | 说明 |
+|------|-------------|
+| `dex_wallet_create` | 创建新钱包 |
+| `dex_balance` | 检查钱包余额 |
+| `dex_quote` | 获取交换报价 |
+| `dex_swap` | 执行交换 |
+| `dex_approve` | 批准代币消费用于 Uniswap 路由器 |
+| `dex_transfer` | 转移代币 |
+| `dex_portfolio` | 查看投资组合 |
+| `dex_token_info` | 代币详情 |
+| `dex_check_token` | 代币安全检查 |
+| `dex_search_token` | 搜索代币 |
+| `dex_watch_wallet` | 监控钱包 |
+| `dex_whale_transfers` | 跟踪大额转账 |
+| `dex_top_traders` | 代币的最佳交易者 |
+| `dex_trending` | 流行代币 |
+
+### 蜜罐检测
+
+`dex_check_token` 在您交易未知代币之前执行全面蜜罐分析：
+
+1. **模拟买卖** — 在分叉环境中执行往返交易，以验证购买后该代币确实可以出售。
+2. **往返税** — 测量买卖之间损失的百分比，以检测隐藏的税收或转移费用。
+3. **所有权审计** — 检查合同所有者是否能够铸币、暂停或列入黑名单。
+4. **ERC-20 兼容性** — 验证代币是否正确实现了标准的 ERC-20 接口（转移、授权、transferFrom、balanceOf）。
+5. **风险评分** — 返回从**0**（安全）到**30**（极高风险）的评分。评分高于 15 的代币会触发警告；高于 25 的评分，除非强制通过，否则交易会被阻止。
+
+:::tip
+交换前始终对不熟悉的代币运行 `dex_check_token`。模拟失败是代币是蜜罐的最强信号。
+:::
+
+### 庞氏追踪
+
+`dex_whale_transfers` 监控区块链的大额代币转账并发出实时警报：
+
+- 可自定义的美元门槛（默认值：$100,000）
+- 显示发送方、接收方、代币、数量和美元价值
+- 突出显示涉及知名交易所热钱包或智能合约部署者的转账
+- 有助于在价格上涨前发现吸筹或派发
+
+### 灰名单追踪
+
+`dex_top_traders` 识别交易特定代币的最盈利的钱包：
+
+- 按 24 小时、7 天或 30 天实现的利润排名钱包
+- 显示胜率、平均交易规模和总交易量
+- 与已知基金和 MEV 机器人地址交叉验证
+- 使用此功能跟随高确定性投资者进入新头寸
+
+## Solana DEX（Jupiter + PumpPortal）
+
+在 **技能** 标签页中启用 **Solana DEX** 技能并配置您的 RPC 端点：
+
+| 凭据 | 是否必需 | 描述 |
+|-----------|----------|-------------|
+| `SOLANA_RPC_URL` | **是** | 来自节点提供商的 Solana JSON-RPC 端点 |
+| `JUPITER_API_KEY` | 可选 | Jupiter 交换 API 密钥 — 改善路由但不是必需的 |
+| `SOLANA_PRIVATE_KEY` | 自动 | 由 `sol_wallet_create` 生成 — 留空 |
+| `SOLANA_WALLET_ADDRESS` | 自动 | 由 `sol_wallet_create` 生成 — 留空 |
+
+:::info
+当您让您的智能体创建钱包（它运行 `sol_wallet_create`）时，`SOLANA_PRIVATE_KEY` 和 `SOLANA_WALLET_ADDRESS` 是**自动生成**的。除非您导入现有钱包，否则不需要手动填写这些值。
+:::
+
+### 获取您的 Solana RPC 端点
+
+**选项 1: Alchemy**
+1. 在 [alchemy.com](https://www.alchemy.com/) 注册
+2. 创建新应用 → 选择 **Solana**
+3. 复制 **HTTPS** URL（如 `https://solana-mainnet.g.alchemy.com/v2/YOUR_KEY`）
+4. 粘贴到 `SOLANA_RPC_URL`
+
+**选项 2: Helius**
+1. 在 [helius.dev](https://www.helius.dev/) 注册
+2. 创建新项目 → 复制 RPC URL
+3. 粘贴到 `SOLANA_RPC_URL`
+
+**选项 3: QuickNode**
+1. 在 [quicknode.com](https://www.quicknode.com/) 注册
+2. 创建 Solana 端点 → 复制 HTTP URL
+3. 粘贴到 `SOLANA_RPC_URL`
+
+### 获取 Jupiter API 密钥（可选）
+
+Jupiter 无需 API 密钥即可工作，但是速率限制较低。要获得免费 API 密钥：
+
+1. 前往 [dev.jup.ag](https://dev.jup.ag/)
+2. 注册并导航到 **仪表板 → API 密钥**
+3. 创建密钥并粘贴到 `JUPITER_API_KEY`
+
+PumpPortal（pump.fun 代币的备用方式）根本不需要 API 密钥。
+
+### 设置您的第一个 Solana 钱包
+
+1. 启用 **Solana DEX** 技能并配置 `SOLANA_RPC_URL`（见上文）
+2. 告诉您的智能体："创建一个新的 Solana 钱包"
+3. 智能体运行 `sol_wallet_create`，它：
+   - 本地生成一个 Ed25519 密钥对
+   - 加密私钥并存储在您的 OS 密钥库保管库中
+   - 保存钱包地址
+   - 验证 RPC 连接并显示 Solana 节点版本
+4. **资助钱包** — 从另一个钱包或交易所向显示的地址发送 SOL
+5. 开始交易："用 1 SOL 换 BONK"
+
+### 路由
+
+交换通过 **Jupiter Metis v1 API** 进行路由，该 API 在单次调用中找到所有 Solana DEX（Orca、Raydium、Meteora 等）上的最佳路线。
+
+对于尚未被 Jupiter 索引的 **pump.fun**、**PumpSwap** 或 **Raydium** 上发布的代币，路由器将返回到 **PumpPortal** 进行直接链上执行。
+
+### 已知 Solana 代币
+
+以下 11 种代币默认被识别：
+
+`SOL` · `USDC` · `USDT` · `BONK` · `JUP` · `RAY` · `PYTH` · `WIF` · `ORCA` · `MSOL` · `JITOSOL`
+
+通过提供代币铸造地址，可以交易任何其他 SPL 代币。
+
+### 滑点（Solana）
+
+默认滑点容忍度是 **50 bps**（0.5%）。对于高波动性的迷因代币，可以通过 `sol_swap` 上的 `slippage_bps` 参数将滑点提高到 **5000 bps**（50%）。Jupiter 始终尝试在允许范围内进行最紧密的执行。
+
+### 交易签名
+
+所有的 Solana 交易都使用 **Ed25519**（Solana 本地签名方案）在本地签名。支持 **版本化 (v0)** 和 **传统** 交易格式 - SDK 根据涉及的指令自动选择最佳格式（当地址查找表可用时优先使用 v0）。
+
+### SPL 代币转账
+
+`sol_transfer` 处理本地 SOL 和任何 SPL 代币。对于 SPL 转账工具：
+
+1. 从接收者钱包地址和代币铸造合约**推导**关联的代币账户 (ATA)。
+2. 如不存在，则**自动创建**该 ATA（发送方支付约 0.002 SOL 的租金）。
+3. 在单一原子交易中转让指定金额。
+
+**工具 (7):**
+
+| 工具 | 描述 |
+|------|-------------|
+| `sol_wallet_create` | 创建一个新的 Solana 钱包 |
+| `sol_balance` | 检查钱包余额 (SOL + SPL 代币) |
+| `sol_quote` | 通过 Jupiter / PumpPortal 获取交换报价 |
+| `sol_swap` | 执行交换 |
+| `sol_transfer` | 将 SOL 或 SPL 代币转移到另一个钱包 |
+| `sol_portfolio` | 查看完整的投资组合及美元估值 |
+| `sol_token_info` | 代币详情 (供应量、持有者、元数据) |
+
+## 持仓
+
+跟踪仓位：
+- 入场价格和数量  
+- 止损百分比
+- 盈利百分比
+- 实时价格跟踪
+- 状态：`开放`、`止损失`、`盈利平`、`手动关闭`
+
+## 安全
+
+- **Coinbase** 使用 CDP API 密钥进行身份验证 — 钱包密钥通过多方法计算在 Coinbase 的基础设施上受到保护
+- **EVM 钱包** 自持仓 — 私钥在本地生成，AES-256 加密，储存到操作系统密钥库，永不离机
+- **Solana 钱包** 自持仓 — 使用 Ed25519 密钥对，与 EVM 一样的库加密
+- **凭证仅限服务端** — API 密钥、RPC 地址和私钥从不注入代理提示或发送至 LLM 提供商
+- 交易审批前检查交易策略（金额限制、允许配对、每日消费）
+- DEX 与 Solana 工具自动审批（无人工干预延迟）确保快速执行
+- 转账需要在交易政策中明确 `allow_transfers: true`
+- 美元估值来源于 **DexScreener** 价格（无需交易账户）

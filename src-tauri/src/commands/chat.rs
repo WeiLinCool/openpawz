@@ -202,19 +202,22 @@ pub async fn engine_chat_send(
                 // If model doesn't match the resolved provider's kind (e.g. "gpt-4o" routed
                 // to a Google provider because the user has no OpenAI), fall back to the
                 // provider's own default_model so the API call uses a valid model name.
-                let corrected_model =
-                    if !user_explicitly_chose_model && !model.is_empty() {
-                        let natural_provider = resolve_provider_for_model(&model, &cfg.providers);
-                        if natural_provider.as_ref().map(|np| np.id != p.id).unwrap_or(true) {
-                            // Model prefix doesn't match our resolved provider — use the
-                            // provider's default_model if available.
-                            p.default_model.clone().unwrap_or(model)
-                        } else {
-                            model
-                        }
+                let corrected_model = if !user_explicitly_chose_model && !model.is_empty() {
+                    let natural_provider = resolve_provider_for_model(&model, &cfg.providers);
+                    if natural_provider
+                        .as_ref()
+                        .map(|np| np.id != p.id)
+                        .unwrap_or(true)
+                    {
+                        // Model prefix doesn't match our resolved provider — use the
+                        // provider's default_model if available.
+                        p.default_model.clone().unwrap_or(model)
                     } else {
                         model
-                    };
+                    }
+                } else {
+                    model
+                };
                 (p, corrected_model)
             }
             None => {
@@ -224,6 +227,14 @@ pub async fn engine_chat_send(
             }
         }
     };
+
+    if provider_config.id == crate::commands::enterprise::ENTERPRISE_PROVIDER_ID {
+        let enterprise_config = crate::commands::enterprise::load_enterprise_config(&state);
+        crate::engine::platform::require_feature(
+            &crate::commands::enterprise::EnterpriseEntitlements::new(&enterprise_config),
+            crate::engine::platform::FEATURE_MODELS_PROXY,
+        )?;
+    }
 
     // ── Store the user message ─────────────────────────────────────────────
     let user_msg = StoredMessage {

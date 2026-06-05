@@ -241,6 +241,7 @@ impl Default for EngineConfig {
             providers: vec![],
             default_provider: None,
             default_model: None,
+            model_proxy: ModelProxyConfig::default(),
             default_system_prompt: Some(r#"You are a powerful AI agent running in Pawz — a desktop AI assistant with full access to the user's machine.
 
 You have these capabilities:

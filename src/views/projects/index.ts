@@ -1,6 +1,6 @@
 // Projects View — Index (orchestration, state, event wiring, exports)
 
-import { $ } from '../../components/helpers';
+import { $, promptModal } from '../../components/helpers';
 import { showToast } from '../../components/toast';
 import { logSecurityEvent } from '../../db';
 import {
@@ -173,7 +173,7 @@ export async function promptAddFolder(): Promise<void> {
     }
   }
 
-  const path = prompt('Enter the full path to your project folder:');
+  const path = await promptModal('Enter the full path to your project folder:');
   if (path && path.trim()) {
     await addProjectFolder(path.trim());
   }

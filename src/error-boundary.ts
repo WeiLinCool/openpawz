@@ -52,6 +52,10 @@ export function clearErrorHistory(): void {
 export function installErrorBoundary(): void {
   // Uncaught errors
   window.addEventListener('error', (event) => {
+    if (isIgnoredBrowserNoise(event.message)) {
+      event.preventDefault();
+      return;
+    }
     const report = toErrorReport(event.error ?? event.message, 'unhandled', {
       filename: event.filename,
       lineno: event.lineno,
@@ -94,6 +98,14 @@ function toErrorReport(
     timestamp: new Date().toISOString(),
     context: sanitizeContext(context),
   };
+}
+
+function isIgnoredBrowserNoise(message: unknown): boolean {
+  const text = String(message);
+  return (
+    text.includes('ResizeObserver loop completed with undelivered notifications') ||
+    text.includes('ResizeObserver loop limit exceeded')
+  );
 }
 
 /** Strip sensitive keys and limit context size to prevent memory bloat. */

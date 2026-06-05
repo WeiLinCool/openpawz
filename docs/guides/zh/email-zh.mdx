@@ -1,0 +1,172 @@
+---
+title: "电子邮件"
+description: "Pawz 可以通过您现有的帐户使用 Himalaya（一个 IMAP/SMTP 命令行客户端）读取和发送邮件。"
+---
+
+# 电子邮件
+
+Pawz 可以通过您现有的账户使用 Himilalya，一个 IMAP/SMTP CLI 客户端，来读取和发送邮件。
+
+## 先决条件
+
+安装 [Himalaya](https://github.com/pimalaya/himalaya)：
+
+```bash
+# macOS
+brew install himalaya
+
+# Linux
+cargo install himalaya
+```
+
+## 配置
+
+Himalaya 在 `~/.config/himalaya/config.toml` 使用一个 TOML 配置文件：
+
+```toml
+[accounts.personal]
+email = "you@gmail.com"
+display-name = "Your Name"
+
+[accounts.personal.imap]
+host = "imap.gmail.com"
+port = 993
+login = "you@gmail.com"
+passwd.cmd = "security find-generic-password -s gmail -w"
+
+[accounts.personal.smtp]
+host = "smtp.gmail.com"
+port = 465
+login = "you@gmail.com"
+passwd.cmd = "security find-generic-password -s gmail -w"
+```
+
+## 智能体设置
+
+在**技能**选项卡中启用**电子邮件**技能并提供以下信息：
+
+| 凭据 | 示例 |
+|-----------|---------|
+| SMTP_HOST | smtp.gmail.com |
+| SMTP_PORT | 465 |
+| SMTP_USER | you@gmail.com |
+| SMTP_PASS | 您的应用密码 |
+| IMAP_HOST | imap.gmail.com |
+| IMAP_USER | you@gmail.com |
+| IMAP_PASS | 您的应用密码 |
+
+:::tip
+对于 Gmail，请使用[应用密码](https://support.google.com/accounts/answer/185833)——而不是您的常规密码。
+:::
+
+## 智能体工具
+
+启用电子邮件技能后，智能体会获得：
+
+| 工具 | 审批 |
+|------|----------|
+| `email_read` | 自动 | 读取收件箱，搜索邮件 |
+| `email_send` | **需要人工审批** | 发送邮件 (必须由人批准） |
+
+## 邮件权限
+
+每个账户可以拥有细粒度的权限：
+
+| 权限 | 描述 |
+|-----------|-------------|
+| `read` | 允许阅读邮件 |
+| `send` | 允许发送邮件 |
+| `delete` | 允许删除邮件 |
+| `manage` | 允许文件夹管理 |
+
+## 提供商标识
+
+邮件视图会自动检测您的提供商并显示相应的图标：
+
+| 供应商 | 图标 |
+|----------|------|
+| Gmail | G |
+| Outlook | O |
+| Yahoo | Y |
+| iCloud | iC |
+| Fastmail | FM |
+| 其他 | M |
+
+## 提供商预设
+
+账户设置向导会为流行提供商自动填充 IMAP/SMTP 设置：
+
+| 供应商 | IMAP 服务器 | IMAP 端口 | SMTP 服务器 | SMTP 端口 | 认证注意事项 |
+|----------|------------|-----------|-------------|-----------|------------|
+| **Gmail** | `imap.gmail.com` | 993 | `smtp.gmail.com` | 465 | 需要[应用密码](https://support.google.com/accounts/answer/185833) |
+| **Outlook / Hotmail** | `outlook.office365.com` | 993 | `smtp.office365.com` | 587 | 普通密码或双因子认证用的应用密码 |
+| **Yahoo 邮箱** | `imap.mail.yahoo.com` | 993 | `smtp.mail.yahoo.com` | 465 | 从 Yahoo 安全设置获取的应用密码 |
+| **iCloud 邮箱** | `imap.mail.me.com` | 993 | `smtp.mail.me.com` | 587 | 从 appleid.apple.com 获取的应用特定密码 |
+| **Fastmail** | `imap.fastmail.com` | 993 | `smtp.fastmail.com` | 465 | 从隐私和安全获取的应用密码 |
+| **自定义** | (手动) | 993 | (手动) | 465 | 输入您自己的 IMAP/SMTP 详细信息 |
+
+:::info
+所有连接使用 TLS 加密。密码存储在**操作系统钥匙串** (macOS 密钥环 / Linux 上的 libsecret)，永不以纯文本文件形式保存。
+:::
+
+## 邮件筛选和文件夹
+
+智能体可以通过邮箱文件夹来处理邮件以组织消息：
+
+| 动作 | 工具 | 描述 |
+|--------|------|-------------|
+| 列出收件箱 | `email_read` | 从收件箱或任何指定文件夹中获取邮件 |
+| 移到文件夹 | `move_email` | 将消息移到不同的文件夹中 (例如归档) |
+| 删除邮件 | `delete_email` | 移到垃圾箱或永久删除 |
+| 搜索 | `email_read` | 按主题、发件人或内容搜索 |
+
+### 支持的文件夹
+
+Himalaya 支持标准 IMAP 文件夹：
+- `INBOX` — 默认收件箱
+- `[Gmail]/All Mail` — Gmail 归档
+- `[Gmail]/Drafts` — 草稿文件夹
+- `Sent` / `[Gmail]/Sent Mail` — 已发送项目
+- 用户创建的自定义文件夹
+
+## 附件处理
+
+邮件附件通过 Himalaya CLI 进行管理：
+
+- **阅读** — `email_read` 检索包含内联内容的完整邮件正文
+- **下载** — 智能体可通过 Himalaya 命令将附件保存到本地文件系统
+- **发送** — 通过 Himalaya 技能在撰写消息时可包含附件
+
+## AI 邮件操作
+
+邮件视图包括为每封邮件内置的 AI 功能。 这些会向您的智能体发送一个预组成的提示：
+
+| 操作 | 智能体会做什么 |
+|--------|--------------------|
+| **摘要** | 生成邮件内容的简明摘要 |
+| **撰写回复** | 根据邮件上下文撰写专业的回复 |
+| **提取任务** | 识别邮件中提到的行动项目和任务 |
+
+### 撰写和回复
+
+内置的撰写模态框支持：
+- **回复** — 预填写收件人和主题，使用 `Re:` 前缀
+- **转发** — 预填写带有 `Fwd:` 前缀的主题，并包含原始消息
+- **新建邮件** — 打开聊天，代理使用撰写提示来起草和发送
+
+:::tip
+对于 AI 撰写的邮件，代理会起草邮件并使用 Himalaya 发送。所有通过 `email_send` 工具发送的邮件都需**人工闭环 (HIL)批准** — 在任何邮件被实际发送之前，您必须确认。
+:::
+
+## 凭据库
+
+邮件账户受凭据库保护，具有完整的审计轨迹：
+
+- **权限切换** — 按账户启用/禁用读取、发送、删除和管理权限
+- **活动记录** — 每个智能体邮件操作都被记录，附带时间戳
+- **已阻止操作** — 尝试使用被禁用权限的行为会被记录并拒绝
+- **撤销访问** — 即刻移除账户并从设备上删除凭据
+
+## 渠道集成
+
+也可将电子邮件设置为渠道 — 详情请参阅[渠道路由](/channels/overview)。

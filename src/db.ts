@@ -2,18 +2,65 @@
 // Provides persistent storage for workspaces, projects, automations, modes, etc.
 
 import Database from '@tauri-apps/plugin-sql';
+import { invoke } from '@tauri-apps/api/core';
 
 let db: Database | null = null;
+let dbPath: string | null = null;
+let storageMode: 'sqlite' | 'memory' = 'memory';
+let lastDbError: string | null = null;
 
-export async function initDb(): Promise<Database> {
-  if (db) return db;
-  db = await Database.load('sqlite:paw.db');
-  await runMigrations(db);
-  return db;
+export async function initDb(options: { forceReconnect?: boolean } = {}): Promise<Database> {
+  if (db && !options.forceReconnect) return db;
+  if (db && options.forceReconnect) {
+    await db.close(db.path).catch(() => {});
+    db = null;
+    dbPath = null;
+  }
+  const resolvedPath = await invoke<string>('ensure_frontend_db_path');
+  const nextDb = await Database.load('sqlite:paw.db');
+  try {
+    await nextDb.select('SELECT 1 as ok');
+    await runMigrations(nextDb);
+    db = nextDb;
+    dbPath = resolvedPath;
+    return nextDb;
+  } catch (e) {
+    await nextDb.close(nextDb.path).catch(() => {});
+    db = null;
+    dbPath = null;
+    throw e;
+  }
+}
+
+export async function initStorage(options: { forceReconnect?: boolean } = {}): Promise<boolean> {
+  try {
+    await initDb(options);
+    storageMode = 'sqlite';
+    lastDbError = null;
+    return true;
+  } catch (e) {
+    db = null;
+    storageMode = 'memory';
+    lastDbError = e instanceof Error ? e.message : String(e);
+    console.warn('[db] SQLite unavailable; continuing with non-persistent storage mode:', e);
+    return false;
+  }
 }
 
 export function getDb(): Database | null {
   return db;
+}
+
+export function getDbPath(): string | null {
+  return dbPath;
+}
+
+export function getStorageMode(): 'sqlite' | 'memory' {
+  return storageMode;
+}
+
+export function getLastDbError(): string | null {
+  return lastDbError;
 }
 
 // ── Field-level encryption (C2) ────────────────────────────────────────────
@@ -30,11 +77,6 @@ const ENC_PREFIX = 'enc:'; // marker prefix for encrypted values
  */
 export async function initDbEncryption(): Promise<boolean> {
   try {
-    const invoke = (window as unknown as Record<string, unknown>).__TAURI_INTERNALS__
-      ? (await import('@tauri-apps/api/core')).invoke
-      : null;
-    if (!invoke) return false;
-
     const hexKey = await invoke<string>('get_db_encryption_key');
     if (!hexKey || hexKey.length < 32) {
       console.error(
@@ -356,15 +398,21 @@ async function runMigrations(db: Database) {
     applied_at TEXT DEFAULT (datetime('now'))
   )`);
 
-  // Get current version
-  const rows = await db.select<{ version: number }[]>(
+  // Repair partially migrated legacy databases before deciding what is pending.
+  // Reinstalling the macOS app does not remove the app data directory, so users
+  // can carry forward a DB where a table/column exists but its schema_version row
+  // was never written. Without this pass, idempotent-looking migrations like
+  // `ALTER TABLE ... ADD COLUMN` can fail forever on startup.
+  await repairLegacySchemaVersion(db);
+
+  const versionRows = await db.select<{ version: number }[]>(
     'SELECT COALESCE(MAX(version), 0) as version FROM schema_version',
   );
-  const currentVersion = rows[0]?.version ?? 0;
+  const effectiveVersion = versionRows[0]?.version ?? 0;
 
   // Run pending migrations in order
   for (const migration of MIGRATIONS) {
-    if (migration.version <= currentVersion) continue;
+    if (migration.version <= effectiveVersion) continue;
 
     console.debug(`[db] Running migration v${migration.version}: ${migration.description}`);
     try {
@@ -387,6 +435,54 @@ async function runMigrations(db: Database) {
   }
 
   await seedDefaultModes(db);
+}
+
+async function tableExists(db: Database, tableName: string): Promise<boolean> {
+  const rows = await db.select<{ count: number }[]>(
+    "SELECT COUNT(*) as count FROM sqlite_master WHERE type='table' AND name = ?",
+    [tableName],
+  );
+  return (rows[0]?.count ?? 0) > 0;
+}
+
+async function columnExists(db: Database, tableName: string, columnName: string): Promise<boolean> {
+  const rows = await db.select<Array<Record<string, unknown>>>(`PRAGMA table_info(${tableName})`);
+  return rows.some((row) => row.name === columnName);
+}
+
+async function markMigrationApplied(
+  db: Database,
+  version: number,
+  description: string,
+): Promise<void> {
+  await db.execute('INSERT OR IGNORE INTO schema_version (version, description) VALUES (?, ?)', [
+    version,
+    description,
+  ]);
+}
+
+async function repairLegacySchemaVersion(db: Database): Promise<void> {
+  const hasCoreSchema = await tableExists(db, 'agent_modes');
+  if (!hasCoreSchema) return;
+
+  console.warn('[db] Detected existing schema without version rows; repairing schema_version');
+  await markMigrationApplied(db, 1, 'Initial schema — core tables');
+  if (await tableExists(db, 'model_pricing')) {
+    await markMigrationApplied(db, 2, 'Model pricing overrides table');
+  }
+  if (await columnExists(db, 'agent_modes', 'auto_approve_all')) {
+    await markMigrationApplied(db, 3, 'Add auto_approve_all to agent_modes for Phase A autonomy');
+  }
+  if (
+    (await tableExists(db, 'agent_tool_policies')) &&
+    (await tableExists(db, 'injection_policy'))
+  ) {
+    await markMigrationApplied(
+      db,
+      4,
+      'Move agent tool policies and injection policy out of localStorage into DB',
+    );
+  }
 }
 
 // ── Agent Modes CRUD ─────────────────────────────────────────────────────

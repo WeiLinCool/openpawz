@@ -4,7 +4,7 @@ use crate::commands::state::EngineState;
 use crate::engine::types::*;
 use log::info;
 use std::sync::atomic::Ordering;
-use tauri::State;
+use tauri::{Manager, State};
 
 // ── Sandbox ────────────────────────────────────────────────────────────
 
@@ -72,6 +72,7 @@ pub fn engine_set_config(
     config: EngineConfig,
 ) -> Result<(), String> {
     let json = serde_json::to_string(&config).map_err(|e| format!("Serialize error: {}", e))?;
+    openpawz_core::engine::http::set_model_proxy_config(config.model_proxy.clone());
 
     // Persist to DB
     state.store.set_config("engine_config", &json)?;
@@ -109,6 +110,7 @@ pub fn engine_upsert_provider(
 
     // Persist
     let json = serde_json::to_string(&*cfg).map_err(|e| format!("Serialize error: {}", e))?;
+    openpawz_core::engine::http::set_model_proxy_config(cfg.model_proxy.clone());
     state.store.set_config("engine_config", &json)?;
 
     info!(
@@ -358,6 +360,7 @@ pub async fn engine_auto_setup(state: State<'_, EngineState>) -> Result<serde_js
 /// Return current storage paths for display in Settings → Storage.
 #[tauri::command]
 pub fn engine_storage_get_paths(
+    app: tauri::AppHandle,
     state: State<'_, EngineState>,
 ) -> Result<serde_json::Value, String> {
     let data_root = crate::engine::paths::paw_data_dir();
@@ -369,6 +372,14 @@ pub fn engine_storage_get_paths(
     // Compute approximate sizes
     let engine_db = crate::engine::paths::engine_db_path();
     let engine_db_size = std::fs::metadata(&engine_db).map(|m| m.len()).unwrap_or(0);
+    let frontend_db = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| format!("Failed to resolve app data directory: {}", e))?
+        .join("paw.db");
+    let frontend_db_size = std::fs::metadata(&frontend_db)
+        .map(|m| m.len())
+        .unwrap_or(0);
 
     let workspaces_dir = crate::engine::paths::workspaces_base_dir();
     let workspaces_size = dir_size(&workspaces_dir);
@@ -388,6 +399,8 @@ pub fn engine_storage_get_paths(
         "is_custom": custom_root.is_some(),
         "engine_db": engine_db.to_string_lossy(),
         "engine_db_size": engine_db_size,
+        "frontend_db": frontend_db.to_string_lossy(),
+        "frontend_db_size": frontend_db_size,
         "workspaces_dir": workspaces_dir.to_string_lossy(),
         "workspaces_size": workspaces_size,
         "skills_dir": skills_dir.to_string_lossy(),

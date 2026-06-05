@@ -8,7 +8,7 @@ import {
   type SecuritySettings,
 } from '../../security';
 import { getSecurityAuditLog, isEncryptionReady } from '../../db';
-import { $, escHtml } from '../../components/helpers';
+import { $, escHtml, promptModal } from '../../components/helpers';
 import { showToast } from '../../components/toast';
 import { isConnected } from '../../state/connection';
 import { getBudgetLimit, setBudgetLimit, downloadFile, type ToolRule } from './atoms';
@@ -334,60 +334,17 @@ export function renderToolRules() {
   });
 }
 
-export function addToolRule() {
-  const promptModal = $('prompt-modal');
-  const promptInput = $('prompt-modal-input') as HTMLInputElement | null;
-  const promptTitle = $('prompt-modal-title');
-  const promptOk = $('prompt-modal-ok');
-  const promptClose = $('prompt-modal-close');
-  const promptCancel = $('prompt-modal-cancel');
-  if (promptModal && promptInput && promptOk && promptClose) {
-    if (promptTitle) promptTitle.textContent = 'Add Tool Rule';
-    promptInput.value = '';
-    promptInput.placeholder = 'Tool name, e.g. brave_search';
-    promptModal.style.display = 'flex';
-    promptInput.focus();
-
-    const cleanup = () => {
-      promptModal.style.display = 'none';
-      promptOk.removeEventListener('click', onOk);
-      promptClose.removeEventListener('click', onCancel);
-      if (promptCancel) promptCancel.removeEventListener('click', onCancel);
-      promptInput.removeEventListener('keydown', onKey);
-    };
-    const onOk = () => {
-      const name = promptInput.value.trim();
-      cleanup();
-      if (!name) return;
-      const rules = _state.getToolRules();
-      if (rules.some((r) => r.name === name)) {
-        showToast(`"${name}" already has a rule`, 'info');
-        return;
-      }
-      _state.pushToolRule({ name, state: 'ask' });
-      renderToolRules();
-    };
-    const onCancel = () => cleanup();
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Enter') onOk();
-      if (e.key === 'Escape') onCancel();
-    };
-    promptOk.addEventListener('click', onOk);
-    promptClose.addEventListener('click', onCancel);
-    if (promptCancel) promptCancel.addEventListener('click', onCancel);
-    promptInput.addEventListener('keydown', onKey);
-  } else {
-    const name = prompt('Tool name (e.g. brave_search):');
-    if (!name?.trim()) return;
-    const trimmed = name.trim();
-    const rules = _state.getToolRules();
-    if (rules.some((r) => r.name === trimmed)) {
-      showToast(`"${trimmed}" already has a rule`, 'info');
-      return;
-    }
-    _state.pushToolRule({ name: trimmed, state: 'ask' });
-    renderToolRules();
+export async function addToolRule() {
+  const name = await promptModal('Add Tool Rule', 'Tool name, e.g. brave_search');
+  if (!name?.trim()) return;
+  const trimmed = name.trim();
+  const rules = _state.getToolRules();
+  if (rules.some((r) => r.name === trimmed)) {
+    showToast(`"${trimmed}" already has a rule`, 'info');
+    return;
   }
+  _state.pushToolRule({ name: trimmed, state: 'ask' });
+  renderToolRules();
 }
 
 export async function loadSettingsApprovals() {

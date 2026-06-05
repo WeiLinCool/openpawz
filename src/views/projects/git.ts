@@ -1,6 +1,6 @@
 // Projects View — Git integration (banner, actions, shell wrappers)
 
-import { escHtml, escAttr } from '../../components/helpers';
+import { escHtml, escAttr, promptModal } from '../../components/helpers';
 import { showToast } from '../../components/toast';
 import { shortenRemote, type GitInfo } from './atoms';
 
@@ -202,7 +202,7 @@ export function bindGitActions(
             break;
           }
           case 'commit': {
-            const msg = prompt('Commit message:');
+            const msg = await promptModal('Commit message:');
             if (!msg) break;
             const addOut = await gitExec(path, 'add', '-A');
             if (addOut === null) {

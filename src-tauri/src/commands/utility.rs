@@ -33,6 +33,102 @@ static DB_KEY_CACHE: RwLock<Option<Zeroizing<String>>> = RwLock::new(None);
 /// Wrapped in `Zeroizing` so the hash is securely zeroed on drop.
 static LOCK_HASH_CACHE: RwLock<Option<Zeroizing<String>>> = RwLock::new(None);
 
+const LOCK_KEYCHAIN_SERVICE: &str = "openpawz-lock";
+const LOCK_KEYCHAIN_USER: &str = "passphrase";
+
+/// Ensure the Tauri app data directory used by the frontend SQL plugin exists.
+/// The frontend opens `sqlite:paw.db`, which the SQL plugin resolves under this
+/// directory. Retry should re-check this path before re-opening the database.
+#[tauri::command]
+pub fn ensure_frontend_db_dir(app: tauri::AppHandle) -> Result<String, String> {
+    let dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| format!("Failed to resolve app data directory: {}", e))?;
+    std::fs::create_dir_all(&dir).map_err(|e| {
+        format!(
+            "Failed to create app data directory '{}': {}",
+            dir.display(),
+            e
+        )
+    })?;
+    Ok(dir.to_string_lossy().to_string())
+}
+
+/// Ensure and return the frontend SQLite database path used by the Tauri SQL plugin.
+/// The plugin requires SQLite paths like `sqlite:paw.db` to be relative to the
+/// app data directory, so the frontend must not pass this absolute path back to
+/// `Database.load`. It is returned for diagnostics and Settings → Storage only.
+#[tauri::command]
+pub fn ensure_frontend_db_path(app: tauri::AppHandle) -> Result<String, String> {
+    let app_data_dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| format!("Failed to resolve app data directory: {}", e))?;
+    std::fs::create_dir_all(&app_data_dir).map_err(|e| {
+        format!(
+            "Failed to create app data directory '{}': {}",
+            app_data_dir.display(),
+            e
+        )
+    })?;
+
+    let target = app_data_dir.join("paw.db");
+    if !target.exists() {
+        let legacy = crate::engine::paths::paw_data_dir().join("paw.db");
+        if legacy.exists() {
+            let conn = rusqlite::Connection::open(&legacy).map_err(|e| {
+                format!(
+                    "Failed to open legacy UI database '{}': {}",
+                    legacy.display(),
+                    e
+                )
+            })?;
+            let target_sql = target.to_string_lossy().to_string();
+            conn.execute("VACUUM INTO ?", [&target_sql]).map_err(|e| {
+                format!(
+                    "Failed to migrate UI database to '{}': {}",
+                    target.display(),
+                    e
+                )
+            })?;
+        }
+    }
+    if target.exists() {
+        match rusqlite::Connection::open(&target).and_then(|conn| {
+            conn.query_row("PRAGMA integrity_check", [], |row| row.get::<_, String>(0))
+        }) {
+            Ok(result) if result.eq_ignore_ascii_case("ok") => {}
+            Ok(result) => {
+                quarantine_frontend_db(&target, &format!("integrity_check returned {}", result))?
+            }
+            Err(e) => quarantine_frontend_db(&target, &e.to_string())?,
+        }
+    }
+
+    Ok(target.to_string_lossy().to_string())
+}
+
+fn quarantine_frontend_db(path: &std::path::Path, reason: &str) -> Result<(), String> {
+    let stamp = chrono::Utc::now().format("%Y%m%d%H%M%S");
+    let backup = path.with_extension(format!("db.corrupt-{}", stamp));
+    std::fs::rename(path, &backup).map_err(|e| {
+        format!(
+            "Frontend database is not usable ({}) and backup failed '{}': {}",
+            reason,
+            backup.display(),
+            e
+        )
+    })?;
+    log::warn!(
+        "[db] Quarantined unusable frontend database '{}' -> '{}' ({})",
+        path.display(),
+        backup.display(),
+        reason
+    );
+    Ok(())
+}
+
 /// Check whether the OS keychain has a stored password for the given account.
 #[tauri::command]
 pub fn keyring_has_password(account_name: String, email: String) -> Result<bool, String> {
@@ -93,6 +189,12 @@ pub fn get_db_encryption_key() -> Result<String, String> {
     Ok(result)
 }
 
+#[tauri::command]
+pub fn retry_keychain() -> KeychainHealth {
+    let loaded = key_vault::reload();
+    keychain_health_from_state(loaded, true)
+}
+
 /// Read (or create) the DB encryption key from the unified key vault.
 /// Returns `Zeroizing<String>` so the key is securely zeroed when dropped.
 fn load_db_key_from_keychain() -> Result<Zeroizing<String>, String> {
@@ -111,7 +213,8 @@ fn load_db_key_from_keychain() -> Result<Zeroizing<String>, String> {
     );
     // Zero the raw bytes immediately
     zeroize::Zeroize::zeroize(&mut bytes);
-    key_vault::set(key_vault::PURPOSE_DB_ENCRYPTION, &key);
+    key_vault::try_set(key_vault::PURPOSE_DB_ENCRYPTION, &key)
+        .map_err(|e| format!("Failed to persist DB encryption key in OS keychain: {}", e))?;
     info!("Generated and stored new DB encryption key in unified vault");
     Ok(key)
 }
@@ -186,8 +289,7 @@ pub fn lock_screen_has_passphrase() -> bool {
     {
         return true;
     }
-    // Fall through to unified vault (populates the cache on success)
-    let result = key_vault::get(key_vault::PURPOSE_LOCK_SCREEN);
+    let result = load_lock_passphrase_hash();
     if let Some(ref hash) = result {
         let mut guard = LOCK_HASH_CACHE.write().unwrap_or_else(|e| e.into_inner());
         *guard = Some(hash.clone());
@@ -203,7 +305,7 @@ pub fn lock_screen_set_passphrase(passphrase: String) -> Result<(), String> {
         return Err("Passphrase must be at least 4 characters".into());
     }
     let hash = hash_passphrase(&passphrase)?;
-    key_vault::set(key_vault::PURPOSE_LOCK_SCREEN, &hash);
+    store_lock_passphrase_hash(&hash)?;
     // Update cache (write lock, poison-safe, zeroized)
     *LOCK_HASH_CACHE.write().unwrap_or_else(|e| e.into_inner()) = Some(Zeroizing::new(hash));
     info!("[lock] Passphrase set in OS keychain");
@@ -224,8 +326,7 @@ pub fn lock_screen_verify_passphrase(passphrase: String) -> Result<bool, String>
         }
     }
 
-    // Fall through to unified vault
-    match key_vault::get(key_vault::PURPOSE_LOCK_SCREEN) {
+    match load_lock_passphrase_hash() {
         Some(stored_hash) => {
             let matches = verify_hash(&passphrase, &stored_hash);
             // Populate cache (write lock, poison-safe, zeroized)
@@ -240,12 +341,57 @@ pub fn lock_screen_verify_passphrase(passphrase: String) -> Result<bool, String>
 /// Also clears the in-memory cache.
 #[tauri::command]
 pub fn lock_screen_remove_passphrase() -> Result<(), String> {
+    remove_lock_passphrase_hash();
     key_vault::remove(key_vault::PURPOSE_LOCK_SCREEN);
-    info!("[lock] Passphrase removed from unified vault");
+    info!("[lock] Passphrase removed from OS keychain");
     // Clear cache (write lock, poison-safe)
     // The old Zeroizing<String> is dropped here, securely zeroing the hash.
     *LOCK_HASH_CACHE.write().unwrap_or_else(|e| e.into_inner()) = None;
     Ok(())
+}
+
+fn lock_keychain_entry() -> Result<keyring::Entry, String> {
+    keyring::Entry::new(LOCK_KEYCHAIN_SERVICE, LOCK_KEYCHAIN_USER)
+        .map_err(|e| format!("Lock keyring init failed: {}", e))
+}
+
+fn load_lock_passphrase_hash() -> Option<Zeroizing<String>> {
+    match lock_keychain_entry().and_then(|entry| {
+        entry
+            .get_password()
+            .map(Zeroizing::new)
+            .map_err(|e| format!("Lock keyring read failed: {}", e))
+    }) {
+        Ok(hash) => return Some(hash),
+        Err(e) => log::debug!("[lock] Dedicated passphrase key unavailable: {}", e),
+    }
+
+    // Backward compatibility for users who already stored the lock hash in the
+    // unified vault. Migrate it once, but do not fail unlock if migration fails.
+    let legacy = key_vault::get(key_vault::PURPOSE_LOCK_SCREEN)?;
+    if let Err(e) = store_lock_passphrase_hash(&legacy) {
+        log::warn!(
+            "[lock] Failed to migrate passphrase hash to dedicated keychain item: {}",
+            e
+        );
+    }
+    Some(legacy)
+}
+
+fn store_lock_passphrase_hash(hash: &str) -> Result<(), String> {
+    let entry = lock_keychain_entry()?;
+    entry
+        .set_password(hash)
+        .map_err(|e| format!("Lock keyring write failed: {}", e))
+}
+
+fn remove_lock_passphrase_hash() {
+    if let Ok(entry) = lock_keychain_entry() {
+        match entry.delete_credential() {
+            Ok(()) | Err(keyring::Error::NoEntry) => {}
+            Err(e) => log::warn!("[lock] Failed to remove dedicated passphrase key: {}", e),
+        }
+    }
 }
 
 // ── System Authentication (macOS Touch ID / device password) ───────────────
@@ -355,9 +501,11 @@ pub struct KeychainHealth {
 /// All encryption keys now live in a single OS keychain entry.
 #[tauri::command]
 pub fn check_keychain_health() -> KeychainHealth {
-    let keychain_ok = key_vault::is_loaded();
+    keychain_health_from_state(key_vault::is_loaded(), false)
+}
 
-    if keychain_ok {
+fn keychain_health_from_state(loaded: bool, probed: bool) -> KeychainHealth {
+    if loaded && key_vault::last_error().is_none() {
         KeychainHealth {
             status: "healthy".to_string(),
             db_key_ok: true,
@@ -365,14 +513,24 @@ pub fn check_keychain_health() -> KeychainHealth {
             message: "OS keychain is accessible — all encryption keys protected".to_string(),
             error: None,
         }
+    } else if !probed {
+        KeychainHealth {
+            status: "degraded".to_string(),
+            db_key_ok: false,
+            vault_key_ok: false,
+            message: "OS keychain has not been checked yet. Credential encryption will be initialized when needed.".to_string(),
+            error: key_vault::last_error(),
+        }
     } else {
-        error!("[keychain] OS keychain completely unavailable");
+        let detail =
+            key_vault::last_error().unwrap_or_else(|| "Unified key vault inaccessible".to_string());
+        error!("[keychain] OS keychain unavailable: {}", detail);
         KeychainHealth {
             status: "unavailable".to_string(),
             db_key_ok: false,
             vault_key_ok: false,
             message: "OS keychain is completely unavailable — no encryption possible. Install and unlock a keychain provider (GNOME Keyring, KWallet, or macOS Keychain).".to_string(),
-            error: Some("Unified key vault inaccessible".to_string()),
+            error: Some(detail),
         }
     }
 }

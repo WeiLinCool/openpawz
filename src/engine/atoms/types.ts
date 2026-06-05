@@ -12,6 +12,7 @@ export interface EngineProviderConfig {
     | 'google'
     | 'ollama'
     | 'openrouter'
+    | 'azurefoundry'
     | 'custom'
     | 'deepseek'
     | 'grok'
@@ -26,6 +27,7 @@ export interface EngineConfig {
   providers: EngineProviderConfig[];
   default_provider?: string;
   default_model?: string;
+  model_proxy?: ModelProxyConfig;
   default_system_prompt?: string;
   max_tool_rounds: number;
   tool_timeout_secs: number;
@@ -38,6 +40,15 @@ export interface EngineConfig {
   context_window_tokens?: number;
   /** Weather location for Today dashboard (e.g. "New York"). Auto-detected via IP if empty. */
   weather_location?: string;
+}
+
+export interface ModelProxyConfig {
+  /** env = read proxy environment variables, custom = use url, off = direct connection */
+  mode?: 'env' | 'custom' | 'off';
+  /** Proxy URL for custom mode, e.g. http://127.0.0.1:7890 */
+  url?: string;
+  /** Optional comma-separated bypass list, e.g. localhost,127.0.0.1 */
+  no_proxy?: string;
 }
 
 /** Model routing for multi-agent orchestration.
@@ -172,6 +183,60 @@ export interface EngineStatus {
   has_api_key: boolean;
   default_model?: string;
   default_provider?: string;
+}
+
+// ── Enterprise Cloud ─────────────────────────────────────────────────
+
+export interface EnterpriseStatus {
+  enabled: boolean;
+  configured: boolean;
+  authenticated: boolean;
+  expired: boolean;
+  gateway_url?: string;
+  user_email?: string;
+  organization_id?: string;
+  plan?: string;
+  entitlements: string[];
+  expires_at?: string;
+  default_model?: string;
+}
+
+export interface EnterpriseConfigureRequest {
+  issuer_url?: string;
+  auth_url?: string;
+  token_url?: string;
+  userinfo_url?: string;
+  entitlements_url?: string;
+  client_id?: string;
+  scopes?: string[];
+  gateway_url: string;
+  access_token: string;
+  refresh_token?: string;
+  user_email?: string;
+  organization_id?: string;
+  plan?: string;
+  entitlements?: string[];
+  expires_at?: string;
+  default_model?: string;
+  make_default?: boolean;
+}
+
+export interface EnterpriseOAuthStartRequest {
+  issuer_url: string;
+  auth_url?: string;
+  token_url?: string;
+  userinfo_url?: string;
+  entitlements_url?: string;
+  gateway_url?: string;
+  client_id?: string;
+  scopes?: string[];
+  default_model?: string;
+  make_default?: boolean;
+}
+
+export interface EntitlementCheck {
+  feature: string;
+  allowed: boolean;
 }
 
 // ── Agent Files (Soul / Persona) ─────────────────────────────────────

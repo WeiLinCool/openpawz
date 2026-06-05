@@ -1,5 +1,7 @@
 // atoms.ts — Pure types and helpers for the command palette
-// NO DOM, NO side effects, NO imports with side effects
+// NO DOM side effects
+
+import { t } from '../../i18n';
 
 export type PaletteItemKind = 'agent' | 'view' | 'action';
 
@@ -72,11 +74,11 @@ export function buildPaletteItems(agents: AgentInfo[], skills?: SkillInfo[]): Pa
   for (const a of ACTION_ENTRIES) {
     items.push({
       id: `action-${a.key}`,
-      label: a.label,
+      label: t(a.label),
       kind: 'action',
       icon: a.icon,
       payload: a.key,
-      description: a.description,
+      description: t(a.description),
       shortcut: a.shortcut,
     });
   }
@@ -89,7 +91,7 @@ export function buildPaletteItems(agents: AgentInfo[], skills?: SkillInfo[]): Pa
       kind: 'agent',
       icon: agent.avatar,
       payload: agent.id,
-      description: 'Switch to agent',
+      description: t('Switch to agent'),
     });
   }
 
@@ -97,11 +99,11 @@ export function buildPaletteItems(agents: AgentInfo[], skills?: SkillInfo[]): Pa
   for (const v of VIEW_ENTRIES) {
     items.push({
       id: `view-${v.key}`,
-      label: v.label,
+      label: t(v.label),
       kind: 'view',
       icon: v.icon,
       payload: v.key,
-      description: 'Go to view',
+      description: t('Go to view'),
       shortcut: v.shortcut,
     });
   }
@@ -111,11 +113,11 @@ export function buildPaletteItems(agents: AgentInfo[], skills?: SkillInfo[]): Pa
     for (const s of skills) {
       items.push({
         id: `skill-${s.id}`,
-        label: `${s.name} ${s.enabled ? '(on)' : '(off)'}`,
+        label: `${s.name} ${s.enabled ? t('(on)') : t('(off)')}`,
         kind: 'action',
         icon: s.icon ?? '🔌',
         payload: `skill-toggle:${s.id}`,
-        description: s.enabled ? 'Disable skill' : 'Enable skill',
+        description: s.enabled ? t('Disable skill') : t('Enable skill'),
       });
     }
   }

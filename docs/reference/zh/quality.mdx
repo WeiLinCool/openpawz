@@ -1,0 +1,87 @@
+---
+title: "质量与测试"
+description: "OpenPawz 维护企业级质量门控。每次提交都由一个包含 3 个作业的 CI 流水线进行验证，必须在合并前通过所有检查。"
+---
+
+# 质量与测试
+
+OpenPawz 维护企业级质量门控。每次提交都由一个包含 3 个作业的 CI 流水线进行验证，必须在合并前通过所有检查。
+
+## CI 流水线
+
+| 作业 | 步骤 | 超时 |
+|-----|-------|---------|
+| **Rust** | `cargo check` → `cargo test` → `cargo clippy -D warnings` | 15 分钟 |
+| **TypeScript** | `tsc --noEmit` → `eslint` → `vitest run` → `prettier --check` | 10 分钟 |
+| **Security** | `cargo audit` → `npm audit` | 5 分钟 |
+
+所有三个作业在每次推送时并行运行。必须全部通过。
+
+## 测试套件
+
+| 层 | 数量 | 覆盖内容 |
+|-------|------:|----------------|
+| Rust 单元测试 | 124 | 加密、注入检测、DeFi 原语、访问控制、路由、重试逻辑 |
+| Rust 集成测试 | 40 | 会话生命周期、内存往返、工具分类、配置持久化 |
+| TypeScript 测试 | 366 | 风险分类器、注入模式、命令解析、视图模块、错误处理 |
+| **总计** | **530** | |
+
+### Rust 测试模块
+
+| 模块 | 描述 |
+|--------|-------------|
+| `security.rs` | AES-256-GCM 加密、密钥派生、nonce 生成 |
+| `injection.rs` | 30 多种提示注入模式、严重性分类 |
+| `access_control.rs` | 智能体策略执行、工具允许/拒绝列表 |
+| `http.rs` | 指数退避、断路器、抖动、TLS 固定、请求签名 |
+| `providers/` | 提供商路由、降级链、流 |
+| `channels/` | 桥接生命周期、消息路由、用户会话 |
+| `trading/` | 诱饵检测、兑换原语、钱包签名 |
+| `memory/` | BM25 搜索、向量相似性、时间衰减 |
+
+### 运行测试
+
+```bash
+# 所有 TypeScript 测试
+npx vitest run
+
+# 所有 Rust 测试
+cd src-tauri && cargo test
+
+# 单个 Rust 测试模块
+cd src-tauri && cargo test --lib security
+
+# 带输出
+cd src-tauri && cargo test -- --nocapture
+```
+
+## 代码检查
+
+```bash
+# TypeScript
+npx tsc --noEmit          # 类型检查
+npx eslint .              # Lint
+npx prettier --check .    # 格式检查
+
+# Rust
+cd src-tauri && cargo clippy -- -D warnings
+cd src-tauri && cargo fmt --check
+```
+
+零 Clippy 警告强制执行。零已知 CVE。使用 Dependabot 进行自动化依赖更新。
+
+## 企业级加固
+
+| 领域 | 实现 |
+|------|---------------|
+| **加密** | 每个字段具有 12 字节随机 nonce 的 AES-256-GCM。密钥存储在操作系统密钥链中。 |
+| **错误处理** | 通过 `thiserror` 实现的 12 种变体 `EngineError` 枚举 — 引擎中没有 `Result<T, String>`。 |
+| **重试逻辑** | 指数退避加抖动（基础 1 秒，最大 30 秒，3 次重试）。5 次失败后断路。 |
+| **日志** | 每日轮转，7 天修剪，结构化格式，在应用程序中包含日志查看器。 |
+| **密钥链** | 缺少操作系统密钥链时硬失败 — 不允许静默纯文本回退。 |
+| **TLS 固定** | 仅使用 Mozilla 根 CA 的自定义 `rustls::ClientConfig`。排除操作系统信任存储。在所有提供商之间共享的单例 `reqwest::Client`。 |
+| **请求签名** | SHA-256 哈希记录每个出站 AI 请求到 500 条目环形缓冲区中，用于篡改检测和合规审计。 |
+| **内存清零** | 提供商 API 密钥包装在 `Zeroizing<String>` 中 — 在析构时通过 `core::ptr::write_volatile` 从 RAM 中清零。 |
+| **警告** | 每次提交的 CI 中强制执行 `cargo clippy -- -D warnings`。 |
+
+参见完整的加固审计 [ENTERPRISE_PLAN.md](https://github.com/OpenPawz/openpawz/blob/main/ENTERPRISE_PLAN.md)。

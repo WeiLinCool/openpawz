@@ -1,5 +1,7 @@
 // Settings: Voice — Pure data catalogs (no DOM, no IPC)
 
+import { t } from '../../i18n';
+
 export const GOOGLE_VOICES: { id: string; label: string; gender: string }[] = [
   // Chirp 3 HD (latest, highest quality)
   { id: 'en-US-Chirp3-HD-Achernar', label: 'Achernar (Chirp 3 HD)', gender: 'F' },
@@ -86,10 +88,12 @@ export function voicesForProvider(provider: string) {
 export function providerHint(provider: string): string {
   switch (provider) {
     case 'openai':
-      return 'Uses your OpenAI API key from Models settings. $15/1M characters.';
+      return t('Uses your OpenAI API key from Models settings. $15/1M characters.');
     case 'elevenlabs':
-      return 'Uses your ElevenLabs API key (entered below). Premium neural voices.';
+      return t('Uses your ElevenLabs API key (entered below). Premium neural voices.');
     default:
-      return 'Uses your Google API key from Models settings. Chirp 3 HD voices are highest quality.';
+      return t(
+        'Uses your Google API key from Models settings. Chirp 3 HD voices are highest quality.',
+      );
   }
 }
