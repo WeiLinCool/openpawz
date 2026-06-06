@@ -18,4 +18,5 @@ export const ID_LABELS: Record<string, string> = {
   fireworks: 'Fireworks',
   groq: 'Groq',
   'google-openai': 'Google (OpenAI-compat)',
+  'enterprise-cloud': '企业云（SSO）',
 };

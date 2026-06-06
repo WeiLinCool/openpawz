@@ -5,6 +5,7 @@ import { pawEngine } from '../../engine';
 import { $, escHtml } from '../../components/helpers';
 import { showToast } from '../../components/toast';
 import { appState } from '../../state/index';
+import { translateUiText } from '../../i18n';
 import { CHANNEL_SETUPS, CHANNEL_CLASSES } from './atoms';
 import {
   loadChannels,
@@ -49,7 +50,7 @@ export async function loadMemory() {
   if (list) list.innerHTML = '';
   if (empty) {
     empty.style.display = 'flex';
-    empty.textContent = 'Agent files managed via Memory Palace';
+    empty.textContent = translateUiText('Agent files managed via Memory Palace');
   }
 }
 
@@ -94,7 +95,7 @@ export function initChannels() {
     const footer = $('channel-setup-save') as HTMLButtonElement | null;
     if (!body || !title || !modal) return;
 
-    title.textContent = 'Add Channel';
+    title.textContent = translateUiText('Add Channel');
     if (footer) footer.style.display = 'none';
 
     let html = '<div class="channel-picker-grid">';

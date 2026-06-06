@@ -1,0 +1,21 @@
+{
+  "id": "openpawz",
+  "appName": "OpenPawz",
+  "shortName": "Pawz",
+  "productName": "Open Pawz Desktop",
+  "windowTitle": "Open Pawz Desktop",
+  "identifier": "com.openpawz.openpawz",
+  "tagline": "Your AI command center",
+  "aboutLine": "Pawz are safer than Claws",
+  "repositoryUrl": "https://github.com/OpenPawz/openpawz",
+  "logo": "../../images/pawz-logo-transparent.png",
+  "favicon": "../../images/pawz-favicon.png",
+  "iconsDir": "../../src-tauri/icons",
+  "iconFiles": [
+    "32x32.png",
+    "128x128.png",
+    "128x128@2x.png",
+    "icon.icns",
+    "icon.ico"
+  ]
+}

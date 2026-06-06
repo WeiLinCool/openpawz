@@ -1,10 +1,91 @@
-import { defineConfig } from "vite";
+import { existsSync, readFileSync } from "node:fs";
+import path from "node:path";
+import { defineConfig, type Plugin } from "vite";
 
 // @ts-expect-error process is a nodejs global
 const host = process.env.TAURI_DEV_HOST;
 
+interface BrandConfig {
+  id: string;
+  appName: string;
+  shortName: string;
+  productName: string;
+  windowTitle: string;
+  identifier: string;
+  tagline: string;
+  aboutLine: string;
+  repositoryUrl: string;
+  logoUrl: string;
+  faviconUrl: string;
+}
+
+const fallbackBrand: BrandConfig = {
+  id: 'openpawz',
+  appName: 'OpenPawz',
+  shortName: 'Pawz',
+  productName: 'Open Pawz Desktop',
+  windowTitle: 'Open Pawz Desktop',
+  identifier: 'com.openpawz.openpawz',
+  tagline: 'Your AI command center',
+  aboutLine: 'Pawz are safer than Claws',
+  repositoryUrl: 'https://github.com/OpenPawz/openpawz',
+  logoUrl: '/images/pawz-logo-transparent.png',
+  faviconUrl: '/images/pawz-favicon.png',
+};
+
+function loadBrand(): BrandConfig {
+  const activeBrandFile = path.resolve('.brand/active.json');
+  if (!existsSync(activeBrandFile)) return fallbackBrand;
+
+  try {
+    return { ...fallbackBrand, ...JSON.parse(readFileSync(activeBrandFile, 'utf8')) };
+  } catch (error) {
+    console.warn('[brand] Failed to load .brand/active.json:', error);
+    return fallbackBrand;
+  }
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;');
+}
+
+function escapeCssUrl(value: string): string {
+  return value.replaceAll('\\', '\\\\').replaceAll("'", "\\'");
+}
+
+function brandHtmlPlugin(): Plugin {
+  const brand = loadBrand();
+  const replacements: Record<string, string> = {
+    OPENPAWZ_BRAND_JSON: escapeHtml(JSON.stringify(brand)),
+    OPENPAWZ_BRAND_ID: escapeHtml(brand.id),
+    OPENPAWZ_BRAND_APP_NAME: escapeHtml(brand.appName),
+    OPENPAWZ_BRAND_SHORT_NAME: escapeHtml(brand.shortName),
+    OPENPAWZ_BRAND_PRODUCT_NAME: escapeHtml(brand.productName),
+    OPENPAWZ_BRAND_TAGLINE: escapeHtml(brand.tagline),
+    OPENPAWZ_BRAND_ABOUT_LINE: escapeHtml(brand.aboutLine),
+    OPENPAWZ_BRAND_REPOSITORY_URL: escapeHtml(brand.repositoryUrl),
+    OPENPAWZ_BRAND_LOGO_URL: escapeCssUrl(brand.logoUrl),
+    OPENPAWZ_BRAND_LOGO_URL_JSON: JSON.stringify(brand.logoUrl),
+    OPENPAWZ_BRAND_FAVICON_URL: escapeHtml(brand.faviconUrl),
+  };
+
+  return {
+    name: 'openpawz-brand-html',
+    transformIndexHtml(html) {
+      return html.replace(/%([A-Z0-9_]+)%/g, (match, key: string) => replacements[key] ?? match);
+    },
+  };
+}
+
 // https://vite.dev/config/
 export default defineConfig(async () => ({
+  publicDir: existsSync('.brand/public') ? '.brand/public' : false,
+  plugins: [brandHtmlPlugin()],
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //

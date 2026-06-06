@@ -21,6 +21,111 @@
   animation: retroFadeIn 300ms ease-out;
 }
 
+body.enterprise-gated .sidebar,
+body.enterprise-gated .agent-dock,
+body.enterprise-gated #notification-drawer {
+  display: none !important;
+}
+
+body.enterprise-gated .main {
+  min-height: 100vh;
+}
+
+.enterprise-login-view {
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  background:
+    linear-gradient(180deg, rgba(143, 176, 160, 0.08), transparent 34%),
+    var(--bg-primary);
+}
+
+.enterprise-login-shell {
+  width: min(440px, 100%);
+  border: 1px solid var(--border);
+  background: var(--bg-secondary);
+  padding: 32px;
+  border-radius: var(--radius-md);
+}
+
+.enterprise-login-mark {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--accent-muted, rgba(143, 176, 160, 0.24));
+  color: var(--accent);
+  margin-bottom: 22px;
+}
+
+.enterprise-login-mark .ms {
+  font-size: 24px;
+}
+
+.enterprise-login-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.enterprise-login-kicker {
+  margin: 0;
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.enterprise-login-copy h1 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 24px;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.enterprise-login-copy p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.enterprise-login-meta {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px 12px;
+  margin-top: 24px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.enterprise-login-meta strong {
+  min-width: 0;
+  color: var(--text-secondary);
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.enterprise-login-actions {
+  margin-top: 26px;
+}
+
+.enterprise-login-btn {
+  width: 100%;
+  height: 42px;
+}
+
+.enterprise-login-error {
+  min-height: 18px;
+  margin: 14px 0 0;
+  color: var(--error);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 @keyframes retroFadeIn {
   0% {
     opacity: 0;

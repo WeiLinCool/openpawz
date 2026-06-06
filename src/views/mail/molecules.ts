@@ -121,7 +121,7 @@ export async function renderMailAccounts(
       // Only add if there's no Himalaya account already covering this email
       const hasGoogle = _mailAccounts.some((a) => a.name === '__google__');
       if (!hasGoogle) {
-        _mailAccounts.push({ name: '__google__', email: 'Google (OAuth)' });
+        _mailAccounts.push({ name: '__google__', email: 'Google（OAuth）' });
       }
     }
   } catch {
@@ -148,53 +148,53 @@ export async function renderMailAccounts(
     const permCount = [perms.read, perms.send, perms.delete, perms.manage].filter(Boolean).length;
     const permSummary =
       [
-        perms.read && 'Read',
-        perms.send && 'Send',
-        perms.delete && 'Delete',
-        perms.manage && 'Manage',
+        perms.read && '读取',
+        perms.send && '发送',
+        perms.delete && '删除',
+        perms.manage && '管理',
       ]
         .filter(Boolean)
-        .join(' · ') || 'No permissions';
+        .join(' · ') || '无权限';
 
     item.innerHTML = `
       <div class="mail-vault-header">
         <div class="mail-account-icon">${icon}</div>
         <div class="mail-account-info">
           <div class="mail-account-name">${escHtml(acct.email)}</div>
-          <div class="mail-account-status connected">${permCount}/4 permissions active</div>
+          <div class="mail-account-status connected">已启用 ${permCount}/4 项权限</div>
         </div>
-        <button class="btn-icon mail-vault-expand" title="Manage permissions">▾</button>
+        <button class="btn-icon mail-vault-expand" title="管理权限">▾</button>
       </div>
       <div class="mail-vault-details" style="display:none">
         <div class="mail-vault-perms">
           <label class="mail-vault-perm-row">
             <input type="checkbox" class="mail-vault-cb" data-perm="read" ${perms.read ? 'checked' : ''}>
             <span class="mail-vault-perm-icon">R</span>
-            <span class="mail-vault-perm-name">Read emails</span>
+            <span class="mail-vault-perm-name">读取邮件</span>
           </label>
           <label class="mail-vault-perm-row">
             <input type="checkbox" class="mail-vault-cb" data-perm="send" ${perms.send ? 'checked' : ''}>
             <span class="mail-vault-perm-icon">S</span>
-            <span class="mail-vault-perm-name">Send emails</span>
+            <span class="mail-vault-perm-name">发送邮件</span>
           </label>
           <label class="mail-vault-perm-row">
             <input type="checkbox" class="mail-vault-cb" data-perm="delete" ${perms.delete ? 'checked' : ''}>
             <span class="mail-vault-perm-icon">D</span>
-            <span class="mail-vault-perm-name">Delete emails</span>
+            <span class="mail-vault-perm-name">删除邮件</span>
           </label>
           <label class="mail-vault-perm-row">
             <input type="checkbox" class="mail-vault-cb" data-perm="manage" ${perms.manage ? 'checked' : ''}>
             <span class="mail-vault-perm-icon">F</span>
-            <span class="mail-vault-perm-name">Manage folders</span>
+            <span class="mail-vault-perm-name">管理文件夹</span>
           </label>
         </div>
         <div class="mail-vault-perm-summary">${permSummary}</div>
         <div class="mail-vault-meta">
-          <span class="mail-vault-meta-item">Stored locally at <code>~/.config/himalaya/</code> &mdash; password in OS keychain</span>
-          <span class="mail-vault-meta-item">All actions logged in Chat</span>
+          <span class="mail-vault-meta-item">本地存储于 <code>~/.config/himalaya/</code>，密码保存在系统钥匙串中</span>
+          <span class="mail-vault-meta-item">所有操作都会记录到聊天中</span>
         </div>
         <div class="mail-vault-actions">
-          <button class="btn btn-ghost btn-sm mail-vault-revoke" data-account="${escAttr(acct.name)}">Revoke Access</button>
+          <button class="btn btn-ghost btn-sm mail-vault-revoke" data-account="${escAttr(acct.name)}">撤销访问</button>
         </div>
       </div>
     `;
@@ -224,25 +224,25 @@ export async function renderMailAccounts(
         ).length;
         const summary =
           [
-            updated.read && 'Read',
-            updated.send && 'Send',
-            updated.delete && 'Delete',
-            updated.manage && 'Manage',
+            updated.read && '读取',
+            updated.send && '发送',
+            updated.delete && '删除',
+            updated.manage && '管理',
           ]
             .filter(Boolean)
-            .join(' · ') || 'No permissions';
+            .join(' · ') || '无权限';
         const statusEl = item.querySelector('.mail-account-status');
         const summaryEl = item.querySelector('.mail-vault-perm-summary');
-        if (statusEl) statusEl.textContent = `${count}/4 permissions active`;
+        if (statusEl) statusEl.textContent = `已启用 ${count}/4 项权限`;
         if (summaryEl) summaryEl.textContent = summary;
-        showToast(`Permissions updated for ${acct.email}`, 'info');
+        showToast(`已更新 ${acct.email} 的权限`, 'info');
       });
     });
 
     item.querySelector('.mail-vault-revoke')?.addEventListener('click', async () => {
       if (
         !(await confirmModal(
-          `Remove ${acct.email} and revoke all access?\n\nThis deletes the stored credentials from your device. Your email account is not affected.`,
+          `确定移除 ${acct.email} 并撤销所有访问权限吗？\n\n这会从你的设备中删除已保存的凭据，不会影响邮箱本身。`,
         ))
       )
         return;
@@ -252,12 +252,12 @@ export async function renderMailAccounts(
         logCredentialActivity({
           accountName: acct.name,
           action: 'denied',
-          detail: `Account revoked: ${acct.email} — credentials deleted from device`,
+          detail: `已撤销账号：${acct.email}，凭据已从设备删除`,
         });
-        showToast(`${acct.email} revoked — credentials removed from this device`, 'success');
+        showToast(`${acct.email} 已撤销，凭据已从本设备移除`, 'success');
         _loadMail();
       } catch (err) {
-        showToast(`Remove failed: ${err instanceof Error ? err.message : err}`, 'error');
+        showToast(`移除失败：${err instanceof Error ? err.message : err}`, 'error');
       }
     });
   }
@@ -266,40 +266,37 @@ export async function renderMailAccounts(
     const item = document.createElement('div');
     item.className = 'mail-account-item';
     const missingBins = himalaya.missing?.bins?.length;
-    let statusLabel = 'Not installed';
+    let statusLabel = '未安装';
     let statusClass = '';
     if (himalaya.disabled) {
-      statusLabel = 'Disabled';
+      statusLabel = '已禁用';
       statusClass = 'muted';
     } else if (missingBins) {
-      statusLabel = 'Missing CLI';
+      statusLabel = '缺少 CLI';
       statusClass = 'error';
     }
 
     item.innerHTML = `
       <div class="mail-account-icon">H</div>
       <div class="mail-account-info">
-        <div class="mail-account-name">Himalaya Skill</div>
+        <div class="mail-account-name">Himalaya 技能</div>
         <div class="mail-account-status ${statusClass}">${statusLabel}</div>
       </div>
-      ${himalaya.install?.length ? `<button class="btn btn-ghost btn-sm mail-himalaya-install">Install</button>` : ''}
-      ${himalaya.disabled ? `<button class="btn btn-ghost btn-sm mail-himalaya-enable">Enable</button>` : ''}
+      ${himalaya.install?.length ? `<button class="btn btn-ghost btn-sm mail-himalaya-install">安装</button>` : ''}
+      ${himalaya.disabled ? `<button class="btn btn-ghost btn-sm mail-himalaya-enable">启用</button>` : ''}
     `;
     list.appendChild(item);
 
     item.querySelector('.mail-himalaya-install')?.addEventListener('click', async () => {
-      showToast(
-        'Himalaya skill installation coming soon — install manually via CLI for now',
-        'info',
-      );
+      showToast('Himalaya 技能安装即将支持，目前请先通过 CLI 手动安装', 'info');
     });
     item.querySelector('.mail-himalaya-enable')?.addEventListener('click', async () => {
-      showToast('Himalaya skill management coming soon', 'info');
+      showToast('Himalaya 技能管理即将支持', 'info');
     });
   }
 
   if (_mailAccounts.length === 0 && !himalaya) {
-    list.innerHTML = '<div class="mail-no-accounts">No accounts connected</div>';
+    list.innerHTML = '<div class="mail-no-accounts">暂无已连接的账号</div>';
   }
 
   updateMailHeroStats();
@@ -325,10 +322,10 @@ export async function renderCredentialActivityLog() {
       logSection.innerHTML = `
         <div class="mail-vault-activity-header" id="mail-vault-activity-toggle">
           <span class="ms ms-sm">description</span>
-          Activity Log
+          凭据活动记录
           <span class="mail-vault-activity-count">0</span>
         </div>
-        <div class="mail-vault-activity-empty">No credential activity yet</div>
+        <div class="mail-vault-activity-empty">暂无凭据活动记录</div>
       `;
       return;
     }
@@ -337,8 +334,8 @@ export async function renderCredentialActivityLog() {
     logSection.innerHTML = `
       <div class="mail-vault-activity-header" id="mail-vault-activity-toggle">
         <span class="ms ms-sm">description</span>
-        Activity Log
-        <span class="mail-vault-activity-count">${entries.length}${blocked ? ` · <span class="vault-blocked-count">${blocked} blocked</span>` : ''}</span>
+        凭据活动记录
+        <span class="mail-vault-activity-count">${entries.length}${blocked ? ` · <span class="vault-blocked-count">${blocked} 条已阻止</span>` : ''}</span>
         <span class="mail-vault-activity-chevron">▸</span>
       </div>
       <div class="mail-vault-activity-list" style="display:none">
@@ -423,8 +420,8 @@ export async function loadMailInbox() {
       for (const env of envelopes) {
         _mailMessages.push({
           id: String(env.id),
-          from: env.from?.name || env.from?.addr || 'Unknown',
-          subject: env.subject || '(No subject)',
+          from: env.from?.name || env.from?.addr || '未知发件人',
+          subject: env.subject || '（无主题）',
           snippet: '',
           date: env.date ? new Date(env.date) : new Date(),
           read: env.flags?.includes('Seen') ?? false,
@@ -477,7 +474,7 @@ export function renderMailList() {
 
   if (_mailFolder !== 'inbox') {
     container.innerHTML = `<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:13px">
-      ${_mailFolder === 'agent' ? 'Agent-drafted emails will appear here when the agent writes emails for your review.' : 'No messages in this folder.'}
+      ${_mailFolder === 'agent' ? '智能体起草的邮件会在这里显示，供你审核。' : '此文件夹中没有消息。'}
     </div>`;
     return;
   }
@@ -515,33 +512,33 @@ export function showMailEmpty(show: boolean) {
       if (hasAccounts && _mailHimalayaReady) {
         empty.innerHTML = `
           ${mailIcon}
-          <div class="empty-title">Inbox is empty</div>
-          <div class="empty-subtitle">No messages yet. Use Compose to send an email or ask your agent to check mail.</div>
-          <button class="btn btn-ghost" id="mail-compose-cta" style="margin-top:16px">Compose Email</button>
+          <div class="empty-title">收件箱为空</div>
+          <div class="empty-subtitle">暂时没有消息。你可以使用撰写功能发送邮件，或者让智能体检查邮件。</div>
+          <button class="btn btn-ghost" id="mail-compose-cta" style="margin-top:16px">撰写邮件</button>
         `;
         $('mail-compose-cta')?.addEventListener('click', () => {
           onSetCurrentSession?.(null);
           onSwitchView?.('chat');
           if (chatInput) {
             chatInput.value =
-              'I want to compose a new email. Please help me draft it and send it when ready.';
+              '我想撰写一封新邮件。请帮我起草，并在准备好后发送。';
             chatInput.focus();
           }
         });
       } else if (hasAccounts && !_mailHimalayaReady) {
         empty.innerHTML = `
           ${mailIcon}
-          <div class="empty-title">Enable the Himalaya skill</div>
-          <div class="empty-subtitle">Your email account is configured but the Himalaya skill needs to be installed or enabled for your agent to read and send emails.</div>
-          <button class="btn btn-primary" id="mail-go-skills" style="margin-top:16px">Go to Skills</button>
+          <div class="empty-title">启用 Himalaya 技能</div>
+          <div class="empty-subtitle">你的邮箱已配置，但需要安装或启用 Himalaya 技能，智能体才能读取和发送邮件。</div>
+          <button class="btn btn-primary" id="mail-go-skills" style="margin-top:16px">前往技能</button>
         `;
         $('mail-go-skills')?.addEventListener('click', () => onSwitchView?.('skills'));
       } else {
         empty.innerHTML = `
           ${mailIcon}
-          <div class="empty-title">Connect your email</div>
-          <div class="empty-subtitle">Add an email account so your agent can read, draft, and send emails on your behalf.</div>
-          <button class="btn btn-primary" id="mail-setup-account" style="margin-top:16px">Add Email Account</button>
+          <div class="empty-title">连接你的邮箱</div>
+          <div class="empty-subtitle">添加一个邮箱账号后，智能体就能代表你读取、起草和发送邮件。</div>
+          <button class="btn btn-primary" id="mail-setup-account" style="margin-top:16px">添加邮箱账号</button>
         `;
         $('mail-setup-account')?.addEventListener('click', () => _openMailAccountSetup());
       }
@@ -570,7 +567,7 @@ export async function openMailMessage(msgId: string) {
       </div>
     </div>
     <div class="mail-preview-subject">${escHtml(msg.subject)}</div>
-    <div class="mail-preview-body" style="opacity:0.5">Loading...</div>
+      <div class="mail-preview-body" style="opacity:0.5">加载中...</div>
   `;
 
   // Fetch full content via Himalaya
@@ -582,7 +579,7 @@ export async function openMailMessage(msgId: string) {
       msg.body = body;
     } catch (e) {
       console.warn('[mail] Failed to fetch content:', e);
-      body = '(Failed to load email content)';
+      body = '（邮件内容加载失败）';
     }
   }
 
@@ -597,16 +594,16 @@ export async function openMailMessage(msgId: string) {
     <div class="mail-preview-subject">${escHtml(msg.subject)}</div>
     <div class="mail-preview-body">${formatMarkdown(body)}</div>
     <div class="mail-preview-actions">
-      <button class="btn btn-primary mail-action-reply">Reply</button>
-      <button class="btn btn-ghost mail-action-forward">Forward</button>
-      <button class="btn btn-ghost mail-action-archive">Archive</button>
-      <button class="btn btn-ghost mail-action-delete">Delete</button>
+      <button class="btn btn-primary mail-action-reply">回复</button>
+      <button class="btn btn-ghost mail-action-forward">转发</button>
+      <button class="btn btn-ghost mail-action-archive">归档</button>
+      <button class="btn btn-ghost mail-action-delete">删除</button>
     </div>
     <div class="mail-ai-actions">
-      <span class="mail-ai-label">AI Actions</span>
-      <button class="btn btn-sm btn-ghost mail-ai-summarize">Summarize</button>
-      <button class="btn btn-sm btn-ghost mail-ai-draft">Draft Reply</button>
-      <button class="btn btn-sm btn-ghost mail-ai-actions">Extract Tasks</button>
+      <span class="mail-ai-label">AI 操作</span>
+      <button class="btn btn-sm btn-ghost mail-ai-summarize">总结</button>
+      <button class="btn btn-sm btn-ghost mail-ai-draft">起草回复</button>
+      <button class="btn btn-sm btn-ghost mail-ai-actions">提取任务</button>
     </div>
   `;
 
@@ -640,19 +637,19 @@ export function openComposeModal(
   const modal = document.createElement('div');
   modal.className = 'mail-compose-modal';
   modal.innerHTML = `
-    <div class="mail-compose-dialog">
+      <div class="mail-compose-dialog">
       <div class="mail-compose-header">
-        <span>${mode === 'reply' ? 'Reply' : 'Forward'}</span>
+        <span>${mode === 'reply' ? '回复' : '转发'}</span>
         <button class="btn-icon mail-compose-close">×</button>
       </div>
       <div class="mail-compose-body">
-        <input type="text" class="mail-compose-to" placeholder="To" value="${mode === 'reply' ? escAttr(msg.from) : ''}">
-        <input type="text" class="mail-compose-subject" placeholder="Subject" value="${mode === 'reply' ? 'Re: ' : 'Fwd: '}${escAttr(msg.subject)}">
-        <textarea class="mail-compose-content" placeholder="Write your message...">${mode === 'forward' ? `\n\n--- Forwarded ---\n${msg.body || ''}` : ''}</textarea>
+        <input type="text" class="mail-compose-to" placeholder="收件人" value="${mode === 'reply' ? escAttr(msg.from) : ''}">
+        <input type="text" class="mail-compose-subject" placeholder="主题" value="${mode === 'reply' ? '回复：' : '转发：'}${escAttr(msg.subject)}">
+        <textarea class="mail-compose-content" placeholder="写下你的消息...">${mode === 'forward' ? `\n\n--- 已转发 ---\n${msg.body || ''}` : ''}</textarea>
       </div>
       <div class="mail-compose-footer">
-        <button class="btn btn-ghost mail-compose-cancel">Cancel</button>
-        <button class="btn btn-primary mail-compose-send">Send</button>
+        <button class="btn btn-ghost mail-compose-cancel">取消</button>
+        <button class="btn btn-primary mail-compose-send">发送</button>
       </div>
     </div>
   `;
@@ -670,17 +667,17 @@ export function openComposeModal(
     const subject = (modal.querySelector('.mail-compose-subject') as HTMLInputElement)?.value;
     const body = (modal.querySelector('.mail-compose-content') as HTMLTextAreaElement)?.value;
     if (!to || !subject) {
-      showToast('Please fill in To and Subject', 'error');
+      showToast('请填写收件人和主题', 'error');
       return;
     }
 
     try {
       const himalayaAccount = _mailAccounts.find((a) => a.name !== '__google__');
       await pawEngine.mailSend(himalayaAccount?.name, to, subject, body);
-      showToast('Email sent!', 'success');
+      showToast('邮件已发送！', 'success');
       close();
     } catch (e) {
-      showToast(`Failed to send: ${e}`, 'error');
+      showToast(`发送失败：${e}`, 'error');
     }
   });
 }
@@ -691,30 +688,30 @@ async function archiveEmail(msg: { id: string; source?: 'himalaya' | 'google' })
   try {
     const himalayaAccount = _mailAccounts.find((a) => a.name !== '__google__');
     await pawEngine.mailMove(himalayaAccount?.name, msg.id, '[Gmail]/All Mail');
-    showToast('Archived', 'success');
+    showToast('已归档', 'success');
     _mailMessages = _mailMessages.filter((m) => m.id !== msg.id);
     renderMailList();
     const preview = $('mail-preview');
     if (preview)
-      preview.innerHTML = '<div class="mail-preview-empty">Select an email to read</div>';
+      preview.innerHTML = '<div class="mail-preview-empty">请选择一封邮件阅读</div>';
   } catch (e) {
-    showToast(`Archive failed: ${e}`, 'error');
+    showToast(`归档失败：${e}`, 'error');
   }
 }
 
 async function deleteEmail(msg: { id: string; subject: string; source?: 'himalaya' | 'google' }) {
-  if (!(await confirmModal(`Delete "${msg.subject}"?`))) return;
+  if (!(await confirmModal(`确定删除“${msg.subject}”吗？`))) return;
   try {
     const himalayaAccount = _mailAccounts.find((a) => a.name !== '__google__');
     await pawEngine.mailDelete(himalayaAccount?.name, msg.id);
-    showToast('Deleted', 'success');
+    showToast('已删除', 'success');
     _mailMessages = _mailMessages.filter((m) => m.id !== msg.id);
     renderMailList();
     const preview = $('mail-preview');
     if (preview)
-      preview.innerHTML = '<div class="mail-preview-empty">Select an email to read</div>';
+      preview.innerHTML = '<div class="mail-preview-empty">请选择一封邮件阅读</div>';
   } catch (e) {
-    showToast(`Delete failed: ${e}`, 'error');
+    showToast(`删除失败：${e}`, 'error');
   }
 }
 
@@ -723,9 +720,9 @@ function aiMailAction(
   msg: { from: string; subject: string; body?: string },
 ) {
   const prompts: Record<string, string> = {
-    summarize: `Summarize this email from ${msg.from}:\n\nSubject: ${msg.subject}\n\n${msg.body || ''}`,
-    draft: `Draft a professional reply to this email from ${msg.from}:\n\nSubject: ${msg.subject}\n\n${msg.body || ''}`,
-    tasks: `Extract any action items or tasks from this email from ${msg.from}:\n\nSubject: ${msg.subject}\n\n${msg.body || ''}`,
+    summarize: `请总结来自 ${msg.from} 的这封邮件：\n\n主题：${msg.subject}\n\n${msg.body || ''}`,
+    draft: `请为来自 ${msg.from} 的这封邮件撰写一封专业回复：\n\n主题：${msg.subject}\n\n${msg.body || ''}`,
+    tasks: `请从来自 ${msg.from} 的这封邮件中提取任何待办事项或任务：\n\n主题：${msg.subject}\n\n${msg.body || ''}`,
   };
 
   onSetCurrentSession?.(null);

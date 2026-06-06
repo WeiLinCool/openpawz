@@ -405,11 +405,28 @@ impl EngineState {
         // not authenticate the user; it seeds the OAuth/gateway endpoints so
         // enterprise-gated features can prompt for remote login immediately.
         if let Some(enterprise_config) = crate::commands::enterprise::enterprise_build_config() {
-            if let Ok(json) = serde_json::to_string(&enterprise_config) {
-                store
-                    .set_config(crate::commands::enterprise::ENTERPRISE_CONFIG_KEY, &json)
-                    .ok();
-                info!("[engine] Enterprise build mode enabled");
+            let should_seed_enterprise =
+                crate::commands::enterprise::enterprise_build_reset_session_enabled()
+                    || store
+                        .get_config(crate::commands::enterprise::ENTERPRISE_CONFIG_KEY)
+                        .ok()
+                        .flatten()
+                        .and_then(|json| {
+                            serde_json::from_str::<crate::commands::enterprise::EnterpriseConfig>(
+                                &json,
+                            )
+                            .ok()
+                        })
+                        .map(|config| config.access_token.trim().is_empty())
+                        .unwrap_or(true);
+
+            if should_seed_enterprise {
+                if let Ok(json) = serde_json::to_string(&enterprise_config) {
+                    store
+                        .set_config(crate::commands::enterprise::ENTERPRISE_CONFIG_KEY, &json)
+                        .ok();
+                    info!("[engine] Enterprise build mode enabled");
+                }
             }
         }
 

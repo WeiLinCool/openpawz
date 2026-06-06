@@ -32,18 +32,18 @@ export function getSearchQuery(): string {
 // ── Main page renderer ─────────────────────────────────────────────────────
 
 export function renderSkillsPage(skills: EngineSkillStatus[]): string {
-  if (skills.length === 0) return '<p style="color:var(--text-muted)">No skills available.</p>';
+  if (skills.length === 0) return '<p style="color:var(--text-muted)">暂无可用技能。</p>';
 
   const enabledCount = skills.filter((s) => s.enabled).length;
   const readyCount = skills.filter((s) => s.is_ready).length;
 
   // Summary bar
   const summary = `<div class="skills-summary-bar">
-    <span class="skills-summary-count">${skills.length} Skills</span>
+    <span class="skills-summary-count">${skills.length} 个技能</span>
     <span class="skills-summary-status">
-      ${msIcon('check_circle')} ${readyCount} ready
+      ${msIcon('check_circle')} ${readyCount} 已就绪
       <span class="skills-summary-sep">·</span>
-      ${msIcon('bolt')} ${enabledCount} enabled
+      ${msIcon('bolt')} ${enabledCount} 已启用
     </span>
   </div>`;
 
@@ -51,9 +51,9 @@ export function renderSkillsPage(skills: EngineSkillStatus[]): string {
   const searchBar = `<div class="skills-search-bar">
     <span class="skills-search-icon">${msIcon('search')}</span>
     <input type="text" class="form-input skills-search-input" id="skills-search-input"
-      placeholder="Search skills by name, description, or tool..."
+      placeholder="按名称、描述或工具搜索技能..."
       value="${escHtml(_searchQuery)}" />
-    ${_searchQuery ? `<button class="skills-search-clear" id="skills-search-clear" title="Clear search">${msIcon('close')}</button>` : ''}
+    ${_searchQuery ? `<button class="skills-search-clear" id="skills-search-clear" title="清除搜索">${msIcon('close')}</button>` : ''}
   </div>`;
 
   // Category filter tabs
@@ -61,11 +61,11 @@ export function renderSkillsPage(skills: EngineSkillStatus[]): string {
   categories.sort((a, b) => (CATEGORY_META[a]?.order ?? 99) - (CATEGORY_META[b]?.order ?? 99));
 
   const tabs = `<div class="skills-filter-tabs">
-    <button class="btn btn-sm skills-filter-btn ${_currentFilter === 'all' ? 'btn-primary' : 'btn-ghost'}" data-filter="all">All</button>
-    <button class="btn btn-sm skills-filter-btn ${_currentFilter === 'enabled' ? 'btn-primary' : 'btn-ghost'}" data-filter="enabled">${msIcon('bolt')} Enabled</button>
+    <button class="btn btn-sm skills-filter-btn ${_currentFilter === 'all' ? 'btn-primary' : 'btn-ghost'}" data-filter="all">全部</button>
+    <button class="btn btn-sm skills-filter-btn ${_currentFilter === 'enabled' ? 'btn-primary' : 'btn-ghost'}" data-filter="enabled">${msIcon('bolt')} 已启用</button>
     <span style="display:inline-block;width:1px;height:20px;background:var(--border-subtle);margin:0 6px;vertical-align:middle"></span>
-    <button class="btn btn-sm skills-filter-btn ${_currentFilter === 'tier:skill' ? 'btn-primary' : 'btn-ghost'}" data-filter="tier:skill">${msIcon('description')} Skills (${skills.filter((s) => s.tier === 'skill').length})</button>
-    <button class="btn btn-sm skills-filter-btn ${_currentFilter === 'tier:integration' ? 'btn-primary' : 'btn-ghost'}" data-filter="tier:integration">${msIcon('key')} Integrations (${skills.filter((s) => s.tier === 'integration').length})</button>
+    <button class="btn btn-sm skills-filter-btn ${_currentFilter === 'tier:skill' ? 'btn-primary' : 'btn-ghost'}" data-filter="tier:skill">${msIcon('description')} 技能 (${skills.filter((s) => s.tier === 'skill').length})</button>
+    <button class="btn btn-sm skills-filter-btn ${_currentFilter === 'tier:integration' ? 'btn-primary' : 'btn-ghost'}" data-filter="tier:integration">${msIcon('key')} 集成 (${skills.filter((s) => s.tier === 'integration').length})</button>
     <span style="display:inline-block;width:1px;height:20px;background:var(--border-subtle);margin:0 6px;vertical-align:middle"></span>
     ${categories
       .map((c) => {
@@ -127,7 +127,7 @@ export function renderSkillsPage(skills: EngineSkillStatus[]): string {
 
   const noResults =
     filtered.length === 0 && _searchQuery
-      ? `<p style="color:var(--text-muted);padding:24px 0;text-align:center">${msIcon('search_off')} No skills match "${escHtml(_searchQuery)}"</p>`
+      ? `<p style="color:var(--text-muted);padding:24px 0;text-align:center">${msIcon('search_off')} 没有匹配“${escHtml(_searchQuery)}”的技能</p>`
       : '';
 
   return summary + searchBar + tabs + (noResults || sections);
@@ -136,9 +136,9 @@ export function renderSkillsPage(skills: EngineSkillStatus[]): string {
 // ── Tier badge ─────────────────────────────────────────────────────────────
 
 const TIER_CONFIG: Record<string, { label: string; icon: string; color: string }> = {
-  skill: { label: 'Skill', icon: 'description', color: 'var(--text-muted)' },
-  integration: { label: 'Integration', icon: 'key', color: 'var(--accent)' },
-  extension: { label: 'Extension', icon: 'widgets', color: '#c084fc' },
+  skill: { label: '技能', icon: 'description', color: 'var(--text-muted)' },
+  integration: { label: '集成', icon: 'key', color: 'var(--accent)' },
+  extension: { label: '扩展', icon: 'widgets', color: '#c084fc' },
 };
 
 function tierBadge(tier: string): string {
@@ -154,27 +154,27 @@ function renderSkillCard(s: EngineSkillStatus): string {
   let statusClass: string;
   if (s.is_ready) {
     statusIcon = 'check_circle';
-    statusText = 'Ready';
+    statusText = '已就绪';
     statusClass = 'status-ready';
   } else if (s.enabled && s.missing_binaries.length > 0) {
     statusIcon = 'error';
-    statusText = 'Missing binaries';
+    statusText = '缺少二进制';
     statusClass = 'status-error';
   } else if (s.enabled && s.missing_credentials.length > 0) {
     statusIcon = 'warning';
-    statusText = 'Missing credentials';
+    statusText = '缺少凭据';
     statusClass = 'status-warn';
   } else if (s.enabled && s.missing_env_vars.length > 0) {
     statusIcon = 'warning';
-    statusText = 'Missing env vars';
+    statusText = '缺少环境变量';
     statusClass = 'status-warn';
   } else if (s.enabled) {
     statusIcon = 'warning';
-    statusText = 'Setup incomplete';
+    statusText = '配置未完成';
     statusClass = 'status-warn';
   } else {
     statusIcon = 'radio_button_unchecked';
-    statusText = 'Disabled';
+    statusText = '已禁用';
     statusClass = 'status-off';
   }
 
@@ -182,13 +182,13 @@ function renderSkillCard(s: EngineSkillStatus): string {
   const hasTools = s.tool_names.length > 0;
 
   const badges: string[] = [tierBadge(s.tier)];
-  if (hasTools) badges.push(`<span class="skill-badge">${msIcon('build')} Tools</span>`);
-  if (hasCreds) badges.push(`<span class="skill-badge">${msIcon('vpn_key')} Vault</span>`);
+  if (hasTools) badges.push(`<span class="skill-badge">${msIcon('build')} 工具</span>`);
+  if (hasCreds) badges.push(`<span class="skill-badge">${msIcon('vpn_key')} 保险库</span>`);
 
   const isToml = s.source === 'toml';
   if (isToml) {
     badges.push(
-      `<span class="skill-badge" style="border-color:#8b5cf6;color:#8b5cf6">${msIcon('package_2')} Community</span>`,
+      `<span class="skill-badge" style="border-color:#8b5cf6;color:#8b5cf6">${msIcon('package_2')} 社区</span>`,
     );
     if (s.version)
       badges.push(
@@ -205,7 +205,7 @@ function renderSkillCard(s: EngineSkillStatus): string {
   }
 
   const uninstallBtn = isToml
-    ? `<button class="btn btn-ghost btn-sm skill-toml-uninstall-btn" data-skill="${escHtml(s.id)}" title="Uninstall this TOML skill" style="color:#ef4444">${msIcon('delete')} Uninstall</button>`
+    ? `<button class="btn btn-ghost btn-sm skill-toml-uninstall-btn" data-skill="${escHtml(s.id)}" title="卸载此 TOML 技能" style="color:#ef4444">${msIcon('delete')} 卸载</button>`
     : '';
 
   return `
@@ -215,16 +215,16 @@ function renderSkillCard(s: EngineSkillStatus): string {
         <span class="skill-card-icon">${skillIcon(s.icon)}</span>
         <div>
           <strong class="skill-card-name">${escHtml(s.name)}</strong>
-          ${isToml && s.author ? `<span style="color:var(--text-muted);font-size:11px;margin-left:6px">by ${escHtml(s.author)}</span>` : ''}
+          ${isToml && s.author ? `<span style="color:var(--text-muted);font-size:11px;margin-left:6px">作者：${escHtml(s.author)}</span>` : ''}
           <span class="skill-status ${statusClass}">${msIcon(statusIcon)} ${statusText}</span>
         </div>
       </div>
       <div class="skill-card-actions">
         <label class="skill-toggle-label">
           <input type="checkbox" class="skill-enabled-toggle" data-skill="${escHtml(s.id)}" ${s.enabled ? 'checked' : ''} />
-          Enable
+          启用
         </label>
-        ${hasCreds ? `<button class="btn btn-ghost btn-sm skill-revoke-btn" data-skill="${escHtml(s.id)}" title="Revoke all credentials">Revoke</button>` : ''}
+        ${hasCreds ? `<button class="btn btn-ghost btn-sm skill-revoke-btn" data-skill="${escHtml(s.id)}" title="撤销全部凭据">撤销</button>` : ''}
         ${uninstallBtn}
       </div>
     </div>
@@ -233,7 +233,7 @@ function renderSkillCard(s: EngineSkillStatus): string {
     ${
       hasTools
         ? `<div class="skill-tools-row">
-      Tools: ${s.tool_names.map((t) => `<code class="skill-tool-tag">${escHtml(t)}</code>`).join(' ')}
+      工具：${s.tool_names.map((t) => `<code class="skill-tool-tag">${escHtml(t)}</code>`).join(' ')}
     </div>`
         : ''
     }
@@ -251,12 +251,12 @@ function renderBinaryStatus(s: EngineSkillStatus): string {
 
   return `<div class="skill-status-block skill-status-danger">
     <div class="skill-status-msg">
-      ${msIcon('error')} Missing binaries: ${s.missing_binaries.map((b) => `<code class="skill-code-tag">${escHtml(b)}</code>`).join(', ')}
+      ${msIcon('error')} 缺少二进制：${s.missing_binaries.map((b) => `<code class="skill-code-tag">${escHtml(b)}</code>`).join(', ')}
     </div>
     ${
       s.install_hint
         ? `<div class="skill-status-hint">
-      Install: <code class="skill-code-tag skill-code-copy">${escHtml(s.install_hint)}</code>
+      安装：<code class="skill-code-tag skill-code-copy">${escHtml(s.install_hint)}</code>
     </div>`
         : ''
     }
@@ -268,7 +268,7 @@ function renderEnvVarStatus(s: EngineSkillStatus): string {
 
   return `<div class="skill-status-block skill-status-warn">
     <div class="skill-status-msg">
-      ${msIcon('warning')} Missing environment variables: ${s.missing_env_vars.map((v) => `<code class="skill-code-tag">${escHtml(v)}</code>`).join(', ')}
+      ${msIcon('warning')} 缺少环境变量：${s.missing_env_vars.map((v) => `<code class="skill-code-tag">${escHtml(v)}</code>`).join(', ')}
     </div>
   </div>`;
 }
@@ -298,7 +298,7 @@ function renderCredentialFields(skill: EngineSkillStatus): string {
           placeholder="${isSet ? '••••••••' : escHtml(cred.placeholder)}"
         />
         <button class="btn btn-ghost btn-sm skill-cred-save" data-skill="${escHtml(skill.id)}" data-key="${escHtml(cred.key)}">
-          ${isSet ? 'Update' : 'Set'}
+          ${isSet ? '更新' : '设置'}
         </button>
         ${isSet ? `<button class="btn btn-ghost btn-sm skill-cred-delete" data-skill="${escHtml(skill.id)}" data-key="${escHtml(cred.key)}">${msIcon('close')}</button>` : ''}
       </div>
@@ -308,7 +308,7 @@ function renderCredentialFields(skill: EngineSkillStatus): string {
     .join('');
 
   return `<div class="skill-cred-section">
-    <div class="skill-section-title">${msIcon('key')} Credentials</div>
+    <div class="skill-section-title">${msIcon('key')} 凭据</div>
     ${rows}
   </div>`;
 }
@@ -324,11 +324,11 @@ function renderAdvancedSection(s: EngineSkillStatus): string {
   return `<div class="skill-advanced-section">
     <details class="skill-advanced-toggle" data-skill="${escHtml(s.id)}">
       <summary class="skill-advanced-summary">
-        ${msIcon('tune')} Advanced — Agent Instructions
-        ${hasCustom ? '<span class="skill-customized-badge">customized</span>' : ''}
+        ${msIcon('tune')} 高级 - 智能体指令
+        ${hasCustom ? '<span class="skill-customized-badge">已自定义</span>' : ''}
       </summary>
       <p class="skill-advanced-hint">
-        These instructions are injected into the agent's system prompt when this skill is enabled. Edit to customize how the agent uses this skill.
+        启用此技能时，这些指令会注入到智能体的系统提示词中。你可以编辑它们来定制智能体如何使用此技能。
       </p>
       <textarea
         class="form-input skill-instructions-editor"
@@ -337,12 +337,12 @@ function renderAdvancedSection(s: EngineSkillStatus): string {
       >${escHtml(currentText)}</textarea>
       <div class="skill-advanced-actions">
         <button class="btn btn-sm btn-primary skill-instructions-save" data-skill="${escHtml(s.id)}">
-          ${msIcon('save')} Save Instructions
+          ${msIcon('save')} 保存指令
         </button>
         ${
           hasCustom
             ? `<button class="btn btn-sm btn-ghost skill-instructions-reset" data-skill="${escHtml(s.id)}">
-          ${msIcon('restart_alt')} Reset to Default
+          ${msIcon('restart_alt')} 恢复默认
         </button>`
             : ''
         }
@@ -413,10 +413,10 @@ export function bindSkillEvents(): void {
       const skillId = input.dataset.skill!;
       try {
         await pawEngine.skillSetEnabled(skillId, input.checked);
-        showToast(`${skillId} ${input.checked ? 'enabled' : 'disabled'}`, 'success');
+        showToast(`${skillId} ${input.checked ? '已启用' : '已禁用'}`, 'success');
         await reload();
       } catch (err) {
-        showToast(`Failed: ${err}`, 'error');
+        showToast(`失败：${err}`, 'error');
         input.checked = !input.checked;
       }
     });
@@ -433,17 +433,17 @@ export function bindSkillEvents(): void {
       ) as HTMLInputElement;
       const value = input?.value?.trim();
       if (!value) {
-        showToast('Enter a value first', 'info');
+        showToast('请先输入一个值', 'info');
         return;
       }
 
       try {
         await pawEngine.skillSetCredential(skillId, key, value);
-        showToast(`${key} saved securely`, 'success');
+        showToast(`${key} 已安全保存`, 'success');
         input.value = '';
         await reload();
       } catch (err) {
-        showToast(`Failed: ${err}`, 'error');
+        showToast(`失败：${err}`, 'error');
       }
     });
   });
@@ -457,10 +457,10 @@ export function bindSkillEvents(): void {
 
       try {
         await pawEngine.skillDeleteCredential(skillId, key);
-        showToast(`${key} removed`, 'success');
+        showToast(`${key} 已移除`, 'success');
         await reload();
       } catch (err) {
-        showToast(`Failed: ${err}`, 'error');
+        showToast(`失败：${err}`, 'error');
       }
     });
   });
@@ -510,15 +510,15 @@ export function bindSkillEvents(): void {
       const btn = el as HTMLButtonElement;
       const skillId = btn.dataset.skill!;
 
-      if (!(await confirmModal('Reset to default instructions? Your customizations will be lost.')))
+      if (!(await confirmModal('确定恢复默认指令吗？你的自定义内容将会丢失。')))
         return;
 
       try {
         await pawEngine.skillSetInstructions(skillId, '');
-        showToast(`Instructions reset for ${skillId}`, 'success');
+        showToast(`${skillId} 的指令已恢复默认`, 'success');
         await reload();
       } catch (err) {
-        showToast(`Failed: ${err}`, 'error');
+        showToast(`失败：${err}`, 'error');
       }
     });
   });
@@ -531,17 +531,17 @@ export function bindSkillEvents(): void {
 
       if (
         !(await confirmModal(
-          `Uninstall "${skillId}"? This removes the skill files from ~/.paw/skills/.`,
+          `确定卸载“${skillId}”吗？这会从 ~/.paw/skills/ 中移除该技能文件。`,
         ))
       )
         return;
 
       try {
         await pawEngine.tomlSkillUninstall(skillId);
-        showToast(`${skillId} uninstalled`, 'success');
+        showToast(`${skillId} 已卸载`, 'success');
         await reload();
       } catch (err) {
-        showToast(`Failed: ${err}`, 'error');
+        showToast(`失败：${err}`, 'error');
       }
     });
   });

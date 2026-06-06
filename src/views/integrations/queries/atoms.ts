@@ -68,13 +68,13 @@ export interface QueryCategoryMeta {
 }
 
 export const QUERY_CATEGORIES: QueryCategoryMeta[] = [
-  { id: 'sales', label: 'Sales', icon: 'payments' },
-  { id: 'projects', label: 'Projects', icon: 'assignment' },
-  { id: 'communication', label: 'Comms', icon: 'forum' },
+  { id: 'sales', label: '销售', icon: 'payments' },
+  { id: 'projects', label: '项目', icon: 'assignment' },
+  { id: 'communication', label: '沟通', icon: 'forum' },
   { id: 'crm', label: 'CRM', icon: 'contacts' },
-  { id: 'development', label: 'Dev', icon: 'code' },
-  { id: 'analytics', label: 'Analytics', icon: 'analytics' },
-  { id: 'cross-service', label: 'Cross-Service', icon: 'hub' },
+  { id: 'development', label: '开发', icon: 'code' },
+  { id: 'analytics', label: '分析', icon: 'analytics' },
+  { id: 'cross-service', label: '跨服务', icon: 'hub' },
 ];
 
 // ── Pure helpers ───────────────────────────────────────────────────────
@@ -119,10 +119,10 @@ export function highlightBadge(severity: QueryHighlight['severity']): {
 } {
   switch (severity) {
     case 'urgent':
-      return { icon: 'error', label: 'Urgent', cssClass: 'highlight-urgent' };
+      return { icon: 'error', label: '紧急', cssClass: 'highlight-urgent' };
     case 'warning':
-      return { icon: 'warning', label: 'Attention', cssClass: 'highlight-warning' };
+      return { icon: 'warning', label: '注意', cssClass: 'highlight-warning' };
     default:
-      return { icon: 'info', label: 'Info', cssClass: 'highlight-info' };
+      return { icon: 'info', label: '信息', cssClass: 'highlight-info' };
   }
 }

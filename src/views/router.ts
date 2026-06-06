@@ -22,6 +22,7 @@ import * as FlowsModule from './flows';
 import * as CanvasModule from './canvas';
 
 export const allViewIds = [
+  'enterprise-login-view',
   'setup-view',
   'chat-view',
   'tasks-view',
@@ -46,6 +47,7 @@ export const allViewIds = [
 ];
 
 const viewMap: Record<string, string> = {
+  enterprise: 'enterprise-login-view',
   dashboard: 'today-view',
   chat: 'chat-view',
   tasks: 'tasks-view',

@@ -63,9 +63,9 @@ export function renderQueryPanel(container: HTMLElement): void {
 
   container.innerHTML = `
     <div class="queries-header">
-      <h2><span class="ms ms-lg">psychology</span> Ask Your Agent</h2>
+      <h2><span class="ms ms-lg">psychology</span> 向智能体提问</h2>
       <p class="queries-subtitle">
-        ${QUERY_CATALOG.length} queries · ${readyCount} ready
+        ${QUERY_CATALOG.length} 个查询 · ${readyCount} 个已就绪
       </p>
     </div>
 
@@ -73,13 +73,13 @@ export function renderQueryPanel(container: HTMLElement): void {
       <div class="queries-search-wrap">
         <span class="ms ms-sm">search</span>
         <input type="text" class="queries-search" id="queries-search"
-               placeholder="Search queries…" value="${escHtml(_searchQuery)}" />
+               placeholder="搜索查询…" value="${escHtml(_searchQuery)}" />
       </div>
     </div>
 
     <div class="queries-cat-pills" id="queries-cat-pills">
       <button class="integrations-cat-pill ${_activeCategory === 'all' ? 'active' : ''}"
-              data-cat="all">All</button>
+              data-cat="all">全部</button>
       ${QUERY_CATEGORIES.map(
         (c) => `
         <button class="integrations-cat-pill ${_activeCategory === c.id ? 'active' : ''}"
@@ -95,7 +95,7 @@ export function renderQueryPanel(container: HTMLElement): void {
         filtered.length === 0
           ? `<div class="integrations-empty">
             <span class="ms ms-lg">search_off</span>
-            <p>No queries match your search</p>
+            <p>没有查询匹配当前搜索</p>
           </div>`
           : filtered.map((q) => _renderQueryCard(q, connectedIds)).join('')
       }
@@ -133,11 +133,11 @@ function _renderQueryCard(q: ServiceQuery, connectedIds: Set<string>): string {
         ${
           ready
             ? `<button class="btn btn-primary btn-sm query-ask-btn" data-query-id="${q.id}">
-              <span class="ms ms-sm">send</span> Ask
+              <span class="ms ms-sm">send</span> 提问
             </button>`
             : `<span class="query-connect-hint">
               <span class="ms ms-sm">link_off</span>
-              Connect ${q.serviceIds
+              连接 ${q.serviceIds
                 .filter((s) => !connectedIds.has(s))
                 .map(svcName)
                 .join(', ')}
@@ -195,7 +195,7 @@ export function renderServiceQueries(container: HTMLElement, serviceId: string):
   if (queries.length === 0) {
     container.innerHTML = `
       <div class="query-svc-empty">
-        <p>No example queries for this service yet.</p>
+        <p>这个服务目前还没有示例查询。</p>
       </div>
     `;
     return;
@@ -211,7 +211,7 @@ export function renderServiceQueries(container: HTMLElement, serviceId: string):
                 title="${escHtml(q.resultHint)}">
           <span class="ms ms-sm">${q.icon}</span>
           <span class="query-example-text">"${escHtml(q.question)}"</span>
-          <span class="ms ms-sm query-example-send">send</span>
+          <span class="ms ms-sm query-example-send">发送</span>
         </button>
       `,
         )

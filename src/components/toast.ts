@@ -1,6 +1,7 @@
 // Toast notification component — animated with anime.js
 
 import { toastEnter, toastLeave } from './animations';
+import { translateUiText } from '../i18n';
 
 const $ = (id: string) => document.getElementById(id);
 
@@ -20,7 +21,7 @@ export function showToast(
     _toastTimer = null;
   }
 
-  toast.textContent = message;
+  toast.textContent = translateUiText(message);
   toast.className = `global-toast toast-${type}`;
   toast.style.display = 'block';
   toast.style.opacity = '0';

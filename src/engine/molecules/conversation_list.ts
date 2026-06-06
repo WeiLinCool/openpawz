@@ -16,6 +16,7 @@ import {
 } from '../atoms/inbox';
 import * as AgentsModule from '../../views/agents';
 import { createTesseract } from '../../components/tesseract';
+import { translateUiText } from '../../i18n';
 
 // ── Types ────────────────────────────────────────────────────────────────
 
@@ -79,12 +80,12 @@ export function createConversationList(
   titleRow.className = 'inbox-conv-title-row';
   const title = document.createElement('span');
   title.className = 'inbox-conv-title';
-  title.textContent = 'Agents';
+  title.textContent = translateUiText('Agents');
 
   // Close button (hides this panel — uses panel icon for consistency)
   const collapseBtn = document.createElement('button');
   collapseBtn.className = 'inbox-conv-collapse-btn';
-  collapseBtn.title = 'Close panel';
+  collapseBtn.title = translateUiText('Close panel');
   collapseBtn.innerHTML = `<span class="ms" style="font-size:16px">left_panel_close</span>`;
   collapseBtn.addEventListener('click', () => callbacks.onToggle?.());
 
@@ -95,7 +96,7 @@ export function createConversationList(
 
   const newBtn = document.createElement('button');
   newBtn.className = 'inbox-new-chat-btn';
-  newBtn.title = 'New conversation';
+  newBtn.title = translateUiText('New conversation');
   newBtn.innerHTML = `<span class="ms" style="font-size:16px">edit_square</span>`;
 
   const newDropdown = document.createElement('div');
@@ -104,7 +105,7 @@ export function createConversationList(
 
   const newDirectBtn = document.createElement('button');
   newDirectBtn.className = 'inbox-new-dropdown-item';
-  newDirectBtn.innerHTML = `<span class="ms" style="font-size:14px">chat</span> New Chat`;
+  newDirectBtn.innerHTML = `<span class="ms" style="font-size:14px">chat</span> ${translateUiText('New Chat')}`;
   newDirectBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     newDropdown.style.display = 'none';
@@ -113,7 +114,7 @@ export function createConversationList(
 
   const newGroupBtn = document.createElement('button');
   newGroupBtn.className = 'inbox-new-dropdown-item';
-  newGroupBtn.innerHTML = `<span class="ms" style="font-size:14px">group</span> New Group Chat`;
+  newGroupBtn.innerHTML = `<span class="ms" style="font-size:14px">group</span> ${translateUiText('New Group Chat')}`;
   newGroupBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     newDropdown.style.display = 'none';
@@ -147,7 +148,7 @@ export function createConversationList(
   searchWrap.innerHTML = `<span class="ms">search</span>`;
   const searchInput = document.createElement('input');
   searchInput.type = 'text';
-  searchInput.placeholder = 'Search agents…';
+  searchInput.placeholder = translateUiText('Search agents…');
   searchInput.addEventListener('input', () => {
     _searchQuery = searchInput.value;
     callbacks.onSearch(_searchQuery);
@@ -183,7 +184,7 @@ export function createConversationList(
     if (agentGroups.length === 0 && groupConvs.length === 0) {
       const empty = document.createElement('div');
       empty.className = 'inbox-conv-empty';
-      empty.innerHTML = `<span class="ms">smart_toy</span><span>No agents</span>`;
+      empty.innerHTML = `<span class="ms">smart_toy</span><span>${translateUiText('No agents')}</span>`;
       scrollArea.appendChild(empty);
       return;
     }
@@ -200,7 +201,7 @@ export function createConversationList(
     if (groupConvs.length > 0) {
       const groupHeader = document.createElement('div');
       groupHeader.className = 'inbox-section-header';
-      groupHeader.innerHTML = `<span class="ms" style="font-size:14px">group</span> Groups`;
+      groupHeader.innerHTML = `<span class="ms" style="font-size:14px">group</span> ${translateUiText('Groups')}`;
       frag.appendChild(groupHeader);
 
       for (const conv of groupConvs) {

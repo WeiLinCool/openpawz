@@ -9,6 +9,7 @@
 import { pawEngine } from '../engine';
 import { showToast } from '../components/toast';
 import type { EngineProviderConfig } from '../engine/atoms/types';
+import { brand } from '../brand';
 
 const $ = (id: string) => document.getElementById(id);
 
@@ -266,7 +267,7 @@ function renderSummary(providerName: string, model: string) {
     `;
   }
   if (subtitleEl) {
-    subtitleEl.textContent = 'OpenPawz is configured and ready to go.';
+    subtitleEl.textContent = `${brand.appName} is configured and ready to go.`;
   }
 }
 

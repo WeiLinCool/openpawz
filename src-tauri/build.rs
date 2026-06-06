@@ -53,7 +53,11 @@ fn main() {
         "OPENPAWZ_ENTERPRISE_CLIENT_ID",
         "OPENPAWZ_ENTERPRISE_DEFAULT_MODEL",
         "OPENPAWZ_ENTERPRISE_SCOPES",
+        "OPENPAWZ_ENTERPRISE_RESET_SESSION",
     ] {
+        if let Ok(value) = std::env::var(key) {
+            println!("cargo:rustc-env={}={}", key, value);
+        }
         println!("cargo:rerun-if-env-changed={}", key);
     }
 

@@ -16,7 +16,7 @@ import {
 } from './components/helpers';
 import { showToast } from './components/toast';
 import { initTheme, getTheme, setTheme } from './components/molecules/theme';
-import { initI18n } from './i18n';
+import { initI18n, translateUiText } from './i18n';
 import { initHILModal } from './components/molecules/hil_modal';
 import {
   initChatListeners,
@@ -33,6 +33,7 @@ import { mountInbox } from './engine/organisms/inbox_controller';
 import { registerStreamHandlers, registerResearchRouter } from './engine/molecules/event_bus';
 import { setLogTransport, flushBufferToTransport, type LogEntry } from './logger';
 import * as ResearchModule from './views/research';
+import type { EnterpriseStatus } from './engine';
 
 // ── Wire event_bus callbacks (engine ← view layer) ──
 registerStreamHandlers({
@@ -117,6 +118,82 @@ setErrorHandler((report) => {
 // ── DOM convenience ────────────────────────────────────────────────────────────────
 const $ = (id: string) => document.getElementById(id);
 
+// ── Enterprise sign-in gate ────────────────────────────────────────────────
+function enterpriseIssuerFromStatus(status: EnterpriseStatus): string {
+  const gatewayUrl = status.gateway_url?.trim();
+  if (gatewayUrl) {
+    try {
+      return new URL(gatewayUrl).origin;
+    } catch {
+      /* fall through */
+    }
+  }
+  return 'http://localhost:3000';
+}
+
+function renderEnterpriseLogin(status: EnterpriseStatus): void {
+  document.body.classList.add('enterprise-gated');
+  showView('enterprise-login-view');
+
+  const meta = $('enterprise-login-meta');
+  if (meta) {
+    const rows = status.expired
+      ? [`<span>${translateUiText('Status')}</span><strong>${translateUiText('Session expired')}</strong>`]
+      : [];
+    meta.innerHTML = rows.length ? rows.join('') : '';
+  }
+}
+
+async function maybeShowEnterpriseLoginGate(): Promise<boolean> {
+  let status: EnterpriseStatus;
+  try {
+    status = await pawEngine.enterpriseStatus();
+  } catch (e) {
+    console.warn('[enterprise] Status check skipped:', e);
+    return false;
+  }
+
+  if (!status.enterprise_build_mode || status.authenticated) {
+    document.body.classList.remove('enterprise-gated');
+    return false;
+  }
+
+  renderEnterpriseLogin(status);
+
+  const btn = $('enterprise-login-btn') as HTMLButtonElement | null;
+  const error = $('enterprise-login-error');
+  btn?.addEventListener(
+    'click',
+    async () => {
+      if (!btn) return;
+      btn.disabled = true;
+      if (error) error.textContent = '';
+      try {
+        const issuerUrl = enterpriseIssuerFromStatus(status);
+        const next = await pawEngine.enterpriseOAuthStart({
+          issuer_url: issuerUrl,
+          gateway_url: status.gateway_url,
+          default_model: status.default_model,
+          make_default: true,
+        });
+
+        if (!next.authenticated) {
+          throw new Error('Enterprise sign-in completed but no authenticated session was stored.');
+        }
+        window.location.reload();
+      } catch (e) {
+        const message = e instanceof Error ? e.message : String(e);
+        if (error) error.textContent = message;
+        showToast(`Enterprise sign-in failed: ${message}`, 'error');
+        btn.disabled = false;
+      }
+    },
+    { once: false },
+  );
+
+  return true;
+}
+
 // ── Model selector ──────────────────────────────────────────────────────────────────
 async function refreshModelLabel() {
   const chatModelSelect = $('chat-model-select') as HTMLSelectElement | null;
@@ -127,7 +204,7 @@ async function refreshModelLabel() {
     const providers = cfg.providers ?? [];
     const currentVal = chatModelSelect.value;
     populateModelSelect(chatModelSelect, providers, {
-      defaultLabel: 'Default Model',
+      defaultLabel: translateUiText('Default Model'),
       currentValue: currentVal && currentVal !== 'default' ? currentVal : 'default',
       showDefaultModel: defaultModel || undefined,
       hideOllama: true,
@@ -154,7 +231,7 @@ async function connectEngine(): Promise<boolean> {
     const chatAvatarEl = $('chat-avatar');
     statusDot?.classList.add('connected');
     statusDot?.classList.remove('error');
-    if (statusText) statusText.textContent = 'Engine';
+    if (statusText) statusText.textContent = translateUiText('Engine');
 
     const initAgent = AgentsModule.getCurrentAgent();
     if (chatAgentName) {
@@ -257,6 +334,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     initTheme();
     initI18n();
+    setEngineMode(true);
+
+    if (await maybeShowEnterpriseLoginGate()) {
+      console.debug('[main] Enterprise sign-in required');
+      return;
+    }
 
     // ── Sidebar entrance animation (anime.js) ───────────────────────────
     sidebarNavEntrance('.nav-item');
@@ -454,8 +537,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     AgentDefaultsSettings.initAgentDefaultsSettings();
     SessionsSettings.initSessionsSettings();
     VoiceSettings.initVoiceSettings();
-    setEngineMode(true);
-
     ProjectsModule.bindEvents();
     TasksModule.bindTaskEvents();
     OrchestratorModule.initOrchestrator();

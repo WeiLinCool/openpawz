@@ -101,7 +101,7 @@ export async function renderProjectList() {
     item.innerHTML = `
       <div class="research-project-name">${escHtml(p.name)}</div>
       <div class="research-project-meta">
-        <span>${p.queries.length} queries</span>
+        <span>${p.queries.length} 次查询</span>
         <span>•</span>
         <span>${new Date(p.updated).toLocaleDateString()}</span>
       </div>
@@ -171,10 +171,10 @@ export async function openProject(id: string) {
     header.innerHTML = `
       <h2 class="research-project-title">${escHtml(project.name)}</h2>
       <div class="research-project-actions-header">
-        <button class="btn btn-ghost btn-sm" id="research-open-folder" title="Open in Finder">
+        <button class="btn btn-ghost btn-sm" id="research-open-folder" title="在 Finder 中打开">
           <span class="ms ms-sm">folder_open</span>
         </button>
-        <button class="btn btn-ghost btn-sm btn-error" id="research-delete-project">Delete</button>
+        <button class="btn btn-ghost btn-sm btn-error" id="research-delete-project">删除</button>
       </div>
     `;
 
@@ -202,7 +202,7 @@ export function renderFindings() {
   if (!findings.length) {
     container.innerHTML = `
       <div class="research-findings-empty">
-        <p>No findings yet. Enter a research query above to get started.</p>
+        <p>暂无发现。请输入上方的研究问题开始。</p>
       </div>
     `;
     return;
@@ -251,20 +251,20 @@ export function renderFindings() {
         `,
           )
           .join('')}
-        ${finding.sources.length > 3 ? `<span class="research-source-more">+${finding.sources.length - 3} more</span>` : ''}
+        ${finding.sources.length > 3 ? `<span class="research-source-more">+${finding.sources.length - 3} 更多</span>` : ''}
       </div>
 
       <div class="research-finding-actions">
-        <button class="btn btn-ghost btn-xs research-action-dig" data-id="${finding.id}" title="Research this deeper">
-          <span class="ms ms-sm">search</span> Dig Deeper
+        <button class="btn btn-ghost btn-xs research-action-dig" data-id="${finding.id}" title="深入研究此项">
+          <span class="ms ms-sm">search</span> 深入研究
         </button>
-        <button class="btn btn-ghost btn-xs research-action-related" data-id="${finding.id}" title="Find related topics">
-          <span class="ms ms-sm">link</span> Related
+        <button class="btn btn-ghost btn-xs research-action-related" data-id="${finding.id}" title="查找相关主题">
+          <span class="ms ms-sm">link</span> 相关
         </button>
-        <button class="btn btn-ghost btn-xs research-action-expand" data-id="${finding.id}" title="View full content">
-          <span class="ms ms-sm">description</span> Full
+        <button class="btn btn-ghost btn-xs research-action-expand" data-id="${finding.id}" title="查看完整内容">
+          <span class="ms ms-sm">description</span> 完整内容
         </button>
-        <button class="btn btn-ghost btn-xs btn-error research-action-delete" data-id="${finding.id}" title="Delete">
+        <button class="btn btn-ghost btn-xs btn-error research-action-delete" data-id="${finding.id}" title="删除">
           ✕
         </button>
       </div>
@@ -282,7 +282,7 @@ export function renderFindings() {
       if (finding) {
         const input = $('research-topic-input') as HTMLInputElement;
         if (input) {
-          input.value = `Dig deeper into: ${finding.query}. Focus on specifics, edge cases, and detailed examples.`;
+            input.value = `深入研究：${finding.query}。重点关注具体细节、边界情况和详细示例。`;
           input.focus();
         }
       }
@@ -297,7 +297,7 @@ export function renderFindings() {
       if (finding) {
         const input = $('research-topic-input') as HTMLInputElement;
         if (input) {
-          input.value = `Find topics related to: ${finding.query}. What are adjacent concepts, alternatives, or complementary approaches?`;
+            input.value = `查找与以下主题相关的内容：${finding.query}。有哪些相邻概念、替代方案或互补方法？`;
           input.focus();
         }
       }
@@ -318,7 +318,7 @@ export function renderFindings() {
       e.stopPropagation();
       const id = btn.getAttribute('data-id');
       const activeProject = _state.getActiveProject();
-      if (id && activeProject && (await confirmModal('Delete this finding?'))) {
+      if (id && activeProject && (await confirmModal('删除这个发现？'))) {
         await workspace.deleteFinding(activeProject.id, id);
         _state.setFindings(await workspace.listFindings(activeProject.id));
         renderFindings();
@@ -338,13 +338,13 @@ export function renderSourcesPanel() {
   workspace.getAllSources(activeProject.id).then((sources) => {
     if (!sources.length) {
       panel.innerHTML =
-        '<div class="research-sources-empty">Sources will appear here as you research</div>';
+        '<div class="research-sources-empty">研究时来源会显示在这里</div>';
       return;
     }
 
     panel.innerHTML = `
       <div class="research-sources-header">
-        <span>${sources.length} sources</span>
+        <span>${sources.length} 个来源</span>
       </div>
       <div class="research-sources-list">
         ${sources
@@ -380,7 +380,7 @@ export function showFindingDetail(finding: ResearchFinding) {
       finding.keyPoints.length
         ? `
       <div class="research-detail-section">
-        <h3>Key Points</h3>
+        <h3>要点</h3>
         <ul>
           ${finding.keyPoints.map((p) => `<li>${escHtml(p)}</li>`).join('')}
         </ul>
@@ -390,12 +390,12 @@ export function showFindingDetail(finding: ResearchFinding) {
     }
 
     <div class="research-detail-section">
-      <h3>Full Content</h3>
+      <h3>完整内容</h3>
       <div class="research-detail-body">${formatMarkdown(finding.content)}</div>
     </div>
 
     <div class="research-detail-section">
-      <h3>Sources (${finding.sources.length})</h3>
+      <h3>来源（${finding.sources.length}）</h3>
       <div class="research-detail-sources">
         ${finding.sources
           .map(
@@ -451,7 +451,7 @@ export async function runResearch() {
   if (stopBtn) stopBtn.style.display = '';
 
   // Add initial step
-  _state.pushLiveStep('Starting research...');
+  _state.pushLiveStep('开始研究...');
   renderProgressSteps();
 
   const mode = _state.getResearchMode();
@@ -461,7 +461,7 @@ export async function runResearch() {
   const done = new Promise<string>((resolve) => {
     _state.setStreamResolve(resolve);
     setTimeout(
-      () => resolve(_state.getStreamContent() || '(Research timed out)'),
+      () => resolve(_state.getStreamContent() || '（研究超时）'),
       modeTimeout(mode),
     );
   });
@@ -487,10 +487,10 @@ export async function runResearch() {
 
     // Clear input
     if (input) input.value = '';
-    showToast('Research complete! Finding saved.', 'success');
+    showToast('研究完成！结果已保存。', 'success');
   } catch (e) {
     console.error('[research] Error:', e);
-    showToast(`Research failed: ${e instanceof Error ? e.message : e}`, 'error');
+    showToast(`研究失败：${e instanceof Error ? e.message : e}`, 'error');
   } finally {
     _state.setIsResearching(false);
     _state.setRunId(null);
@@ -519,7 +519,7 @@ export async function stopResearch() {
 
   const resolve = _state.getStreamResolve();
   if (resolve) {
-    resolve(_state.getStreamContent() || '(Aborted)');
+    resolve(_state.getStreamContent() || '（已中止）');
     _state.setStreamResolve(null);
   }
 }
@@ -528,7 +528,7 @@ export async function generateReport() {
   const activeProject = _state.getActiveProject();
   const findings = _state.getFindings();
   if (!activeProject || !findings.length || !isConnected()) {
-    showToast('No findings to generate report from', 'error');
+    showToast('没有可用于生成报告的发现', 'error');
     return;
   }
 
@@ -537,13 +537,13 @@ export async function generateReport() {
   if (!reportModal || !reportContent) return;
 
   reportModal.style.display = 'flex';
-  reportContent.innerHTML = `${tesseractPlaceholder(28, 'thinking')}<p>Generating report...</p>`;
+  reportContent.innerHTML = `${tesseractPlaceholder(28, 'thinking')}<p>正在生成报告...</p>`;
   activateTesseracts(reportContent);
 
   const findingsText = findings
     .map(
       (f, i) =>
-        `## Finding ${i + 1}: ${f.query}\n\n${f.summary || ''}\n\n${f.content}\n\nSources: ${f.sources.map((s) => s.url).join(', ')}`,
+        `## 发现 ${i + 1}：${f.query}\n\n${f.summary || ''}\n\n${f.content}\n\n来源：${f.sources.map((s) => s.url).join(', ')}`,
     )
     .join('\n\n---\n\n');
 
@@ -555,7 +555,7 @@ export async function generateReport() {
   const done = new Promise<string>((resolve) => {
     _state.setStreamResolve(resolve);
     setTimeout(
-      () => resolve(_state.getStreamContent() || '(Report generation timed out)'),
+      () => resolve(_state.getStreamContent() || '（报告生成超时）'),
       180_000,
     );
   });
@@ -563,7 +563,7 @@ export async function generateReport() {
   try {
     await pawEngine.chatSend(
       sessionKey,
-      `Based on all the research findings below, write a comprehensive, well-structured report. Include:\n\n1. Executive Summary (2-3 paragraphs)\n2. Key Findings (organized by theme)\n3. Detailed Analysis\n4. Conclusions and Recommendations\n5. Sources Bibliography\n\nUse markdown formatting.\n\n${findingsText}`,
+      `请基于下面所有研究结果撰写一份全面、结构清晰的报告。请包含：\n\n1. 执行摘要（2-3 段）\n2. 关键发现（按主题组织）\n3. 详细分析\n4. 结论与建议\n5. 资料来源\n\n请使用 Markdown 格式。\n\n${findingsText}`,
     );
 
     const reportText = await done;
@@ -571,7 +571,7 @@ export async function generateReport() {
     // Save report
     const report: workspace.ResearchReport = {
       id: workspace.generateFindingId(),
-      title: `Research Report — ${new Date().toLocaleDateString()}`,
+      title: `研究报告 — ${new Date().toLocaleDateString()}`,
       created: new Date().toISOString(),
       content: reportText,
       findingIds: findings.map((f) => f.id),
@@ -580,9 +580,9 @@ export async function generateReport() {
     await workspace.saveReport(activeProject.id, report);
 
     reportContent.innerHTML = formatMarkdown(reportText);
-    showToast('Report generated and saved!', 'success');
+    showToast('报告已生成并保存！', 'success');
   } catch {
-    reportContent.innerHTML = `<p class="error">Failed to generate report. Check logs for details.</p>`;
+    reportContent.innerHTML = `<p class="error">生成报告失败。请查看日志了解详情。</p>`;
   } finally {
     _state.setIsResearching(false);
     _state.setStreamResolve(null);
@@ -590,15 +590,15 @@ export async function generateReport() {
 }
 
 export async function createNewProject() {
-  const name = await _state.getPromptModal()?.('Research project name:', 'My Research');
+  const name = await _state.getPromptModal()?.('研究项目名称：', '我的研究');
   if (!name) return;
 
   try {
     const project = await workspace.createResearchProject(name);
     await openProject(project.id);
-    showToast('Project created!', 'success');
+    showToast('项目已创建！', 'success');
   } catch (e) {
-    showToast(`Failed to create project: ${e}`, 'error');
+    showToast(`创建项目失败：${e}`, 'error');
   }
 }
 
@@ -607,7 +607,7 @@ export async function deleteCurrentProject() {
   if (!activeProject) return;
   if (
     !(await confirmModal(
-      `Delete "${activeProject.name}" and all its findings? This cannot be undone.`,
+      `删除“${activeProject.name}”及其所有发现？此操作无法撤销。`,
     ))
   )
     return;
@@ -625,8 +625,8 @@ export async function deleteCurrentProject() {
     if (main) main.style.display = 'none';
 
     await _state.reloadProjects();
-    showToast('Project deleted', 'success');
+    showToast('项目已删除', 'success');
   } catch (e) {
-    showToast(`Failed to delete: ${e}`, 'error');
+    showToast(`删除失败：${e}`, 'error');
   }
 }

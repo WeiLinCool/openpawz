@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 
 import { spawnSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { join } from 'node:path';
 
 const defaults = {
   OPENPAWZ_BUILD_EDITION: 'enterprise',
@@ -9,12 +12,44 @@ const defaults = {
   OPENPAWZ_ENTERPRISE_DEFAULT_MODEL: 'gpt-4o-mini',
 };
 
-const env = { ...process.env, ...defaults, ...process.env };
-
 const args = process.argv.slice(2);
 const command = args.length > 0 ? args : ['tauri', 'build'];
+const isDev = command[0] === 'tauri' && command[1] === 'dev';
+const devDefaults = isDev ? { OPENPAWZ_ENTERPRISE_RESET_SESSION: '1' } : {};
+const env = { ...process.env, ...defaults, ...devDefaults, ...process.env };
 
-const result = spawnSync('pnpm', ['exec', ...command], {
+if (isDev && env.OPENPAWZ_ENTERPRISE_RESET_SESSION !== '0') {
+  resetEnterpriseSession();
+}
+
+function resetEnterpriseSession() {
+  const dbPath = join(homedir(), '.paw', 'engine.db');
+  if (!existsSync(dbPath)) return;
+
+  spawnSync(
+    'sqlite3',
+    [
+      dbPath,
+      `
+      UPDATE engine_config
+      SET value = json_set(
+        value,
+        '$.access_token', '',
+        '$.refresh_token', NULL,
+        '$.user_email', NULL,
+        '$.organization_id', NULL,
+        '$.plan', NULL,
+        '$.entitlements', json_array(),
+        '$.expires_at', NULL
+      )
+      WHERE key = 'enterprise_config';
+      `,
+    ],
+    { stdio: 'ignore' },
+  );
+}
+
+const result = spawnSync('node', ['scripts/brand.mjs', ...command], {
   stdio: 'inherit',
   env,
   shell: process.platform === 'win32',

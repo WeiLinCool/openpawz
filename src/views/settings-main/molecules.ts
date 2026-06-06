@@ -44,7 +44,7 @@ export async function loadSettingsStatus() {
   if (section) section.style.display = '';
   if (content)
     content.innerHTML =
-      '<div class="status-card"><div class="status-card-label">Runtime</div><div class="status-card-value">Paw Engine (Tauri)</div></div>';
+      '<div class="status-card"><div class="status-card-label">运行时</div><div class="status-card-value">Paw 引擎（Tauri）</div></div>';
 }
 
 // ── Logs Viewer ────────────────────────────────────────────────────────────
@@ -55,7 +55,7 @@ export async function loadSettingsLogs() {
   const output = $('settings-logs-output');
   if (section) section.style.display = '';
   if (output)
-    output.textContent = '(Engine logs viewer coming soon — check the Tauri console for now)';
+    output.textContent = '引擎日志查看器即将上线 - 目前请先查看 Tauri 控制台';
 }
 
 // ── Usage Dashboard ────────────────────────────────────────────────────────
@@ -67,8 +67,8 @@ export async function loadSettingsUsage() {
   if (section) section.style.display = '';
   if (content)
     content.innerHTML = `<div class="usage-empty-state">
-    <p style="color:var(--text-secondary);margin:0 0 8px">Usage tracking coming soon to the Paw engine.</p>
-    <p style="color:var(--text-muted);margin:0;font-size:12px">Token tracking is active in chat — send a message to see per-session estimates in the chat header.</p>
+    <p style="color:var(--text-secondary);margin:0 0 8px">Paw 引擎的用量追踪即将上线。</p>
+    <p style="color:var(--text-muted);margin:0;font-size:12px">聊天中已启用令牌追踪 - 发送消息后可在聊天顶部查看每个会话的估算值。</p>
   </div>`;
 }
 
@@ -86,12 +86,12 @@ function _checkBudgetAlert(currentCost: number) {
     alertEl.style.display = '';
     const text = $('budget-alert-text');
     if (text)
-      text.textContent = `Budget limit reached: $${currentCost.toFixed(4)} / $${limit.toFixed(2)} — consider switching to a cheaper model or pausing automations`;
+      text.textContent = `已达到预算上限：$${currentCost.toFixed(4)} / $${limit.toFixed(2)} - 建议切换到更便宜的模型或暂停自动化`;
   } else if (currentCost >= limit * 0.8) {
     alertEl.style.display = '';
     const text = $('budget-alert-text');
     if (text)
-      text.textContent = `Approaching budget: $${currentCost.toFixed(4)} / $${limit.toFixed(2)} (${((currentCost / limit) * 100).toFixed(0)}%)`;
+      text.textContent = `接近预算上限：$${currentCost.toFixed(4)} / $${limit.toFixed(2)}（${((currentCost / limit) * 100).toFixed(0)}%）`;
   } else {
     alertEl.style.display = 'none';
   }
@@ -110,11 +110,11 @@ export function initBudgetSettings() {
   saveBtn?.addEventListener('click', () => {
     const val = parseFloat((input as HTMLInputElement)?.value ?? '');
     if (isNaN(val) || val <= 0) {
-      showToast('Enter a valid budget amount', 'error');
+      showToast('请输入有效的预算金额', 'error');
       return;
     }
     setBudgetLimit(val);
-    showToast(`Budget alert set at $${val.toFixed(2)}`, 'success');
+    showToast(`预算提醒已设为 $${val.toFixed(2)}`, 'success');
     loadSettingsUsage().catch(() => {});
   });
 
@@ -123,7 +123,7 @@ export function initBudgetSettings() {
     if (input) (input as HTMLInputElement).value = '';
     const alertEl = $('budget-alert');
     if (alertEl) alertEl.style.display = 'none';
-    showToast('Budget alert cleared', 'info');
+    showToast('预算提醒已清除', 'info');
   });
 }
 
@@ -156,11 +156,11 @@ export async function loadSettingsWizard() {
 }
 
 export async function startWizard() {
-  showToast('Wizard not available in engine mode', 'info');
+  showToast('引擎模式下无法使用向导', 'info');
 }
 
 export async function wizardNext() {
-  showToast('Wizard not available in engine mode', 'info');
+  showToast('引擎模式下无法使用向导', 'info');
 }
 
 export async function cancelWizard() {
@@ -174,7 +174,7 @@ export async function checkForUpdate() {
   const checkBtn = $('settings-update-check') as HTMLButtonElement | null;
   const installBtn = $('settings-update-install') as HTMLButtonElement | null;
 
-  if (statusEl) statusEl.textContent = 'Checking for updates…';
+  if (statusEl) statusEl.textContent = '正在检查更新...';
   if (checkBtn) checkBtn.disabled = true;
   if (installBtn) {
     installBtn.style.display = 'none';
@@ -185,22 +185,22 @@ export async function checkForUpdate() {
     const update = await check();
 
     if (update) {
-      if (statusEl) statusEl.textContent = `Update available: v${update.version}`;
+      if (statusEl) statusEl.textContent = `有可用更新：v${update.version}`;
       if (installBtn) {
         installBtn.style.display = '';
         installBtn.disabled = false;
         // Store the update handle for install step
         _pendingUpdate = update;
       }
-      showToast(`Update v${update.version} available`, 'info');
+      showToast(`发现更新 v${update.version}`, 'info');
     } else {
-      if (statusEl) statusEl.textContent = 'You are on the latest version.';
-      showToast('Already up to date', 'info');
+      if (statusEl) statusEl.textContent = '当前已经是最新版本。';
+      showToast('已是最新版本', 'info');
     }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    if (statusEl) statusEl.textContent = `Update check failed: ${msg}`;
-    showToast(`Update check failed: ${msg}`, 'error');
+    if (statusEl) statusEl.textContent = `更新检查失败：${msg}`;
+    showToast(`更新检查失败：${msg}`, 'error');
   } finally {
     if (checkBtn) checkBtn.disabled = false;
   }
@@ -212,12 +212,12 @@ export async function runUpdate() {
   const update = _pendingUpdate;
 
   if (!update) {
-    showToast('No update available — check for updates first', 'info');
+    showToast('暂无可用更新 - 请先检查更新', 'info');
     return;
   }
 
   if (installBtn) installBtn.disabled = true;
-  if (statusEl) statusEl.textContent = 'Downloading update…';
+  if (statusEl) statusEl.textContent = '正在下载更新...';
 
   try {
     let downloaded = 0;
@@ -227,29 +227,29 @@ export async function runUpdate() {
       switch (event.event) {
         case 'Started':
           contentLength = event.data.contentLength || 0;
-          if (statusEl) statusEl.textContent = `Downloading… 0%`;
+          if (statusEl) statusEl.textContent = `正在下载... 0%`;
           break;
         case 'Progress':
           downloaded += event.data.chunkLength || 0;
           if (contentLength > 0 && statusEl) {
             const pct = Math.round((downloaded / contentLength) * 100);
-            statusEl.textContent = `Downloading… ${pct}%`;
+            statusEl.textContent = `正在下载... ${pct}%`;
           }
           break;
         case 'Finished':
-          if (statusEl) statusEl.textContent = 'Download complete. Restarting…';
+          if (statusEl) statusEl.textContent = '下载完成，正在重启...';
           break;
       }
     });
 
-    showToast('Update installed — restarting…', 'info');
+    showToast('更新已安装，正在重启...', 'info');
     // Give the toast a moment to display
     setTimeout(() => relaunch(), 1000);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    if (statusEl) statusEl.textContent = `Update failed: ${msg}`;
+    if (statusEl) statusEl.textContent = `更新失败：${msg}`;
     if (installBtn) installBtn.disabled = false;
-    showToast(`Update failed: ${msg}`, 'error');
+    showToast(`更新失败：${msg}`, 'error');
   }
 }
 
@@ -261,7 +261,7 @@ export async function loadSettingsBrowser() {
 }
 
 export async function startBrowser() {
-  showToast('Browser control coming soon to the Paw engine', 'info');
+  showToast('Paw 引擎的浏览器控制功能即将上线', 'info');
 }
 
 export async function stopBrowser() {
@@ -278,7 +278,7 @@ export function renderToolRules() {
 
   if (toolRules.length === 0) {
     list.innerHTML =
-      '<div class="approvals-empty">No tool-specific rules yet. Click "Add rule" to create one.</div>';
+      '<div class="approvals-empty">暂无工具专用规则。点击“添加规则”创建一个。</div>';
     return;
   }
 
@@ -288,20 +288,20 @@ export function renderToolRules() {
     <div class="approvals-tool-row" data-idx="${i}">
       <div class="approvals-tool-name">${escHtml(rule.name)}</div>
       <div class="approvals-toggle-group">
-        <button class="approvals-toggle-btn${rule.state === 'allow' ? ' active allow' : ''}" data-state="allow" data-idx="${i}" title="Always allow">
+        <button class="approvals-toggle-btn${rule.state === 'allow' ? ' active allow' : ''}" data-state="allow" data-idx="${i}" title="始终允许">
           <span class="ms" style="font-size:14px">check</span>
-          Allow
+          允许
         </button>
-        <button class="approvals-toggle-btn${rule.state === 'ask' ? ' active ask' : ''}" data-state="ask" data-idx="${i}" title="Ask each time">
+        <button class="approvals-toggle-btn${rule.state === 'ask' ? ' active ask' : ''}" data-state="ask" data-idx="${i}" title="每次询问">
           <span class="ms" style="font-size:14px">help</span>
-          Ask
+          询问
         </button>
-        <button class="approvals-toggle-btn${rule.state === 'deny' ? ' active deny' : ''}" data-state="deny" data-idx="${i}" title="Always block">
+        <button class="approvals-toggle-btn${rule.state === 'deny' ? ' active deny' : ''}" data-state="deny" data-idx="${i}" title="始终阻止">
           <span class="ms" style="font-size:14px">close</span>
-          Block
+          阻止
         </button>
       </div>
-      <button class="approvals-remove-btn" data-idx="${i}" title="Remove rule">
+      <button class="approvals-remove-btn" data-idx="${i}" title="移除规则">
         <span class="ms" style="font-size:14px">delete</span>
       </button>
     </div>
@@ -335,12 +335,12 @@ export function renderToolRules() {
 }
 
 export async function addToolRule() {
-  const name = await promptModal('Add Tool Rule', 'Tool name, e.g. brave_search');
+  const name = await promptModal('添加工具规则', '工具名称，例如 brave_search');
   if (!name?.trim()) return;
   const trimmed = name.trim();
   const rules = _state.getToolRules();
   if (rules.some((r) => r.name === trimmed)) {
-    showToast(`"${trimmed}" already has a rule`, 'info');
+    showToast(`“${trimmed}” 已有规则`, 'info');
     return;
   }
   _state.pushToolRule({ name: trimmed, state: 'ask' });
@@ -364,7 +364,7 @@ export async function saveSettingsApprovals() {
   const deny = toolRules.filter((r) => r.state === 'deny').map((r) => r.name);
 
   localStorage.setItem('paw-tool-approvals', JSON.stringify({ allow, deny, askPolicy: policy }));
-  showToast('Approval rules saved locally', 'success');
+  showToast('审批规则已保存在本地', 'success');
 }
 
 // ── Security Audit Dashboard ───────────────────────────────────────────────
@@ -377,8 +377,8 @@ export function updateEncryptionStatus() {
   const ready = isEncryptionReady();
   bar.className = `encryption-status-bar ${ready ? 'enc-active' : 'enc-inactive'}`;
   text.textContent = ready
-    ? 'Database encryption active — sensitive fields encrypted with OS keychain key'
-    : 'Encryption unavailable — credential storage is blocked until keychain is restored';
+    ? '数据库加密已启用 - 敏感字段使用系统钥匙串密钥加密'
+    : '加密不可用 - 在钥匙串恢复前将阻止凭据存储';
 }
 
 interface KeychainHealth {
@@ -418,7 +418,7 @@ export async function updateKeychainHealth(): Promise<void> {
   } catch (e) {
     bar.style.display = 'flex';
     bar.className = 'keychain-health-bar kc-unavailable';
-    text.textContent = 'Unable to check keychain health';
+    text.textContent = '无法检查钥匙串健康状态';
     if (detail) {
       detail.textContent = String(e);
       detail.style.display = 'block';
@@ -453,9 +453,9 @@ export async function loadSecurityAudit() {
     const deniedLabel = $('audit-score-denied-label');
     const allowedLabel = $('audit-score-allowed-label');
     const criticalLabel = $('audit-score-critical-label');
-    if (deniedLabel) deniedLabel.textContent = `${denied} blocked`;
-    if (allowedLabel) allowedLabel.textContent = `${allowed} allowed`;
-    if (criticalLabel) criticalLabel.textContent = `${critical} critical`;
+    if (deniedLabel) deniedLabel.textContent = `${denied} 已阻止`;
+    if (allowedLabel) allowedLabel.textContent = `${allowed} 已允许`;
+    if (criticalLabel) criticalLabel.textContent = `${critical} 高风险`;
 
     if (filtered.length === 0) {
       tbody.innerHTML = '';
@@ -474,8 +474,8 @@ export async function loadSecurityAudit() {
           ? `<span class="audit-risk-badge risk-${escHtml(e.risk_level)}">${escHtml(e.risk_level)}</span>`
           : '<span class="audit-risk-badge">—</span>';
         const resultBadge = e.was_allowed
-          ? '<span class="audit-result-badge allowed">✓ Allowed</span>'
-          : '<span class="audit-result-badge denied">✕ Denied</span>';
+          ? '<span class="audit-result-badge allowed">✓ 已允许</span>'
+          : '<span class="audit-result-badge denied">✕ 已阻止</span>';
         const eventLabel = e.event_type.replace(/_/g, ' ');
         return `<tr class="${e.was_allowed ? '' : 'audit-row-denied'}">
         <td class="audit-cell-time">${escHtml(time)}</td>
@@ -491,7 +491,7 @@ export async function loadSecurityAudit() {
     console.warn('[settings] Audit log load failed:', e);
     if (emptyEl) {
       emptyEl.style.display = '';
-      emptyEl.textContent = `Failed to load audit log: ${e}`;
+      emptyEl.textContent = `加载审计日志失败：${e}`;
     }
     if (tableWrapper) tableWrapper.style.display = 'none';
   }
@@ -505,7 +505,7 @@ export function exportAuditJSON() {
       const json = JSON.stringify(entries, null, 2);
       downloadFile('paw-security-audit.json', json, 'application/json');
     })
-    .catch((e) => showToast(`Export failed: ${e}`, 'error'));
+    .catch((e) => showToast(`导出失败：${e}`, 'error'));
 }
 
 export function exportAuditCSV() {
@@ -537,7 +537,7 @@ export function exportAuditCSV() {
       const csv = [headers.join(','), ...rows].join('\n');
       downloadFile('paw-security-audit.csv', csv, 'text/csv');
     })
-    .catch((e) => showToast(`Export failed: ${e}`, 'error'));
+    .catch((e) => showToast(`导出失败：${e}`, 'error'));
 }
 
 // ── Security Policies (local settings) ─────────────────────────────────────
@@ -563,7 +563,7 @@ export function loadSecurityPolicies() {
   if (rotationInterval) rotationInterval.value = String(settings.tokenRotationIntervalDays);
   if (rotationStatus) {
     if (settings.tokenRotationIntervalDays > 0) {
-      rotationStatus.textContent = `Tokens older than ${settings.tokenRotationIntervalDays} days will be auto-rotated`;
+      rotationStatus.textContent = `超过 ${settings.tokenRotationIntervalDays} 天的令牌将自动轮换`;
     } else {
       rotationStatus.textContent = '';
     }
@@ -599,7 +599,7 @@ export function saveSecurityPolicies() {
     try {
       new RegExp(p);
     } catch {
-      showToast(`Invalid regex pattern: ${p}`, 'error');
+      showToast(`无效的正则表达式：${p}`, 'error');
       return;
     }
   }
@@ -617,18 +617,18 @@ export function saveSecurityPolicies() {
     readOnlyProjects,
   };
   saveSecuritySettings(settings);
-  showToast('Security policies saved', 'success');
+  showToast('安全策略已保存', 'success');
 }
 
 export function resetSecurityPolicies() {
   resetSecuritySettings()
     .then(() => {
       loadSecurityPolicies();
-      showToast('Security policies reset to defaults', 'info');
+      showToast('安全策略已重置为默认值', 'info');
     })
     .catch((e) => {
       console.warn('[settings] Failed to reset security settings:', e);
-      showToast('Failed to reset security policies', 'error');
+      showToast('重置安全策略失败', 'error');
     });
 }
 
@@ -644,7 +644,7 @@ export function updateSessionOverrideBanner(): void {
     const mins = Math.ceil(remaining / 60000);
     banner.style.display = 'flex';
     if (label)
-      label.textContent = `Session override active — auto-approving all tools for ${mins} minute${mins !== 1 ? 's' : ''}`;
+      label.textContent = `会话覆盖已启用 - 在 ${mins} 分钟内自动批准所有工具`;
 
     if (!_state.getOverrideBannerInterval()) {
       const interval = setInterval(() => {
@@ -660,7 +660,7 @@ export function updateSessionOverrideBanner(): void {
         }
         const m = Math.ceil(r / 60000);
         if (label)
-          label.textContent = `Session override active — auto-approving all tools for ${m} minute${m !== 1 ? 's' : ''}`;
+          label.textContent = `会话覆盖已启用 - 在 ${m} 分钟内自动批准所有工具`;
       }, 30000);
       _state.setOverrideBannerInterval(interval);
     }

@@ -56,7 +56,7 @@ export async function renderExtensionView(container: HTMLElement, skillId: strin
   const label = tab?.label || skillId;
 
   container.innerHTML = `<div style="display:flex;align-items:center;gap:8px;padding:12px;color:var(--text-muted)">
-    <span class="wa-spinner"></span> Loading ${label}...
+    <span class="wa-spinner"></span> 正在加载 ${label}...
   </div>`;
 
   try {
@@ -69,7 +69,7 @@ export async function renderExtensionView(container: HTMLElement, skillId: strin
     bindExtensionEvents(container, skillId);
   } catch (err) {
     container.innerHTML = `<div style="padding:24px">
-      <p style="color:var(--accent-danger)">Failed to load extension: ${String(err)}</p>
+      <p style="color:var(--accent-danger)">加载扩展失败：${String(err)}</p>
     </div>`;
   }
 }
@@ -86,7 +86,7 @@ function renderExtensionPage(
     outputs.length > 0
       ? `<div class="extension-widgets">
           <h3 style="font-size:15px;font-weight:600;margin:0 0 12px;display:flex;align-items:center;gap:6px">
-            <span class="ms ms-sm">dashboard</span> Live Data
+            <span class="ms ms-sm">dashboard</span> 实时数据
           </h3>
           <div class="extension-widget-grid">
             ${outputs.map((o) => renderSkillWidgetCard(o)).join('')}
@@ -94,23 +94,23 @@ function renderExtensionPage(
         </div>`
       : `<div style="text-align:center;padding:32px;color:var(--text-muted)">
           <span class="ms" style="font-size:48px;opacity:0.3">dashboard</span>
-          <p style="margin:8px 0 0">No widget data yet. The agent will populate this when it runs.</p>
+          <p style="margin:8px 0 0">当前还没有小组件数据。智能体运行后会自动填充。</p>
         </div>`;
 
   const storageSection =
     storage.length > 0
       ? `<div class="extension-storage" style="margin-top:24px">
           <h3 style="font-size:15px;font-weight:600;margin:0 0 12px;display:flex;align-items:center;gap:6px">
-            <span class="ms ms-sm">database</span> Persistent Storage
-            <span style="font-size:12px;font-weight:400;color:var(--text-muted)">(${storage.length} entries)</span>
+            <span class="ms ms-sm">database</span> 持久存储
+            <span style="font-size:12px;font-weight:400;color:var(--text-muted)">（${storage.length} 条）</span>
           </h3>
           <div class="extension-storage-table-wrap" style="overflow-x:auto">
             <table class="extension-storage-table">
               <thead>
                 <tr>
-                  <th>Key</th>
-                  <th>Value</th>
-                  <th>Updated</th>
+                  <th>键</th>
+                  <th>值</th>
+                  <th>更新时间</th>
                 </tr>
               </thead>
               <tbody>
@@ -127,7 +127,7 @@ function renderExtensionPage(
       <h2 style="margin:0;font-size:20px;font-weight:700">${label}</h2>
       <div style="display:flex;gap:8px">
         <button class="btn btn-ghost btn-sm extension-refresh-btn">
-          <span class="ms ms-sm">refresh</span> Refresh
+          <span class="ms ms-sm">refresh</span> 刷新
         </button>
       </div>
     </div>
@@ -163,6 +163,6 @@ function renderStorageRow(item: SkillStorageItem): string {
 function bindExtensionEvents(container: HTMLElement, skillId: string): void {
   container.querySelector('.extension-refresh-btn')?.addEventListener('click', async () => {
     await renderExtensionView(container, skillId);
-    showToast('Extension view refreshed', 'success');
+    showToast('扩展视图已刷新', 'success');
   });
 }

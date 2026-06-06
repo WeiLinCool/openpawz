@@ -70,14 +70,14 @@ export interface TemplateCategoryMeta {
 }
 
 export const TEMPLATE_CATEGORIES: TemplateCategoryMeta[] = [
-  { id: 'alerts', label: 'Alerts', icon: 'notifications_active' },
-  { id: 'reporting', label: 'Reporting', icon: 'bar_chart' },
-  { id: 'sync', label: 'Sync', icon: 'sync' },
-  { id: 'onboarding', label: 'Onboarding', icon: 'waving_hand' },
-  { id: 'productivity', label: 'Productivity', icon: 'bolt' },
-  { id: 'devops', label: 'DevOps', icon: 'terminal' },
-  { id: 'marketing', label: 'Marketing', icon: 'campaign' },
-  { id: 'support', label: 'Support', icon: 'support_agent' },
+  { id: 'alerts', label: '提醒', icon: 'notifications_active' },
+  { id: 'reporting', label: '报告', icon: 'bar_chart' },
+  { id: 'sync', label: '同步', icon: 'sync' },
+  { id: 'onboarding', label: '入门', icon: 'waving_hand' },
+  { id: 'productivity', label: '效率', icon: 'bolt' },
+  { id: 'devops', label: '运维', icon: 'terminal' },
+  { id: 'marketing', label: '营销', icon: 'campaign' },
+  { id: 'support', label: '支持', icon: 'support_agent' },
 ];
 
 // ── Pure helpers ───────────────────────────────────────────────────────
@@ -144,13 +144,13 @@ export function triggerLabel(trigger: TemplateTrigger): string {
 export function statusBadge(status: AutomationStatus): { label: string; icon: string } {
   switch (status) {
     case 'active':
-      return { label: 'Active', icon: 'play_circle' };
+      return { label: '运行中', icon: 'play_circle' };
     case 'paused':
-      return { label: 'Paused', icon: 'pause_circle' };
+      return { label: '已暂停', icon: 'pause_circle' };
     case 'error':
-      return { label: 'Error', icon: 'error' };
+      return { label: '错误', icon: 'error' };
     case 'draft':
-      return { label: 'Draft', icon: 'edit_note' };
+      return { label: '草稿', icon: 'edit_note' };
     default:
       return { label: status, icon: 'help' };
   }

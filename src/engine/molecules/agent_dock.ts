@@ -7,6 +7,7 @@ import type { AgentDockController, AgentDockEntry } from '../atoms/mini-hub';
 import { spriteAvatar } from '../../views/agents/atoms';
 import { escAttr } from '../../components/helpers';
 import { createTesseract, cleanupTesseracts } from '../../components/tesseract';
+import { translateUiText } from '../../i18n';
 
 // ── Constants ────────────────────────────────────────────────────────────
 
@@ -82,13 +83,13 @@ export function createAgentDock(
       .join('');
 
     dockEl.innerHTML = `
-      <button class="agent-dock-toggle${activeHubs.size > 0 ? ' has-active-hubs' : ''}" title="${collapsed ? 'Show agents' : 'Hide agents'}">
+      <button class="agent-dock-toggle${activeHubs.size > 0 ? ' has-active-hubs' : ''}" title="${collapsed ? translateUiText('Show agents') : translateUiText('Hide agents')}">
         <span class="ms ms-sm">${toggleIcon}</span>
       </button>
       <div class="agent-dock-items">
         ${itemsHtml}
-        ${overflowCount > 0 ? `<button class="agent-dock-expand" title="Show ${overflowCount} more">+${overflowCount}</button>` : ''}
-        <button class="agent-dock-new-group" title="New Group Chat">
+        ${overflowCount > 0 ? `<button class="agent-dock-expand" title="${translateUiText(`Show ${overflowCount} more`)}">+${overflowCount}</button>` : ''}
+        <button class="agent-dock-new-group" title="${translateUiText('New Group Chat')}">
           <span class="ms" style="font-size:16px">group_add</span>
         </button>
       </div>

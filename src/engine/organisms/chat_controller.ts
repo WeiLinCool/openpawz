@@ -46,6 +46,7 @@ import {
   clearToolStep,
   type RenderOpts,
 } from '../molecules/chat_renderer';
+import { translateUiText } from '../../i18n';
 import {
   createTokenMeter,
   type TokenMeterController,
@@ -409,19 +410,23 @@ export function finalizeStreaming(
           }
           addMessage({
             role: 'assistant',
-            content: '*(No response received)*',
+              content: translateUiText('*(No response received)*'),
             timestamp: new Date(),
           });
         })
         .catch(() => {
           addMessage({
             role: 'assistant',
-            content: '*(No response received)*',
+            content: translateUiText('*(No response received)*'),
             timestamp: new Date(),
           });
         });
     } else {
-      addMessage({ role: 'assistant', content: '*(No response received)*', timestamp: new Date() });
+      addMessage({
+        role: 'assistant',
+        content: translateUiText('*(No response received)*'),
+        timestamp: new Date(),
+      });
     }
   }
 }
@@ -559,7 +564,11 @@ export async function steerWithMessage(): Promise<void> {
   }
 
   // Show the steering message in the UI
-  addMessage({ role: 'user', content: `🧭 *Steering:* ${content}`, timestamp: new Date() });
+  addMessage({
+    role: 'user',
+    content: `🧭 *${translateUiText('Steering')}:* ${content}`,
+    timestamp: new Date(),
+  });
   if (chatInput) {
     chatInput.value = '';
     chatInput.style.height = 'auto';
@@ -627,7 +636,7 @@ async function handleQueueReady(sessionId: string, message: string, model?: stri
     ss.resolve = resolve;
     ss.timeout = setTimeout(() => {
       console.warn('[chat] Queue-ready: streaming timeout — auto-finalizing');
-      resolve(ss.content || '(Response timed out)');
+      resolve(ss.content || translateUiText('(Response timed out)'));
     }, 600_000);
   });
 
@@ -657,8 +666,8 @@ async function handleQueueReady(sessionId: string, message: string, model?: stri
   } catch (error) {
     console.error('[chat] Queue-ready error:', error);
     if (ss?.el && appState.activeStreams.has(streamKey)) {
-      const errMsg = error instanceof Error ? error.message : 'Failed to get response';
-      finalizeStreaming(ss.content || `Error: ${errMsg}`, undefined, streamKey);
+      const errMsg = error instanceof Error ? error.message : translateUiText('Failed to get response');
+      finalizeStreaming(ss.content || `${translateUiText('Error')}: ${errMsg}`, undefined, streamKey);
     }
   } finally {
     const finalKey = appState.currentSessionKey ?? streamKey;

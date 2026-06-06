@@ -17,6 +17,7 @@ import {
   bumpRateLimit,
   accessMeta,
 } from './atoms';
+import { translateUiText } from '../../i18n';
 
 // ── Confirmation card (injected into chat) ─────────────────────────────
 
@@ -47,25 +48,25 @@ export function renderConfirmationCard(req: ConfirmationRequest): string {
     <div class="guardrail-confirm-card ${meta.cssClass}" data-confirm-id="${req.id}">
       <div class="guardrail-confirm-header">
         <span class="ms" style="color:${meta.color}">${meta.icon}</span>
-        <span class="guardrail-confirm-title">Agent wants to: <strong>${_esc(req.action)}</strong></span>
+        <span class="guardrail-confirm-title">${translateUiText('Agent wants to:')} <strong>${_esc(req.action)}</strong></span>
         <span class="guardrail-service-badge">${_esc(req.serviceName)}</span>
       </div>
       ${targetHtml}
       ${previewHtml}
       <div class="guardrail-confirm-actions">
         <button class="guardrail-btn guardrail-btn-approve" data-action="approve" data-confirm-id="${req.id}">
-          <span class="ms">check</span> Confirm
+          <span class="ms">check</span> ${translateUiText('Confirm')}
         </button>
         ${
           req.risk === 'hard'
             ? ''
             : `
         <button class="guardrail-btn guardrail-btn-edit" data-action="edit" data-confirm-id="${req.id}">
-          <span class="ms">edit</span> Edit
+          <span class="ms">edit</span> ${translateUiText('Edit')}
         </button>`
         }
         <button class="guardrail-btn guardrail-btn-cancel" data-action="cancel" data-confirm-id="${req.id}">
-          <span class="ms">close</span> Cancel
+          <span class="ms">close</span> ${translateUiText('Cancel')}
         </button>
       </div>
     </div>`;
@@ -86,7 +87,7 @@ export function renderRateLimitWarning(
     <div class="guardrail-rate-warning ${isExhausted ? 'exhausted' : ''}">
       <div class="guardrail-rate-header">
         <span class="ms">${isExhausted ? 'error' : 'speed'}</span>
-        <span>${isExhausted ? 'Rate limit reached' : 'Approaching rate limit'} — ${_esc(serviceName)}</span>
+        <span>${isExhausted ? translateUiText('Rate limit reached') : translateUiText('Approaching rate limit')} — ${_esc(serviceName)}</span>
       </div>
       <div class="guardrail-rate-bar">
         <div class="guardrail-rate-fill" style="width:${pct}%"></div>
@@ -99,10 +100,10 @@ export function renderRateLimitWarning(
           ? `
       <div class="guardrail-rate-actions">
         <button class="guardrail-btn guardrail-btn-approve" data-rate-service="${_esc(service)}" data-rate-action="bump">
-          <span class="ms">add</span> Allow 20 more
+          <span class="ms">add</span> ${translateUiText('Allow 20 more')}
         </button>
         <button class="guardrail-btn guardrail-btn-cancel" data-rate-service="${_esc(service)}" data-rate-action="wait">
-          <span class="ms">pause</span> Wait
+          <span class="ms">pause</span> ${translateUiText('Wait')}
         </button>
       </div>`
           : ''
@@ -120,18 +121,18 @@ export function renderDryRunPlan(plan: DryRunPlan): string {
     <div class="guardrail-dryrun" data-plan-id="${plan.id}">
       <div class="guardrail-dryrun-header">
         <span class="ms">playlist_play</span>
-        <span>Planned actions (${plan.totalActions} steps${highCount > 0 ? `, ${highCount} high-risk` : ''})</span>
+        <span>${translateUiText('Planned actions')} (${plan.totalActions} steps${highCount > 0 ? `, ${highCount} high-risk` : ''})</span>
       </div>
       <ol class="guardrail-dryrun-steps">${stepsHtml}</ol>
       <div class="guardrail-dryrun-actions">
         <button class="guardrail-btn guardrail-btn-approve" data-plan-id="${plan.id}" data-plan-action="run-all">
-          <span class="ms">play_arrow</span> Run all
+          <span class="ms">play_arrow</span> ${translateUiText('Run all')}
         </button>
         <button class="guardrail-btn guardrail-btn-edit" data-plan-id="${plan.id}" data-plan-action="step">
-          <span class="ms">skip_next</span> Step-by-step
+          <span class="ms">skip_next</span> ${translateUiText('Step-by-step')}
         </button>
         <button class="guardrail-btn guardrail-btn-cancel" data-plan-id="${plan.id}" data-plan-action="cancel">
-          <span class="ms">close</span> Cancel
+          <span class="ms">close</span> ${translateUiText('Cancel')}
         </button>
       </div>
     </div>`;
@@ -153,7 +154,7 @@ function _renderPlanStep(step: DryRunStep): string {
 export function renderAuditLog(logs: CredentialUsageLog[]): string {
   if (!logs.length) {
     return `<div class="guardrail-audit-empty">
-      <span class="ms">history</span> No credential usage logged yet.
+      <span class="ms">history</span> ${translateUiText('No credential usage logged yet.')}
     </div>`;
   }
 
@@ -176,7 +177,7 @@ export function renderAuditLog(logs: CredentialUsageLog[]): string {
         <td>${_esc(log.service)}</td>
         <td>${_esc(log.action)}</td>
         <td>${_esc(log.accessLevel)}</td>
-        <td>${log.approved ? 'Auto' : 'Manual'}</td>
+        <td>${log.approved ? translateUiText('Auto') : translateUiText('Manual')}</td>
         <td><span class="ms" style="color:${resultColor};font-size:16px">${resultIcon}</span></td>
       </tr>`;
     })
@@ -186,21 +187,21 @@ export function renderAuditLog(logs: CredentialUsageLog[]): string {
     <div class="guardrail-audit">
       <div class="guardrail-audit-header">
         <span class="ms">history</span>
-        <span>Integration Access Log (last ${Math.min(logs.length, 100)} entries)</span>
+        <span>${translateUiText('Integration Access Log')} (${Math.min(logs.length, 100)} entries)</span>
         <button class="guardrail-btn guardrail-btn-cancel guardrail-audit-clear" data-audit-action="clear">
-          <span class="ms">delete_sweep</span> Clear
+          <span class="ms">delete_sweep</span> ${translateUiText('Clear')}
         </button>
       </div>
       <table class="guardrail-audit-table">
         <thead>
           <tr>
-            <th>Time</th>
-            <th>Agent</th>
-            <th>Service</th>
-            <th>Action</th>
-            <th>Access</th>
-            <th>Approval</th>
-            <th>Result</th>
+            <th>${translateUiText('Time')}</th>
+            <th>${translateUiText('Agent')}</th>
+            <th>${translateUiText('Service')}</th>
+            <th>${translateUiText('Action')}</th>
+            <th>${translateUiText('Access')}</th>
+            <th>${translateUiText('Approval')}</th>
+            <th>${translateUiText('Result')}</th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>
@@ -243,7 +244,7 @@ export function renderPermissionEditor(
     <div class="guardrail-permissions">
       <div class="guardrail-perm-header">
         <span class="ms">admin_panel_settings</span>
-        <span>Service Permissions</span>
+        <span>${translateUiText('Service Permissions')}</span>
       </div>
       <div class="guardrail-perm-list">${rows}</div>
     </div>`;
@@ -334,7 +335,7 @@ export function wireGuardrailEvents(container: HTMLElement): void {
       const auditEl = container.querySelector('.guardrail-audit');
       if (auditEl)
         auditEl.innerHTML =
-          '<div class="guardrail-audit-empty"><span class="ms">history</span> Log cleared.</div>';
+          `<div class="guardrail-audit-empty"><span class="ms">history</span> ${translateUiText('Log cleared.')}</div>`;
     }
   });
 

@@ -49,7 +49,7 @@
 .lock-logo-icon {
   width: 64px;
   height: 64px;
-  background: url('/images/pawz-logo-transparent.png') center / contain no-repeat;
+  background: var(--brand-logo-image, url('/images/pawz-logo-transparent.png')) center / contain no-repeat;
   filter: drop-shadow(0 0 8px rgba(255, 77, 77, 0.5));
   animation: lock-logo-glow 3s ease-in-out infinite;
 }

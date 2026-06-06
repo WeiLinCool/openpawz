@@ -21,7 +21,7 @@ export async function loadAgentDefaultsSettings() {
   if (!isConnected()) return;
   const container = $('settings-agent-defaults-content');
   if (!container) return;
-  container.innerHTML = '<p style="color:var(--text-muted)">Loading…</p>';
+  container.innerHTML = '<p style="color:var(--text-muted)">加载中…</p>';
 
   try {
     const config = await pawEngine.getConfig();
@@ -30,7 +30,7 @@ export async function loadAgentDefaultsSettings() {
 
     // ── Default Model & Provider ─────────────────────────────────────────
     const modelSection = document.createElement('div');
-    modelSection.innerHTML = '<h3 class="settings-subsection-title">Model & Provider</h3>';
+    modelSection.innerHTML = '<h3 class="settings-subsection-title">模型与提供商</h3>';
 
     const modelRow = formRow('Default Model', 'The AI model used for new conversations');
     const modelInp = textInput(config.default_model ?? '', 'gpt-4o');
@@ -75,7 +75,7 @@ export async function loadAgentDefaultsSettings() {
     // ── Tool Execution ───────────────────────────────────────────────────
     const toolSection = document.createElement('div');
     toolSection.innerHTML =
-      '<h3 class="settings-subsection-title" style="margin-top:20px">Tool Execution</h3>';
+      '<h3 class="settings-subsection-title" style="margin-top:20px">工具执行</h3>';
 
     const roundsRow = formRow(
       'Max Tool Rounds',
@@ -133,16 +133,16 @@ export async function loadAgentDefaultsSettings() {
     // ── System Prompt ────────────────────────────────────────────────────
     const promptSection = document.createElement('div');
     promptSection.innerHTML =
-      '<h3 class="settings-subsection-title" style="margin-top:20px">Default System Prompt</h3>';
+      '<h3 class="settings-subsection-title" style="margin-top:20px">默认系统提示词</h3>';
     promptSection.innerHTML +=
-      '<p class="form-hint" style="margin:0 0 8px;font-size:11px;color:var(--text-muted)">Base instructions prepended to every conversation. Agent soul files (SOUL.md, IDENTITY.md, etc.) are appended on top of this.</p>';
+      '<p class="form-hint" style="margin:0 0 8px;font-size:11px;color:var(--text-muted)">每次对话前都会附加的基础指令。智能体 soul 文件（SOUL.md、IDENTITY.md 等）会追加在其上。</p>';
 
     const promptArea = document.createElement('textarea');
     promptArea.className = 'form-input';
     promptArea.style.cssText =
       'width:100%;min-height:140px;font-family:var(--font-mono);font-size:12px;resize:vertical';
     promptArea.value = config.default_system_prompt ?? '';
-    promptArea.placeholder = 'You are a helpful AI assistant. You have access to tools...';
+    promptArea.placeholder = '你是一名乐于助人的 AI 助手。你可以使用各种工具...';
     promptSection.appendChild(promptArea);
 
     container.appendChild(promptSection);
@@ -150,7 +150,7 @@ export async function loadAgentDefaultsSettings() {
     // ── Memory Defaults ──────────────────────────────────────────────────
     const memSection = document.createElement('div');
     memSection.innerHTML =
-      '<h3 class="settings-subsection-title" style="margin-top:20px">Memory Defaults</h3>';
+      '<h3 class="settings-subsection-title" style="margin-top:20px">记忆默认值</h3>';
 
     const { container: recallToggle, checkbox: recallCb } = toggleSwitch(
       memConfig.auto_recall,
@@ -179,9 +179,9 @@ export async function loadAgentDefaultsSettings() {
     // ── Embedding Configuration ──────────────────────────────────────────
     const embSection = document.createElement('div');
     embSection.innerHTML =
-      '<h3 class="settings-subsection-title" style="margin-top:20px">Embedding (Semantic Search)</h3>';
+      '<h3 class="settings-subsection-title" style="margin-top:20px">嵌入（语义搜索）</h3>';
     embSection.innerHTML +=
-      '<p class="form-hint" style="margin:0 0 8px;font-size:11px;color:var(--text-muted)">Embeddings power semantic memory search. Choose a provider — Ollama runs locally, or use your existing cloud API key. Pawz will always fall back to keyword matching if embeddings are unavailable.</p>';
+      '<p class="form-hint" style="margin:0 0 8px;font-size:11px;color:var(--text-muted)">嵌入向量用于驱动语义记忆搜索。请选择一个提供商 - Ollama 可本地运行，也可以使用你现有的云端 API Key。若嵌入不可用，Pawz 会自动回退到关键词匹配。</p>';
 
     // ── Embedding Provider selector ──────────────────────────────────────
     const embProviderRow = formRow(
@@ -210,20 +210,20 @@ export async function loadAgentDefaultsSettings() {
       'display:flex;align-items:center;gap:10px;margin:0 0 12px 0;padding:10px 14px;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-secondary, rgba(255,255,255,0.03))';
     const autoSetupBtn = document.createElement('button');
     autoSetupBtn.className = 'btn btn-primary btn-sm';
-    autoSetupBtn.textContent = 'Auto-Setup Ollama Embeddings';
+    autoSetupBtn.textContent = '自动配置 Ollama 嵌入';
     autoSetupBtn.style.whiteSpace = 'nowrap';
     const autoSetupStatus = document.createElement('span');
     autoSetupStatus.style.cssText = 'font-size:12px;color:var(--text-muted);line-height:1.4';
     autoSetupStatus.textContent =
-      'Checks Ollama, starts it if needed, and pulls the embedding model';
+      '检查 Ollama，必要时启动它，并拉取嵌入模型';
     autoSetupRow.appendChild(autoSetupBtn);
     autoSetupRow.appendChild(autoSetupStatus);
     ollamaSection.appendChild(autoSetupRow);
 
     autoSetupBtn.addEventListener('click', async () => {
       autoSetupBtn.disabled = true;
-      autoSetupBtn.textContent = '⏳ Setting up…';
-      autoSetupStatus.textContent = 'Starting Ollama and checking embedding model…';
+      autoSetupBtn.textContent = '⏳ 正在配置…';
+      autoSetupStatus.textContent = '正在启动 Ollama 并检查嵌入模型…';
       autoSetupStatus.style.color = 'var(--text-muted)';
       try {
         // Save current form values first
@@ -239,14 +239,14 @@ export async function loadAgentDefaultsSettings() {
           autoSetupStatus.textContent = `✗ ${result.error}`;
           autoSetupStatus.style.color = 'var(--text-danger)';
         } else {
-          let msg = `✓ Ready! ${result.model_name} — ${result.embedding_dims} dimensions`;
-          if (result.was_auto_started) msg += ' (Ollama auto-started)';
-          if (result.was_auto_pulled) msg += ' (model auto-pulled)';
+          let msg = `✓ 已就绪！${result.model_name} — ${result.embedding_dims} 维`;
+          if (result.was_auto_started) msg += '（Ollama 已自动启动）';
+          if (result.was_auto_pulled) msg += '（模型已自动拉取）';
           autoSetupStatus.textContent = msg;
           autoSetupStatus.style.color = 'var(--text-success)';
           // Update dims field with actual value
           if (result.embedding_dims > 0) embDimsInp.value = String(result.embedding_dims);
-          showToast('Semantic memory is ready!', 'success');
+          showToast('语义记忆已就绪！', 'success');
         }
       } catch (e) {
         const err = e instanceof Error ? e.message : String(e);
@@ -254,13 +254,13 @@ export async function loadAgentDefaultsSettings() {
         autoSetupStatus.style.color = 'var(--text-danger)';
       } finally {
         autoSetupBtn.disabled = false;
-        autoSetupBtn.textContent = 'Auto-Setup Ollama Embeddings';
+        autoSetupBtn.textContent = '自动配置 Ollama 嵌入';
       }
     });
 
     const embUrlRow = formRow(
-      'Ollama URL',
-      'Where Ollama is running (default: http://localhost:11434)',
+      'Ollama 地址',
+      'Ollama 的运行地址（默认：http://localhost:11434）',
     );
     const embUrlInp = textInput(
       memConfig.embedding_base_url || 'http://localhost:11434',
@@ -270,7 +270,7 @@ export async function loadAgentDefaultsSettings() {
     embUrlRow.appendChild(embUrlInp);
     ollamaSection.appendChild(embUrlRow);
 
-    const embModelRow = formRow('Embedding Model', 'Model for generating embeddings');
+    const embModelRow = formRow('嵌入模型', '用于生成嵌入向量的模型');
     const embModelInp = textInput(
       memConfig.embedding_model || 'nomic-embed-text',
       'nomic-embed-text',
@@ -307,13 +307,13 @@ export async function loadAgentDefaultsSettings() {
     cloudInfo.style.cssText =
       'padding:10px 14px;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-secondary, rgba(255,255,255,0.03));margin:0 0 12px 0';
     cloudInfo.innerHTML = `
-      <p style="margin:0 0 6px;font-size:12px;color:var(--text-primary)"><strong>Using your configured chat provider for embeddings</strong></p>
+      <p style="margin:0 0 6px;font-size:12px;color:var(--text-primary)"><strong>使用你已配置的聊天提供商生成嵌入</strong></p>
       <p style="margin:0;font-size:11px;color:var(--text-muted)">
-        The embedding model is auto-selected based on your provider:<br>
+        嵌入模型会根据你的提供商自动选择：<br>
         <strong>OpenAI</strong> → text-embedding-3-small &nbsp;|&nbsp;
         <strong>Google</strong> → text-embedding-004 &nbsp;|&nbsp;
         <strong>Mistral</strong> → mistral-embed<br>
-        No extra configuration needed — your existing API key is used.
+        无需额外配置 - 会直接使用你已有的 API Key。
       </p>
     `;
     cloudSection.appendChild(cloudInfo);
@@ -321,8 +321,8 @@ export async function loadAgentDefaultsSettings() {
 
     // ── Shared fields (dims, test, backfill) ─────────────────────────────
     const embDimsRow = formRow(
-      'Embedding Dimensions',
-      'Auto-detected when you run Test or Auto-Setup',
+      '嵌入维度',
+      '在你运行“测试”或“自动配置”时自动检测',
     );
     const embDimsInp = numberInput(memConfig.embedding_dims || 768, {
       min: 64,
@@ -338,11 +338,11 @@ export async function loadAgentDefaultsSettings() {
     embStatusRow.style.cssText = 'display:flex;align-items:center;gap:8px;margin:10px 0';
     const testBtn = document.createElement('button');
     testBtn.className = 'btn btn-sm';
-    testBtn.textContent = 'Test Connection';
+    testBtn.textContent = '测试连接';
     const backfillBtn = document.createElement('button');
     backfillBtn.className = 'btn btn-sm';
-    backfillBtn.textContent = 'Backfill Embeddings';
-    backfillBtn.title = 'Embed any memories that were stored without vectors';
+    backfillBtn.textContent = '补齐嵌入';
+    backfillBtn.title = '为任何未带向量存储的记忆生成嵌入';
     const statusSpan = document.createElement('span');
     statusSpan.style.cssText = 'font-size:12px;color:var(--text-muted)';
     embStatusRow.appendChild(testBtn);
@@ -352,7 +352,7 @@ export async function loadAgentDefaultsSettings() {
 
     testBtn.addEventListener('click', async () => {
       testBtn.disabled = true;
-      statusSpan.textContent = 'Testing...';
+      statusSpan.textContent = '测试中...';
       statusSpan.style.color = 'var(--text-muted)';
       try {
         // Save current values first so the test uses them
@@ -364,7 +364,7 @@ export async function loadAgentDefaultsSettings() {
         await pawEngine.setMemoryConfig(mc);
 
         const dims = await pawEngine.testEmbedding();
-        statusSpan.textContent = `✓ Connected — ${dims} dimensions`;
+        statusSpan.textContent = `✓ 已连接 — ${dims} 维`;
         statusSpan.style.color = 'var(--text-success)';
         if (dims > 0) embDimsInp.value = String(dims);
       } catch (e) {
@@ -378,15 +378,15 @@ export async function loadAgentDefaultsSettings() {
 
     backfillBtn.addEventListener('click', async () => {
       backfillBtn.disabled = true;
-      statusSpan.textContent = 'Backfilling…';
+      statusSpan.textContent = '正在补齐…';
       statusSpan.style.color = 'var(--text-muted)';
       try {
         const result = await pawEngine.memoryBackfill();
-        statusSpan.textContent = `✓ Backfill: ${result.success} embedded, ${result.failed} failed`;
+        statusSpan.textContent = `✓ 补齐完成：${result.success} 个已嵌入，${result.failed} 个失败`;
         statusSpan.style.color =
           result.failed > 0 ? 'var(--text-warning, orange)' : 'var(--text-success)';
       } catch (e) {
-        statusSpan.textContent = `✗ Backfill failed: ${e instanceof Error ? e.message : e}`;
+        statusSpan.textContent = `✗ 补齐失败：${e instanceof Error ? e.message : e}`;
         statusSpan.style.color = 'var(--text-danger)';
       } finally {
         backfillBtn.disabled = false;
@@ -410,22 +410,22 @@ export async function loadAgentDefaultsSettings() {
         if (prov === 'auto' || prov === 'ollama') {
           const embStatus = await pawEngine.embeddingStatus();
           if (embStatus.ollama_running && embStatus.model_available) {
-            statusSpan.textContent = `✓ Ollama running, ${embStatus.model_name} available`;
+            statusSpan.textContent = `✓ Ollama 正在运行，${embStatus.model_name} 可用`;
             statusSpan.style.color = 'var(--text-success)';
-            autoSetupStatus.textContent = `✓ Ollama is running and ${embStatus.model_name} is available`;
+            autoSetupStatus.textContent = `✓ Ollama 正在运行，${embStatus.model_name} 已可用`;
             autoSetupStatus.style.color = 'var(--text-success)';
           } else if (embStatus.ollama_running) {
-            statusSpan.textContent = `Ollama running but ${embStatus.model_name} not pulled yet`;
+            statusSpan.textContent = `Ollama 正在运行，但 ${embStatus.model_name} 还未拉取`;
             statusSpan.style.color = 'var(--text-warning, orange)';
-            autoSetupStatus.textContent = `Ollama is running but ${embStatus.model_name} needs to be pulled — click Auto-Setup`;
+            autoSetupStatus.textContent = `Ollama 正在运行，但需要拉取 ${embStatus.model_name} - 请点击自动配置`;
             autoSetupStatus.style.color = 'var(--text-warning, orange)';
           } else {
             statusSpan.textContent =
-              'Ollama not detected — click Auto-Setup or switch to a cloud provider';
+              '未检测到 Ollama - 请点击自动配置或切换到云端提供商';
             statusSpan.style.color = 'var(--text-warning, orange)';
           }
         } else {
-          statusSpan.textContent = `Using ${prov} provider for embeddings — click Test to verify`;
+          statusSpan.textContent = `正在使用 ${prov} 提供商生成嵌入 - 点击测试进行验证`;
           statusSpan.style.color = 'var(--text-muted)';
         }
       } catch {
@@ -464,15 +464,15 @@ export async function loadAgentDefaultsSettings() {
             mc.embedding_dims = parseInt(embDimsInp.value) || 768;
             await pawEngine.setMemoryConfig(mc);
 
-            showToast('Agent defaults saved', 'success');
+            showToast('智能体默认设置已保存', 'success');
           } catch (e) {
-            showToast(`Save failed: ${e instanceof Error ? e.message : e}`, 'error');
+            showToast(`保存失败：${e instanceof Error ? e.message : e}`, 'error');
           }
         },
         () => loadAgentDefaultsSettings(),
       ),
     );
   } catch (e) {
-    container.innerHTML = `<p style="color:var(--danger)">Failed to load: ${esc(String(e))}</p>`;
+    container.innerHTML = `<p style="color:var(--danger)">加载失败：${esc(String(e))}</p>`;
   }
 }

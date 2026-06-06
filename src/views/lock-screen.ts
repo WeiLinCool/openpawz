@@ -7,6 +7,7 @@
 
 import { invoke } from '@tauri-apps/api/core';
 import { lockScreenUnlock, shakeElement } from '../components/animations';
+import { brand } from '../brand';
 
 const $ = (id: string) => document.getElementById(id);
 const LOCK_MODE_KEY = 'paw-lock-mode';
@@ -217,7 +218,7 @@ async function showSetupForm() {
   $('lock-form-setup')!.style.display = '';
   $('lock-auth-options')!.style.display = '';
   $('lock-passphrase-subform')!.style.display = 'none';
-  $('lock-subtitle')!.textContent = 'Welcome to OpenPawz';
+  $('lock-subtitle')!.textContent = `Welcome to ${brand.appName}`;
   $('lock-setup-error')!.textContent = '';
   _setupBothMode = false;
 
@@ -272,7 +273,7 @@ function handleSetupBack() {
   _setupBothMode = false;
   $('lock-auth-options')!.style.display = '';
   $('lock-passphrase-subform')!.style.display = 'none';
-  $('lock-subtitle')!.textContent = 'Welcome to OpenPawz';
+  $('lock-subtitle')!.textContent = `Welcome to ${brand.appName}`;
   $('lock-setup-error')!.textContent = '';
 }
 

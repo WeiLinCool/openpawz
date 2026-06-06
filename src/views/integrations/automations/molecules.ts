@@ -53,18 +53,18 @@ export function renderAutomations(container: HTMLElement): void {
 
   container.innerHTML = `
     <div class="automations-header">
-      <h2><span class="ms ms-lg">auto_fix_high</span> Automations</h2>
+      <h2><span class="ms ms-lg">auto_fix_high</span> 自动化</h2>
       <p class="automations-subtitle">
-        ${TEMPLATE_CATALOG.length} templates · ${active.length} active
+        ${TEMPLATE_CATALOG.length} 个模板 · ${active.length} 个运行中
       </p>
     </div>
 
     <div class="automations-tabs">
       <button class="automations-tab ${_tab === 'templates' ? 'active' : ''}" data-tab="templates">
-        <span class="ms ms-sm">library_books</span> Templates
+        <span class="ms ms-sm">library_books</span> 模板
       </button>
       <button class="automations-tab ${_tab === 'active' ? 'active' : ''}" data-tab="active">
-        <span class="ms ms-sm">play_circle</span> Active (${active.length})
+        <span class="ms ms-sm">play_circle</span> 运行中（${active.length}）
       </button>
     </div>
 
@@ -103,12 +103,12 @@ function _renderTemplatesTab(body: HTMLElement): void {
       <div class="automations-search-wrap">
         <span class="ms ms-sm">search</span>
         <input type="text" class="automations-search" id="auto-search"
-               placeholder="Search templates…" value="${escHtml(_searchQuery)}" />
+               placeholder="搜索模板…" value="${escHtml(_searchQuery)}" />
       </div>
     </div>
 
     <div class="automations-cat-pills" id="auto-cat-pills">
-      <button class="integrations-cat-pill ${_activeCategory === 'all' ? 'active' : ''}" data-cat="all">All</button>
+      <button class="integrations-cat-pill ${_activeCategory === 'all' ? 'active' : ''}" data-cat="all">全部</button>
       ${TEMPLATE_CATEGORIES.map(
         (c) => `
         <button class="integrations-cat-pill ${_activeCategory === c.id ? 'active' : ''}" data-cat="${c.id}">
@@ -123,7 +123,7 @@ function _renderTemplatesTab(body: HTMLElement): void {
         filtered.length === 0
           ? `<div class="integrations-empty">
             <span class="ms ms-lg">search_off</span>
-            <p>No templates match your search</p>
+            <p>没有模板匹配当前搜索</p>
           </div>`
           : filtered.map((t) => renderTemplateCard(t, connectedIds)).join('')
       }
@@ -140,12 +140,12 @@ function _renderActiveTab(body: HTMLElement): void {
 
   if (active.length === 0) {
     body.innerHTML = `
-      <div class="automations-empty-active">
-        <span class="ms ms-xl">auto_fix_high</span>
-        <h3>No active automations yet</h3>
-        <p>Activate a template or ask your agent to build one.</p>
+    <div class="automations-empty-active">
+      <span class="ms ms-xl">auto_fix_high</span>
+      <h3>当前没有运行中的自动化</h3>
+      <p>启用一个模板，或者让你的智能体帮你创建一个。</p>
         <button class="btn btn-ghost btn-sm" id="switch-to-templates">
-          <span class="ms ms-sm">library_books</span> Browse templates
+          <span class="ms ms-sm">library_books</span> 浏览模板
         </button>
       </div>
     `;
@@ -257,9 +257,9 @@ export function renderServiceTemplates(container: HTMLElement, serviceId: string
 
   if (templates.length === 0) {
     container.innerHTML = `
-      <div class="automation-svc-empty">
-        <p>No templates yet for this service.</p>
-        <p class="automation-svc-hint">Ask your agent: "Set up an automation for ${svcName(serviceId)}"</p>
+    <div class="automation-svc-empty">
+        <p>这个服务目前还没有模板。</p>
+        <p class="automation-svc-hint">让你的智能体帮你：“为 ${svcName(serviceId)} 设置一个自动化”</p>
       </div>
     `;
     return;

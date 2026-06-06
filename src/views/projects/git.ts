@@ -107,7 +107,7 @@ export function renderGitBanner(git: GitInfo, projectPath: string): string {
   if (!git.isRepo) {
     return `
       <div class="git-banner git-banner--none" style="margin-top:12px;padding:10px 12px;border-radius:8px;background:var(--surface-2, rgba(255,255,255,0.04));font-size:12px;color:var(--text-muted)">
-        <span style="opacity:0.6">Not a git repository</span>
+        <span style="opacity:0.6">不是 git 仓库</span>
         <button class="btn btn-sm git-action" data-action="init" data-path="${escAttr(projectPath)}" style="margin-left:auto;font-size:11px">
           git init
         </button>
@@ -120,8 +120,8 @@ export function renderGitBanner(git: GitInfo, projectPath: string): string {
 
   const dirtyBadge =
     git.dirty !== undefined && git.dirty > 0
-      ? `<span style="font-size:11px;color:var(--warning)">● ${git.dirty} changed</span>`
-      : `<span style="font-size:11px;color:var(--success)">● Clean</span>`;
+      ? `<span style="font-size:11px;color:var(--warning)">● ${git.dirty} 项已修改</span>`
+      : `<span style="font-size:11px;color:var(--success)">● 干净</span>`;
 
   let syncBadge = '';
   if (git.ahead || git.behind) {
@@ -137,7 +137,7 @@ export function renderGitBanner(git: GitInfo, projectPath: string): string {
 
   const lastCommitLine = git.lastCommit
     ? `<div style="font-size:11px;color:var(--text-muted);margin-top:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
-        Latest: ${escHtml(git.lastCommit)}${git.lastCommitDate ? ` <span style="opacity:0.6">(${escHtml(git.lastCommitDate)})</span>` : ''}
+        最近：${escHtml(git.lastCommit)}${git.lastCommitDate ? ` <span style="opacity:0.6">(${escHtml(git.lastCommitDate)})</span>` : ''}
       </div>`
     : '';
 
@@ -152,10 +152,10 @@ export function renderGitBanner(git: GitInfo, projectPath: string): string {
       </div>
       ${lastCommitLine}
       <div class="git-actions" style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
-        ${git.remote ? `<button class="btn btn-sm git-action" data-action="pull" data-path="${escAttr(projectPath)}">⬇ Pull</button>` : ''}
-        ${git.remote ? `<button class="btn btn-sm git-action" data-action="push" data-path="${escAttr(projectPath)}">⬆ Push</button>` : ''}
-        <button class="btn btn-sm git-action" data-action="commit" data-path="${escAttr(projectPath)}"><span class="ms ms-sm">save</span> Commit</button>
-        <button class="btn btn-sm git-action" data-action="status" data-path="${escAttr(projectPath)}" style="margin-left:auto;opacity:0.7;font-size:11px">↻ Refresh</button>
+        ${git.remote ? `<button class="btn btn-sm git-action" data-action="pull" data-path="${escAttr(projectPath)}">⬇ 拉取</button>` : ''}
+        ${git.remote ? `<button class="btn btn-sm git-action" data-action="push" data-path="${escAttr(projectPath)}">⬆ 推送</button>` : ''}
+        <button class="btn btn-sm git-action" data-action="commit" data-path="${escAttr(projectPath)}"><span class="ms ms-sm">save</span> 提交</button>
+        <button class="btn btn-sm git-action" data-action="status" data-path="${escAttr(projectPath)}" style="margin-left:auto;opacity:0.7;font-size:11px">↻ 刷新</button>
       </div>
     </div>`;
 }
@@ -184,45 +184,45 @@ export function bindGitActions(
             const out = await gitExec(path, 'pull');
             if (out !== null) {
               showToast(
-                out.includes('Already up to date') ? 'Already up to date' : 'Pull complete',
+                out.includes('Already up to date') ? '已是最新' : '拉取完成',
                 'success',
               );
             } else {
-              showToast('Pull failed — check remote & credentials', 'error');
+              showToast('拉取失败 - 请检查远程仓库和凭据', 'error');
             }
             break;
           }
           case 'push': {
             const out = await gitExec(path, 'push');
             if (out !== null) {
-              showToast('Push complete', 'success');
+              showToast('推送完成', 'success');
             } else {
-              showToast('Push failed — check remote & credentials', 'error');
+              showToast('推送失败 - 请检查远程仓库和凭据', 'error');
             }
             break;
           }
           case 'commit': {
-            const msg = await promptModal('Commit message:');
+            const msg = await promptModal('提交信息：');
             if (!msg) break;
             const addOut = await gitExec(path, 'add', '-A');
             if (addOut === null) {
-              showToast('git add failed', 'error');
+              showToast('git add 失败', 'error');
               break;
             }
             const commitOut = await gitExec(path, 'commit', '-m', msg);
             if (commitOut !== null) {
-              showToast('Committed!', 'success');
+              showToast('提交成功！', 'success');
             } else {
-              showToast('Commit failed — nothing to commit?', 'error');
+              showToast('提交失败 - 没有可提交的内容？', 'error');
             }
             break;
           }
           case 'init': {
             const initOut = await gitExec(path, 'init');
             if (initOut !== null) {
-              showToast('Initialized git repo', 'success');
+              showToast('已初始化 git 仓库', 'success');
             } else {
-              showToast('git init failed', 'error');
+              showToast('git init 失败', 'error');
             }
             break;
           }
@@ -236,7 +236,7 @@ export function bindGitActions(
         clearGitInfoCache(path);
         await onRefresh(path);
       } catch (err) {
-        showToast(`Git error: ${err instanceof Error ? err.message : err}`, 'error');
+        showToast(`Git 错误：${err instanceof Error ? err.message : err}`, 'error');
       } finally {
         btn.textContent = origText;
         (btn as HTMLButtonElement).disabled = false;

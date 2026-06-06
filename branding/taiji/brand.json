@@ -1,0 +1,15 @@
+{
+  "id": "taiji",
+  "appName": "太极台",
+  "shortName": "太极",
+  "productName": "太极台",
+  "windowTitle": "太极",
+  "identifier": "com.openpawz.taiji-dragon",
+  "tagline": "Your AI command center",
+  "aboutLine": "Local-first intelligence with a new product identity",
+  "repositoryUrl": "https://github.com/OpenPawz/openpawz",
+  "logo": "./logo.png",
+  "favicon": "./favicon.png",
+  "iconsDir": "./icons",
+  "iconFiles": ["32x32.png", "128x128.png", "128x128@2x.png", "icon.icns", "icon.ico"]
+}

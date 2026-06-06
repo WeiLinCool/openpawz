@@ -4,6 +4,7 @@
 
 import { SERVICE_CATALOG } from '../views/integrations/catalog';
 import { escHtml } from './helpers';
+import { translateUiText } from '../i18n';
 import {
   CATEGORIES,
   type ConnectedService,
@@ -43,7 +44,7 @@ export function renderHealthList(connected: ConnectedService[]): void {
   if (!container) return;
 
   if (connected.length === 0) {
-    container.innerHTML = '<div class="integrations-health-empty">No connections yet</div>';
+    container.innerHTML = `<div class="integrations-health-empty">${translateUiText('No connections yet')}</div>`;
     return;
   }
 
@@ -51,10 +52,15 @@ export function renderHealthList(connected: ConnectedService[]): void {
     .slice(0, 8)
     .map((c) => {
       const svc = SERVICE_CATALOG.find((s) => s.id === c.serviceId);
-      const name = svc?.name ?? c.serviceId ?? 'Unknown';
+      const name = svc?.name ?? c.serviceId ?? translateUiText('Unknown');
       const dotClass =
         c.status === 'error' ? 'error' : c.status === 'expired' ? 'warning' : 'healthy';
-      const statusLabel = c.status === 'error' ? 'ERR' : c.status === 'expired' ? 'EXP' : 'OK';
+      const statusLabel =
+        c.status === 'error'
+          ? translateUiText('ERR')
+          : c.status === 'expired'
+            ? translateUiText('EXP')
+            : translateUiText('OK');
       return `<div class="integrations-health-item">
         <span class="integrations-health-dot ${dotClass}"></span>
         <span class="integrations-health-name">${escHtml(name)}</span>

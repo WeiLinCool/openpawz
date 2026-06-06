@@ -85,7 +85,7 @@
 .sidebar-logo {
   width: 32px;
   height: 32px;
-  background: url('/images/pawz-logo-transparent.png') center/contain no-repeat;
+  background: var(--brand-logo-image, url('/images/pawz-logo-transparent.png')) center/contain no-repeat;
   border-radius: var(--radius-sm);
   display: flex;
   align-items: center;

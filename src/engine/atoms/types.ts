@@ -189,6 +189,7 @@ export interface EngineStatus {
 
 export interface EnterpriseStatus {
   enabled: boolean;
+  enterprise_build_mode: boolean;
   configured: boolean;
   authenticated: boolean;
   expired: boolean;

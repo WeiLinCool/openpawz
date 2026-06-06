@@ -27,10 +27,10 @@ export function renderExtensionsTab(
     return `
     <div style="text-align:center;padding:48px 24px">
       <span class="ms" style="font-size:48px;opacity:0.3;display:block;margin-bottom:12px">dashboard</span>
-      <h3 style="margin:0 0 8px;font-size:16px;font-weight:600;color:var(--text-primary)">No extensions</h3>
+      <h3 style="margin:0 0 8px;font-size:16px;font-weight:600;color:var(--text-primary)">暂无扩展</h3>
       <p style="color:var(--text-muted);font-size:13px;margin:0;max-width:400px;margin-inline:auto">
-        Extensions add dashboard widgets and custom views. Create one with the <strong>Create</strong> tab
-        or install community extensions.
+        扩展会添加仪表盘小组件和自定义视图。你可以通过 <strong>创建</strong> 选项卡新建一个，
+        或安装社区扩展。
       </p>
     </div>`;
   }
@@ -42,7 +42,7 @@ export function renderExtensionsTab(
     html += `
     <div style="margin-bottom:24px">
       <h3 style="margin:0 0 12px;font-size:15px;font-weight:600;display:flex;align-items:center;gap:6px">
-        ${msIcon('tab')} Custom Views
+        ${msIcon('tab')} 自定义视图
         <span style="font-size:12px;font-weight:400;color:var(--text-muted)">(${viewTabs.length})</span>
       </h3>
       <div class="skills-card-grid">
@@ -55,13 +55,13 @@ export function renderExtensionsTab(
               <div class="skill-card-compact-info">
                 <strong class="skill-card-name">${escHtml(tab.label)}</strong>
                 <span class="skill-status status-ready">
-                  ${msIcon('check_circle')} Active
+                  ${msIcon('check_circle')} 已启用
                 </span>
               </div>
             </div>
             <div class="skill-badges-row">
-              <span class="skill-tier-badge skill-tier-extension">Extension</span>
-              <span class="skill-badge">${msIcon('tab')} Custom View</span>
+              <span class="skill-tier-badge skill-tier-extension">扩展</span>
+              <span class="skill-badge">${msIcon('tab')} 自定义视图</span>
             </div>
           </div>`,
           )
@@ -76,7 +76,7 @@ export function renderExtensionsTab(
     html += `
     <div>
       <h3 style="margin:0 0 12px;font-size:15px;font-weight:600;display:flex;align-items:center;gap:6px">
-        ${msIcon('dashboard')} Widget Extensions
+        ${msIcon('dashboard')} 小组件扩展
         <span style="font-size:12px;font-weight:400;color:var(--text-muted)">(${widgetExtensions.length})</span>
       </h3>
       <div class="skills-card-grid">

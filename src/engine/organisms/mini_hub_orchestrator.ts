@@ -34,6 +34,7 @@ import { pawEngine } from '../molecules/ipc_client';
 import { extractContent, fileToBase64 } from '../atoms/chat';
 import { showToast } from '../../components/toast';
 import { escHtml, parseDate } from '../../components/helpers';
+import { translateUiText } from '../../i18n';
 
 // ── Module state ─────────────────────────────────────────────────────────
 
@@ -243,14 +244,14 @@ async function openGroupCreationFromDock(): Promise<void> {
   const modal = document.createElement('div');
   modal.className = 'inbox-group-modal';
   modal.innerHTML = `
-    <h3 class="inbox-group-modal-title">New Group Hub</h3>
-    <label class="inbox-group-modal-label">Group Name</label>
-    <input type="text" class="inbox-group-name-input" placeholder="e.g. Research Team" />
-    <label class="inbox-group-modal-label">Select Agents</label>
+    <h3 class="inbox-group-modal-title">${translateUiText('New Group Hub')}</h3>
+    <label class="inbox-group-modal-label">${translateUiText('Group Name')}</label>
+    <input type="text" class="inbox-group-name-input" placeholder="${translateUiText('e.g. Research Team')}" />
+    <label class="inbox-group-modal-label">${translateUiText('Select Agents')}</label>
     <div class="inbox-group-agent-list"></div>
     <div class="inbox-group-modal-actions">
-      <button class="inbox-group-cancel">Cancel</button>
-      <button class="inbox-group-create">Create & Open</button>
+      <button class="inbox-group-cancel">${translateUiText('Cancel')}</button>
+      <button class="inbox-group-create">${translateUiText('Create & Open')}</button>
     </div>
   `;
   const agentListEl = modal.querySelector('.inbox-group-agent-list')!;

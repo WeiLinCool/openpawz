@@ -31,7 +31,7 @@ export function initEngineSettings(): void {
     if (configPanel) configPanel.style.display = engineMode ? '' : 'none';
 
     if (saveStatus) {
-      saveStatus.textContent = 'Reload the app to switch modes';
+      saveStatus.textContent = '请重载应用以切换模式';
       saveStatus.style.color = 'var(--text-warning, orange)';
     }
   });
@@ -66,7 +66,7 @@ export function initEngineSettings(): void {
 
       if (!apiKey && kind !== 'ollama') {
         if (saveStatus) {
-          saveStatus.textContent = 'API key is required';
+          saveStatus.textContent = '需要 API 密钥';
           saveStatus.style.color = 'var(--text-danger, red)';
         }
         return;
@@ -94,7 +94,7 @@ export function initEngineSettings(): void {
       }
 
       if (saveStatus) {
-        saveStatus.textContent = 'Saved! ✓';
+        saveStatus.textContent = '已保存！✓';
         saveStatus.style.color = 'var(--text-success, green)';
         setTimeout(() => {
           if (saveStatus) saveStatus.textContent = '';
@@ -110,7 +110,7 @@ export function initEngineSettings(): void {
     } catch (e) {
       console.error('[engine-settings] Save failed:', e);
       if (saveStatus) {
-        saveStatus.textContent = `Error: ${e}`;
+        saveStatus.textContent = `错误：${e}`;
         saveStatus.style.color = 'var(--text-danger, red)';
       }
     }
@@ -128,24 +128,25 @@ async function renderProvidersList(): Promise<void> {
 
     if (!providers.length) {
       list.innerHTML =
-        '<div style="color:var(--text-muted);font-size:13px;padding:8px 0">No providers configured yet. Add one above.</div>';
+        '<div style="color:var(--text-muted);font-size:13px;padding:8px 0">当前还没有配置提供商。请在上方添加。</div>';
       return;
     }
 
-    list.innerHTML = `<label class="form-label" style="margin-top:12px">Configured Providers</label>${providers
+    list.innerHTML = `<label class="form-label" style="margin-top:12px">已配置的提供商</label>${providers
       .map((p) => {
         const label = ID_LABELS[p.id] || KIND_LABELS[p.kind] || p.id;
+        const hideBaseUrl = p.id === 'enterprise-cloud';
         const isDefault = p.id === config.default_provider;
         return `<div class="engine-provider-row" style="display:flex;align-items:center;gap:8px;padding:6px 10px;margin:4px 0;background:var(--bg-secondary);border-radius:6px;font-size:13px">
           <span style="flex:1">
             <strong>${escHtml(label)}</strong>
-            <span style="color:var(--text-muted);margin-left:6px">${escHtml(p.default_model ?? '')}${p.base_url ? ` · ${escHtml(p.base_url)}` : ''}</span>
-            ${isDefault ? '<span style="color:var(--accent);margin-left:6px">★ default</span>' : ''}
+            <span style="color:var(--text-muted);margin-left:6px">${escHtml(p.default_model ?? '')}${!hideBaseUrl && p.base_url ? ` · ${escHtml(p.base_url)}` : ''}</span>
+            ${isDefault ? '<span style="color:var(--accent);margin-left:6px">★ 默认</span>' : ''}
           </span>
           <span style="color:var(--text-muted)">${p.api_key ? '<span class="ms ms-sm">key</span>' : p.kind === 'ollama' ? '<span class="ms ms-sm">home</span>' : '<span class="ms ms-sm">warning</span>'}</span>
-          ${!isDefault ? `<button class="btn btn-ghost btn-sm engine-set-default" data-id="${escHtml(p.id)}" title="Set as default" style="padding:2px 6px">★</button>` : ''}
-          <button class="btn btn-ghost btn-sm engine-edit-provider" data-id="${escHtml(p.id)}" title="Edit" style="padding:2px 6px">✎</button>
-          <button class="btn btn-ghost btn-sm engine-remove-provider" data-id="${escHtml(p.id)}" title="Remove" style="padding:2px 6px;color:var(--text-danger,red)">✕</button>
+          ${!isDefault ? `<button class="btn btn-ghost btn-sm engine-set-default" data-id="${escHtml(p.id)}" title="设为默认" style="padding:2px 6px">★</button>` : ''}
+          <button class="btn btn-ghost btn-sm engine-edit-provider" data-id="${escHtml(p.id)}" title="编辑" style="padding:2px 6px">✎</button>
+          <button class="btn btn-ghost btn-sm engine-remove-provider" data-id="${escHtml(p.id)}" title="移除" style="padding:2px 6px;color:var(--text-danger,red)">✕</button>
         </div>`;
       })
       .join('')}`;
@@ -154,12 +155,12 @@ async function renderProvidersList(): Promise<void> {
     list.querySelectorAll('.engine-remove-provider').forEach((btn) => {
       btn.addEventListener('click', async () => {
         const id = (btn as HTMLElement).dataset.id!;
-        if (!(await confirmModal(`Remove provider "${id}"?`))) return;
+        if (!(await confirmModal(`确定移除提供商“${id}”吗？`))) return;
         try {
           await pawEngine.removeProvider(id);
           await renderProvidersList();
         } catch (e) {
-          showToast(`Failed: ${e}`, 'error');
+          showToast(`失败：${e}`, 'error');
         }
       });
     });
@@ -176,7 +177,7 @@ async function renderProvidersList(): Promise<void> {
           await pawEngine.setConfig(cfg);
           await renderProvidersList();
         } catch (e) {
-          showToast(`Failed: ${e}`, 'error');
+          showToast(`失败：${e}`, 'error');
         }
       });
     });
@@ -201,7 +202,7 @@ async function renderProvidersList(): Promise<void> {
         }
         if (apiKeyInput) apiKeyInput.value = p.api_key;
         if (modelInput) modelInput.value = p.default_model ?? '';
-        if (baseUrlInput) baseUrlInput.value = p.base_url ?? '';
+        if (baseUrlInput) baseUrlInput.value = p.id === 'enterprise-cloud' ? '' : p.base_url ?? '';
       });
     });
   } catch (e) {
@@ -234,7 +235,7 @@ async function loadEngineConfig(): Promise<void> {
       }
       if (apiKeyInput) apiKeyInput.value = p.api_key;
       if (modelInput) modelInput.value = p.default_model ?? config.default_model ?? '';
-      if (baseUrlInput) baseUrlInput.value = p.base_url ?? '';
+      if (baseUrlInput) baseUrlInput.value = p.id === 'enterprise-cloud' ? '' : p.base_url ?? '';
     }
 
     // Render the providers list

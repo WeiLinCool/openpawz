@@ -9,7 +9,7 @@ import { findLastIndex } from '../atoms/chat';
 import { tesseractPlaceholder, activateTesseracts } from '../../components/tesseract';
 import type { Message } from '../../types';
 import type { MessageWithAttachments } from '../../state/index';
-import { t } from '../../i18n';
+import { t, translateUiText } from '../../i18n';
 
 // ── Render options ───────────────────────────────────────────────────────
 
@@ -26,15 +26,15 @@ function generateFollowUpSuggestions(content: string): string[] {
 
   // If the response mentions code/implementation, suggest explaining or expanding
   if (lower.includes('function') || lower.includes('class') || lower.includes('```')) {
-    suggestions.push('Explain this in more detail');
+    suggestions.push(translateUiText('Explain this in more detail'));
   }
   // If there's a list/steps, suggest continuing or alternatives
   if ((lower.match(/\d\.\s/g)?.length ?? 0) >= 3 || (lower.match(/^[-•·]\s/gm)?.length ?? 0) >= 3) {
-    suggestions.push('Are there other approaches?');
+    suggestions.push(translateUiText('Are there other approaches?'));
   }
   // If there's an error or warning mentioned
   if (lower.includes('error') || lower.includes('warning') || lower.includes('issue')) {
-    suggestions.push('How do I fix this?');
+    suggestions.push(translateUiText('How do I fix this?'));
   }
   // If it mentions files or configuration
   if (
@@ -43,14 +43,14 @@ function generateFollowUpSuggestions(content: string): string[] {
     lower.includes('.json') ||
     lower.includes('.yaml')
   ) {
-    suggestions.push('Show me an example configuration');
+    suggestions.push(translateUiText('Show me an example configuration'));
   }
   // Generic follow-up if we have room
   if (suggestions.length < 2 && content.length > 200) {
-    suggestions.push('Tell me more');
+    suggestions.push(translateUiText('Tell me more'));
   }
   if (suggestions.length < 3 && content.length > 300) {
-    suggestions.push('Summarize the key points');
+    suggestions.push(translateUiText('Summarize the key points'));
   }
 
   return suggestions.slice(0, 3);
@@ -75,18 +75,18 @@ export function showToolStep(container: HTMLElement, toolName: string): void {
     else streamingMsg.appendChild(stepEl);
   }
   const humanLabels: Record<string, string> = {
-    exec: 'Running command',
-    run_command: 'Running command',
-    write_file: 'Writing file',
-    read_file: 'Reading file',
-    search: 'Searching',
-    web_search: 'Searching the web',
-    fetch: 'Fetching URL',
-    web_read: 'Reading page',
-    list_files: 'Listing files',
-    grep: 'Searching code',
+    exec: translateUiText('Running command'),
+    run_command: translateUiText('Running command'),
+    write_file: translateUiText('Writing file'),
+    read_file: translateUiText('Reading file'),
+    search: translateUiText('Searching'),
+    web_search: translateUiText('Searching the web'),
+    fetch: translateUiText('Fetching URL'),
+    web_read: translateUiText('Reading page'),
+    list_files: translateUiText('Listing files'),
+    grep: translateUiText('Searching code'),
   };
-  const label = humanLabels[toolName] ?? `Using ${toolName}`;
+  const label = humanLabels[toolName] ?? translateUiText(`Using ${toolName}`);
   stepEl.innerHTML = `<span class="ms step-spin" style="font-size:14px">progress_activity</span> ${escHtml(label)}`;
 }
 
@@ -128,7 +128,7 @@ export function renderScreenshotCard(msgContent: string): HTMLElement | null {
   ssCard.style.cssText =
     'margin:8px 0;border-radius:8px;overflow:hidden;border:1px solid var(--border-color);cursor:pointer;max-width:400px';
   ssCard.innerHTML =
-    '<div style="padding:8px;text-align:center;color:var(--text-muted);font-size:12px">Loading screenshot…</div>';
+      `<div style="padding:8px;text-align:center;color:var(--text-muted);font-size:12px">${translateUiText('Loading screenshot…')}</div>`;
   (async () => {
     try {
       const { pawEngine: eng } = await import('./ipc_client');

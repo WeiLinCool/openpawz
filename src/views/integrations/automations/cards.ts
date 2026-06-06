@@ -51,12 +51,12 @@ export function renderTemplateCard(t: AutomationTemplate, connectedIds: Set<stri
       <div class="automation-card-footer">
         ${
           ready
-            ? `<button class="btn btn-primary btn-sm automation-activate-btn" data-template-id="${t.id}">
-              <span class="ms ms-sm">play_arrow</span> Activate
+          ? `<button class="btn btn-primary btn-sm automation-activate-btn" data-template-id="${t.id}">
+              <span class="ms ms-sm">play_arrow</span> 启用
             </button>`
             : `<span class="automation-missing-label">
               <span class="ms ms-sm">link_off</span>
-              Connect ${missing.map(svcName).join(', ')} first
+              先连接 ${missing.map(svcName).join(', ')}
             </span>`
         }
         <span class="automation-setup-time">${escHtml(t.estimatedSetup)}</span>
@@ -94,7 +94,7 @@ export function renderActiveCard(a: ActiveAutomation): string {
         <span class="automation-active-stats">
           ${
             a.lastRunAt
-              ? `Last run: ${formatDate(a.lastRunAt)}
+              ? `最近运行：${formatDate(a.lastRunAt)}
                ${
                  a.lastRunResult === 'success'
                    ? '<span class="ms ms-sm" style="color:var(--success)">check_circle</span>'
@@ -103,18 +103,18 @@ export function renderActiveCard(a: ActiveAutomation): string {
                      : ''
                }
                ${a.lastRunDetails ? `· ${escHtml(a.lastRunDetails)}` : ''}`
-              : 'Not yet run'
+              : '尚未运行'
           }
-          · ${a.runCount} runs
+          · ${a.runCount} 次运行
         </span>
         <div class="automation-active-actions">
           <button class="btn btn-ghost btn-xs auto-toggle-btn"
                   data-auto-id="${a.id}" data-action="${a.status === 'active' ? 'pause' : 'resume'}"
-                  title="${a.status === 'active' ? 'Pause' : 'Resume'}">
+                  title="${a.status === 'active' ? '暂停' : '继续'}">
             <span class="ms ms-sm">${a.status === 'active' ? 'pause' : 'play_arrow'}</span>
           </button>
           <button class="btn btn-ghost btn-xs auto-delete-btn"
-                  data-auto-id="${a.id}" title="Delete">
+                  data-auto-id="${a.id}" title="删除">
             <span class="ms ms-sm">delete</span>
           </button>
         </div>

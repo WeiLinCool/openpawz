@@ -1,3 +1,5 @@
+import { translateUiText } from '../i18n';
+
 // Shared helper functions
 
 export const $ = (id: string) => document.getElementById(id);
@@ -120,7 +122,7 @@ export function populateModelSelect(
   } = {},
 ): void {
   const {
-    defaultLabel = '(use default)',
+    defaultLabel = translateUiText('(use default)'),
     currentValue = '',
     showDefaultModel,
     hideOllama = false,
@@ -138,7 +140,7 @@ export function populateModelSelect(
     defaultOpt.value = defaultLabel === 'Default Model' ? 'default' : '';
     defaultOpt.textContent = showDefaultModel
       ? `${defaultLabel} — ${showDefaultModel}`
-      : (defaultLabel ?? '(use default)');
+      : (defaultLabel ?? translateUiText('(use default)'));
     select.appendChild(defaultOpt);
   }
 
@@ -178,7 +180,7 @@ export function populateModelSelect(
     } else if (prevValue && prevValue !== 'default' && prevValue !== '') {
       // The user's model isn't in our list — add it as a custom entry
       const customGroup = document.createElement('optgroup');
-      customGroup.label = 'Current';
+      customGroup.label = translateUiText('Current');
       const opt = document.createElement('option');
       opt.value = prevValue;
       opt.textContent = prevValue;
@@ -267,8 +269,8 @@ function ensureConfirmModal(): {
         <p id="confirm-modal-message" style="margin: 0; white-space: pre-wrap"></p>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary" id="confirm-modal-cancel" type="button">Cancel</button>
-        <button class="btn btn-danger" id="confirm-modal-ok" type="button">Confirm</button>
+        <button class="btn btn-secondary" id="confirm-modal-cancel" type="button">${translateUiText('Cancel')}</button>
+        <button class="btn btn-danger" id="confirm-modal-ok" type="button">${translateUiText('Confirm')}</button>
       </div>
     </div>
   `;
@@ -291,8 +293,8 @@ export function confirmModal(message: string, title = 'Confirm'): Promise<boolea
     const { overlay, titleEl, messageEl, okBtn, cancelBtn, closeBtn } = ensureConfirmModal();
 
     overlay.dataset.active = 'true';
-    titleEl.textContent = title;
-    messageEl.textContent = message;
+    titleEl.textContent = translateUiText(title);
+    messageEl.textContent = translateUiText(message);
     overlay.style.display = 'flex';
     okBtn?.focus();
 
@@ -362,19 +364,19 @@ function ensureDeleteSessionModal(): {
   overlay.innerHTML = `
     <div class="modal-card" style="width: 440px">
       <div class="modal-header">
-        <h2 class="modal-title">Delete Session</h2>
+        <h2 class="modal-title">${translateUiText('Delete Session')}</h2>
         <button class="btn-icon" id="delete-session-modal-close" type="button">✕</button>
       </div>
       <div class="modal-body" style="display: flex; flex-direction: column; gap: 12px">
-        <p style="margin: 0">Delete this session? This cannot be undone.</p>
+        <p style="margin: 0">${translateUiText('Delete this session? This cannot be undone.')}</p>
         <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none">
           <input type="checkbox" id="delete-session-memory-checkbox" />
-          <span>Also delete memories created in this session</span>
+          <span>${translateUiText('Also delete memories created in this session')}</span>
         </label>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary" id="delete-session-modal-cancel" type="button">Cancel</button>
-        <button class="btn btn-danger" id="delete-session-modal-ok" type="button">Delete Session</button>
+        <button class="btn btn-secondary" id="delete-session-modal-cancel" type="button">${translateUiText('Cancel')}</button>
+        <button class="btn btn-danger" id="delete-session-modal-ok" type="button">${translateUiText('Delete Session')}</button>
       </div>
     </div>
   `;
@@ -484,8 +486,8 @@ function ensurePromptModal(): {
         />
       </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary" id="prompt-modal-cancel" type="button">Cancel</button>
-        <button class="btn btn-primary" id="prompt-modal-ok" type="button">OK</button>
+        <button class="btn btn-secondary" id="prompt-modal-cancel" type="button">${translateUiText('Cancel')}</button>
+        <button class="btn btn-primary" id="prompt-modal-ok" type="button">${translateUiText('OK')}</button>
       </div>
     </div>
   `;
@@ -509,8 +511,8 @@ export function promptModal(title: string, placeholder?: string): Promise<string
 
     console.warn('[promptModal]', title, new Error().stack);
     overlay.dataset.active = 'true';
-    titleEl.textContent = title;
-    input.placeholder = placeholder ?? '';
+    titleEl.textContent = translateUiText(title);
+    input.placeholder = placeholder ? translateUiText(placeholder) : '';
     input.value = '';
     overlay.style.display = 'flex';
     input.focus();

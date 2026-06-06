@@ -855,9 +855,389 @@ const EN_TO_ZH: Record<string, string> = {
   'Security policies saved': '安全策略已保存',
   'Security policies reset to defaults': '安全策略已重置为默认值',
   'Failed to reset security policies': '重置安全策略失败',
+  Confirm: '确认',
+  OK: '确定',
+  Current: '当前',
+  'New Group Chat': '新建群聊',
+  'New Group Hub': '新建群组中心',
+  'Close panel': '关闭面板',
+  'New conversation': '新建对话',
+  'Search agents…': '搜索智能体…',
+  'No agents': '暂无智能体',
+  Groups: '群组',
+  'Show agents': '显示智能体',
+  'Hide agents': '隐藏智能体',
+  'Show more': '显示更多',
+  'Loading screenshot…': '正在加载截图…',
+  '(use default)': '（使用默认值）',
+  'Running command': '正在运行命令',
+  'Writing file': '正在写入文件',
+  'Reading file': '正在读取文件',
+  Searching: '搜索中',
+  'Searching the web': '正在搜索网页',
+  'Fetching URL': '正在获取 URL',
+  'Reading page': '正在读取页面',
+  'Listing files': '正在列出文件',
+  'Searching code': '正在搜索代码',
+  'Using': '正在使用',
+  'Agent wants to:': '智能体想要执行：',
+  'Rate limit reached': '已达到速率限制',
+  'Approaching rate limit': '接近速率限制',
+  'Allow 20 more': '再允许 20 次',
+  Wait: '等待',
+  'Planned actions': '计划的操作',
+  'Run all': '全部运行',
+  'Step-by-step': '逐步执行',
+  'No credential usage logged yet.': '暂无凭据使用记录。',
+  'Integration Access Log': '集成访问日志',
+  'Log cleared.': '日志已清空。',
+  'Service Permissions': '服务权限',
+  Service: '服务',
+  Action: '操作',
+  Access: '权限',
+  Approval: '审批',
+  Auto: '自动',
+  Manual: '手动',
+  'Delete Session': '删除会话',
+  'Also delete memories created in this session': '同时删除此会话中创建的记忆',
+  'Delete this session? This cannot be undone.': '删除此会话？此操作无法撤销。',
+  'Delete this session?': '删除此会话？',
+  'Clear all messages in this session?': '清空此会话中的所有消息？',
+  Gateway: '网关',
+  'Session expired': '会话已过期',
+  'Enterprise Cloud': '企业云',
+  'Sign in to OpenPawz': '登录 OpenPawz',
+  'This build is managed by your organization. Authenticate with enterprise SSO to unlock cloud models, entitlements, and workspace policy.':
+    '此版本由你的组织统一管理。请使用企业 SSO 完成认证，以解锁云端模型、权益和工作区策略。',
+  'Sign in with SSO': '使用 SSO 登录',
+  'Setup guides opening soon': '设置指引即将上线',
+  'Automations scheduler coming soon': '自动化调度器即将上线',
+  'Use Memory Palace for file management': '请使用记忆宫殿管理文件',
+  'Wizard not available in engine mode': '引擎模式下无法使用向导',
+  'Browser control coming soon to the Paw engine': 'Paw 引擎的浏览器控制功能即将上线',
+  'Update installed — restarting…': '更新已安装，正在重启…',
+  'TOML copied to clipboard': 'TOML 已复制到剪贴板',
+  'Research complete! Finding saved.': '研究完成！结果已保存。',
+  'No findings to generate report from': '没有可用于生成报告的发现',
+  'Report generated and saved!': '报告已生成并保存！',
+  'Project created!': '项目已创建！',
+  'Project deleted': '项目已删除',
+  'Project updated': '项目已更新',
+  'Session renamed': '会话已重命名',
+  'Session deleted': '会话已删除',
+  'History cleared': '历史记录已清空',
+  'Session compacted': '会话已压缩',
+  'New conversation started': '已开始新对话',
+  'Not connected': '未连接',
+  'Himalaya skill management coming soon': 'Himalaya 技能管理即将上线',
+  'Email sent!': '邮件已发送！',
+  Archived: '已归档',
+  Deleted: '已删除',
+  'Microphone access denied — Talk Mode requires mic permission':
+    '麦克风访问被拒绝 - 语音模式需要麦克风权限',
+  'Explain this in more detail': '更详细地解释一下',
+  'Are there other approaches?': '还有其他方案吗？',
+  'How do I fix this?': '我该如何修复这个问题？',
+  'Show me an example configuration': '给我看一个配置示例',
+  'Tell me more': '再详细说说',
+  'Summarize the key points': '总结要点',
+  'Agent files managed via Memory Palace': '智能体文件由记忆宫殿管理',
+  'Add Channel': '添加频道',
+  Unknown: '未知',
+  ERR: '错误',
+  EXP: '过期',
+  'Group Name': '群组名称',
+  'Select Agents': '选择智能体',
+  'Create & Open': '创建并打开',
+  'e.g. Research Team': '例如：研究团队',
+  'Send failed': '发送失败',
+  'Steering': '引导中',
+  '*(No response received)*': '*(未收到回复)*',
+  '(Response timed out)': '(回复超时)',
+  'Failed to get response': '获取回复失败',
+  'Group has no members': '群组没有成员',
+  'Squad has no members': '团队没有成员',
+  'Failed to create group': '创建群组失败',
+  'Failed to open squad chat': '打开团队聊天失败',
+  'You need at least 2 agents to create a group': '创建群组至少需要 2 个智能体',
+  'Select at least 2 agents': '请至少选择 2 个智能体',
+  'Enter a group name': '请输入群组名称',
+  'Maximum mini-hubs reached': '已达到最大迷你中心数量',
+  'Mini-hub error': '迷你中心错误',
+  'Group': '群组',
 };
 
 const ZH_TO_EN = Object.fromEntries(Object.entries(EN_TO_ZH).map(([en, zh]) => [zh, en]));
+
+const UI_MESSAGE_PATTERNS: Array<{
+  en: RegExp;
+  zh: (...groups: string[]) => string;
+}> = [
+  {
+    en: /^Using (.+)$/,
+    zh: (tool) => `正在使用 ${tool}`,
+  },
+  {
+    en: /^Show (\d+) more$/,
+    zh: (count) => `显示更多 ${count} 项`,
+  },
+  {
+    en: /^Group "([^"]+)" created — send a message to start$/,
+    zh: (name) => `群组“${name}”已创建 - 发送消息即可开始`,
+  },
+  {
+    en: /^Group "([^"]+)" created$/,
+    zh: (name) => `群组“${name}”已创建`,
+  },
+  {
+    en: /^Sent to (.+)$/,
+    zh: (target) => `已发送到 ${target}`,
+  },
+  {
+    en: /^Queue failed: (.+)$/,
+    zh: (reason) => `队列失败：${reason}`,
+  },
+  {
+    en: /^Steer failed: (.+)$/,
+    zh: (reason) => `引导失败：${reason}`,
+  },
+  {
+    en: /^Failed to reconnect (.+)$/,
+    zh: (service) => `重新连接 ${service} 失败`,
+  },
+  {
+    en: /^Reconnected to (.+)!$/,
+    zh: (service) => `已重新连接到 ${service}！`,
+  },
+  {
+    en: /^OAuth error: (.+)$/,
+    zh: (reason) => `OAuth 错误：${reason}`,
+  },
+  {
+    en: /^n8n OAuth error: (.+)$/,
+    zh: (reason) => `n8n OAuth 错误：${reason}`,
+  },
+  {
+    en: /^Enterprise sign-in failed: (.+)$/,
+    zh: (reason) => `企业登录失败：${reason}`,
+  },
+  {
+    en: /^Message queued — it will be sent after the current response$/,
+    zh: () => '消息已加入队列 - 会在当前回复完成后发送',
+  },
+  {
+    en: /^Steering the agent — wrapping up and redirecting…$/,
+    zh: () => '正在引导智能体 - 收尾并转向下一步…',
+  },
+  {
+    en: /^Maximum mini-hubs reached$/,
+    zh: () => '已达到最大迷你中心数量',
+  },
+  {
+    en: /^You need at least 2 agents to create a group$/,
+    zh: () => '创建群组至少需要 2 个智能体',
+  },
+  {
+    en: /^You need at least 2 agents to create a group chat$/,
+    zh: () => '创建群聊至少需要 2 个智能体',
+  },
+  {
+    en: /^Select at least 2 agents$/,
+    zh: () => '请至少选择 2 个智能体',
+  },
+  {
+    en: /^Select at least 2 agents for a group chat$/,
+    zh: () => '群聊至少需要选择 2 个智能体',
+  },
+  {
+    en: /^Enter a group name$/,
+    zh: () => '请输入群组名称',
+  },
+  {
+    en: /^Please enter a group name$/,
+    zh: () => '请输入群组名称',
+  },
+  {
+    en: /^New conversation started$/,
+    zh: () => '已开始新对话',
+  },
+  {
+    en: /^Session renamed$/,
+    zh: () => '会话已重命名',
+  },
+  {
+    en: /^Session deleted$/,
+    zh: () => '会话已删除',
+  },
+  {
+    en: /^History cleared$/,
+    zh: () => '历史记录已清空',
+  },
+  {
+    en: /^Compact failed$/,
+    zh: () => '压缩失败',
+  },
+  {
+    en: /^Project title is required$/,
+    zh: () => '项目标题为必填项',
+  },
+  {
+    en: /^Project goal is required$/,
+    zh: () => '项目目标为必填项',
+  },
+  {
+    en: /^Project updated$/,
+    zh: () => '项目已更新',
+  },
+  {
+    en: /^Project created$/,
+    zh: () => '项目已创建',
+  },
+  {
+    en: /^Project deleted$/,
+    zh: () => '项目已删除',
+  },
+  {
+    en: /^Project started! The boss agent is orchestrating\.$/,
+    zh: () => '项目已启动！主控智能体正在编排。',
+  },
+  {
+    en: /^Project is already running$/,
+    zh: () => '项目已经在运行',
+  },
+  {
+    en: /^Add at least one agent before running$/,
+    zh: () => '运行前请至少添加一个智能体',
+  },
+  {
+    en: /^Agent ID is required$/,
+    zh: () => '智能体 ID 为必填项',
+  },
+  {
+    en: /^This agent is already on the team$/,
+    zh: () => '该智能体已经在团队中',
+  },
+  {
+    en: /^Added agent (.+)$/,
+    zh: (agent) => `已添加智能体 ${agent}`,
+  },
+  {
+    en: /^Removed agent (.+)$/,
+    zh: (agent) => `已移除智能体 ${agent}`,
+  },
+  {
+    en: /^Delete project "([^"]+)"\? This cannot be undone\.$/,
+    zh: (title) => `删除项目“${title}”？此操作无法撤销。`,
+  },
+  {
+    en: /^Delete this session\? This cannot be undone\.$/,
+    zh: () => '删除此会话？此操作无法撤销。',
+  },
+  {
+    en: /^Delete this session\?$/,
+    zh: () => '删除此会话？',
+  },
+  {
+    en: /^Clear all messages in this session\?$/,
+    zh: () => '清空此会话中的所有消息？',
+  },
+  {
+    en: /^Remove provider "([^"]+)"\?$/,
+    zh: (id) => `移除供应商“${id}”？`,
+  },
+  {
+    en: /^Uninstall (.+)\?$/,
+    zh: (name) => `卸载 ${name}？`,
+  },
+  {
+    en: /^Remove "([^"]+)"\? You can reinstall it later\.$/,
+    zh: (name) => `移除“${name}”？之后仍可重新安装。`,
+  },
+  {
+    en: /^Revoke ALL credentials for (.+)\? This can't be undone\.$/,
+    zh: (skill) => `撤销 ${skill} 的所有凭据？此操作无法撤销。`,
+  },
+  {
+    en: /^Remove MCP server "([^"]+)"\? This cannot be undone\.$/,
+    zh: (name) => `移除 MCP 服务器“${name}”？此操作无法撤销。`,
+  },
+  {
+    en: /^Remove Telegram configuration\?$/,
+    zh: () => '移除 Telegram 配置？',
+  },
+  {
+    en: /^Delete "([^"]+)"\?$/,
+    zh: (subject) => `删除“${subject}”？`,
+  },
+  {
+    en: /^Failed to save: (.+)$/,
+    zh: (reason) => `保存失败：${reason}`,
+  },
+  {
+    en: /^Failed to save squad: (.+)$/,
+    zh: (reason) => `保存团队失败：${reason}`,
+  },
+  {
+    en: /^Failed to add member: (.+)$/,
+    zh: (reason) => `添加成员失败：${reason}`,
+  },
+  {
+    en: /^Failed to create project: (.+)$/,
+    zh: (reason) => `创建项目失败：${reason}`,
+  },
+  {
+    en: /^Failed to delete: (.+)$/,
+    zh: (reason) => `删除失败：${reason}`,
+  },
+  {
+    en: /^Failed to connect: (.+)$/,
+    zh: (reason) => `连接失败：${reason}`,
+  },
+  {
+    en: /^Failed to load dashboards$/,
+    zh: () => '加载仪表板失败',
+  },
+  {
+    en: /^Failed to clear canvas$/,
+    zh: () => '清空画布失败',
+  },
+  {
+    en: /^Failed to open squad chat$/,
+    zh: () => '打开团队聊天失败',
+  },
+  {
+    en: /^Failed to create group$/,
+    zh: () => '创建群组失败',
+  },
+  {
+    en: /^Start failed: (.+)$/,
+    zh: (reason) => `启动失败：${reason}`,
+  },
+  {
+    en: /^Stop failed: (.+)$/,
+    zh: (reason) => `停止失败：${reason}`,
+  },
+  {
+    en: /^Install failed: (.+)$/,
+    zh: (reason) => `安装失败：${reason}`,
+  },
+  {
+    en: /^Uninstall failed: (.+)$/,
+    zh: (reason) => `卸载失败：${reason}`,
+  },
+  {
+    en: /^Cancel failed: (.+)$/,
+    zh: (reason) => `取消失败：${reason}`,
+  },
+  {
+    en: /^Search failed: (.+)$/,
+    zh: (reason) => `搜索失败：${reason}`,
+  },
+  {
+    en: /^Confirm$/,
+    zh: () => '确认',
+  },
+];
 
 let currentLocale: AppLocale = readLocale();
 let observer: MutationObserver | null = null;
@@ -879,6 +1259,16 @@ export function setLocale(locale: AppLocale): void {
 export function t(text: string): string {
   if (currentLocale === 'zh-CN') return EN_TO_ZH[text] ?? text;
   return ZH_TO_EN[text] ?? text;
+}
+
+export function translateUiText(text: string): string {
+  if (currentLocale !== 'zh-CN') return text;
+  if (text in EN_TO_ZH) return EN_TO_ZH[text];
+  for (const pattern of UI_MESSAGE_PATTERNS) {
+    const match = text.match(pattern.en);
+    if (match) return pattern.zh(...match.slice(1));
+  }
+  return text;
 }
 
 export function initI18n(): void {

@@ -2,7 +2,7 @@
 // Renders a bento-grid of agent-generated components.
 
 import { pawEngine } from '../../engine';
-import { $, escHtml, promptModal } from '../../components/helpers';
+import { $, escHtml, promptModal, confirmModal } from '../../components/helpers';
 import { showToast } from '../../components/toast';
 import { formatMarkdown } from '../../components/molecules/markdown';
 import {
@@ -91,7 +91,7 @@ export function renderCanvas(): void {
 
   const tabBarHtml = _state.getTabBarHtml();
 
-  const titleText = dashName ? escHtml(dashName) : 'Canvas';
+  const titleText = dashName ? escHtml(dashName) : '画布';
 
   container.innerHTML = `
     ${tabBarHtml}
@@ -100,36 +100,36 @@ export function renderCanvas(): void {
         <h2><span class="ms">dashboard_customize</span> ${titleText}</h2>
       </div>
       <div class="canvas-toolbar">
-        <button class="btn btn-ghost btn-sm" id="canvas-open-btn" title="Open saved dashboard">
-          <span class="ms ms-sm">folder_open</span> Open
+        <button class="btn btn-ghost btn-sm" id="canvas-open-btn" title="打开已保存的仪表盘">
+          <span class="ms ms-sm">folder_open</span> 打开
         </button>
         ${
           !isEmpty
-            ? `<button class="btn btn-ghost btn-sm" id="canvas-save-btn" title="${hasDashboard ? 'Saved' : 'Save as dashboard'}">
-                <span class="ms ms-sm">${hasDashboard ? 'check_circle' : 'save'}</span> ${hasDashboard ? 'Saved' : 'Save'}
+            ? `<button class="btn btn-ghost btn-sm" id="canvas-save-btn" title="${hasDashboard ? '已保存' : '另存为仪表盘'}">
+                <span class="ms ms-sm">${hasDashboard ? 'check_circle' : 'save'}</span> ${hasDashboard ? '已保存' : '保存'}
               </button>`
             : ''
         }
         ${
           hasDashboard
-            ? `<button class="btn btn-ghost btn-sm" id="canvas-rename-btn" title="Rename dashboard">
-                <span class="ms ms-sm">edit</span> Rename
+            ? `<button class="btn btn-ghost btn-sm" id="canvas-rename-btn" title="重命名仪表盘">
+                <span class="ms ms-sm">edit</span> 重命名
               </button>
-              <button class="btn btn-ghost btn-sm" id="canvas-pin-btn" title="Pin/Unpin dashboard">
-                <span class="ms ms-sm">push_pin</span> Pin
+              <button class="btn btn-ghost btn-sm" id="canvas-pin-btn" title="固定或取消固定仪表盘">
+                <span class="ms ms-sm">push_pin</span> 固定
               </button>
-              <button class="btn btn-ghost btn-sm" id="canvas-popout-btn" title="Open in new window">
+              <button class="btn btn-ghost btn-sm" id="canvas-popout-btn" title="在新窗口打开">
                 <span class="ms ms-sm">open_in_new</span>
               </button>
-              <button class="btn btn-ghost btn-sm canvas-toolbar-danger" id="canvas-delete-btn" title="Delete dashboard">
+              <button class="btn btn-ghost btn-sm canvas-toolbar-danger" id="canvas-delete-btn" title="删除仪表盘">
                 <span class="ms ms-sm">delete</span>
               </button>`
             : ''
         }
         ${
           !isEmpty && !hasDashboard
-            ? `<button class="btn btn-ghost btn-sm" id="canvas-clear-btn" title="Clear canvas">
-                <span class="ms ms-sm">delete_sweep</span> Clear
+            ? `<button class="btn btn-ghost btn-sm" id="canvas-clear-btn" title="清空画布">
+                <span class="ms ms-sm">delete_sweep</span> 清空
               </button>`
             : ''
         }
@@ -152,9 +152,9 @@ function renderEmptyState(): string {
   return `
     <div class="canvas-empty">
       <span class="ms ms-xl">dashboard_customize</span>
-      <h3>No canvas components yet</h3>
-      <p>Ask an agent to visualize data and components will appear here in real-time.</p>
-      <p class="canvas-empty-hint">Try: "Show me a dashboard of my project status"</p>
+      <h3>当前还没有画布组件</h3>
+      <p>让智能体帮你可视化数据，组件就会实时出现在这里。</p>
+      <p class="canvas-empty-hint">试试：“显示我的项目状态仪表盘”</p>
     </div>
   `;
 }
@@ -170,7 +170,7 @@ function renderGrid(components: ParsedCanvasComponent[]): string {
         <div class="canvas-card-header">
           <span class="ms ms-sm">${componentIcon(c.componentType)}</span>
           <span class="canvas-card-title">${escHtml(c.title)}</span>
-          <button class="btn btn-ghost btn-xs canvas-card-remove" data-id="${escHtml(c.id)}" title="Remove">
+            <button class="btn btn-ghost btn-xs canvas-card-remove" data-id="${escHtml(c.id)}" title="移除">
             <span class="ms ms-sm">close</span>
           </button>
         </div>
@@ -268,7 +268,7 @@ function renderTable(data: Record<string, unknown>): string {
   const rawColumns = dataArr(data, 'columns') as unknown[];
   let rows = dataArr(data, 'rows') as unknown[][];
 
-  if (!rawColumns.length) return '<p class="canvas-muted">No columns defined</p>';
+  if (!rawColumns.length) return '<p class="canvas-muted">未定义列</p>';
 
   // Normalise columns: accept strings OR objects like {key, label, header, name}
   const columns = rawColumns.map((c) => {
@@ -318,7 +318,7 @@ function renderTable(data: Record<string, unknown>): string {
     return `
       <div class="canvas-table-wrap">
         <table class="canvas-table"><thead><tr>${thead}</tr></thead></table>
-        <p class="canvas-muted">No data yet</p>
+        <p class="canvas-muted">暂无数据</p>
       </div>`;
   }
 
@@ -336,7 +336,7 @@ function renderTable(data: Record<string, unknown>): string {
         <thead><tr>${thead}</tr></thead>
         <tbody>${tbody}</tbody>
       </table>
-      ${rows.length > 50 ? `<p class="canvas-muted">${rows.length - 50} more rows…</p>` : ''}
+      ${rows.length > 50 ? `<p class="canvas-muted">还有 ${rows.length - 50} 行…</p>` : ''}
     </div>
   `;
 }
@@ -347,10 +347,18 @@ function renderChart(data: Record<string, unknown>): string {
 
 function renderLog(data: Record<string, unknown>): string {
   const entries = dataArr(data, 'entries') as Record<string, unknown>[];
-  if (!entries.length) return '<p class="canvas-muted">No log entries</p>';
+  if (!entries.length) return '<p class="canvas-muted">暂无日志条目</p>';
 
   // Determine which levels are present so we can render filter buttons
   const levels = [...new Set(entries.map((e) => dataStr(e, 'level', 'info')))];
+  const levelLabels: Record<string, string> = {
+    info: '信息',
+    warning: '警告',
+    error: '错误',
+    debug: '调试',
+    success: '成功',
+    trace: '追踪',
+  };
 
   const rows = entries
     .slice(-100) // last 100 entries
@@ -367,7 +375,7 @@ function renderLog(data: Record<string, unknown>): string {
 
   const filters =
     levels.length > 1
-      ? `<div class="canvas-log-filters">${levels.map((l) => `<button class="btn btn-xs canvas-log-filter-btn canvas-log-filter-active" data-log-filter="${escHtml(l)}">${escHtml(l)}</button>`).join('')}</div>`
+      ? `<div class="canvas-log-filters">${levels.map((l) => `<button class="btn btn-xs canvas-log-filter-btn canvas-log-filter-active" data-log-filter="${escHtml(l)}">${escHtml(levelLabels[l] ?? l)}</button>`).join('')}</div>`
       : '';
 
   return `<div class="canvas-log">${filters}${rows}</div>`;
@@ -375,7 +383,7 @@ function renderLog(data: Record<string, unknown>): string {
 
 function renderKv(data: Record<string, unknown>): string {
   const pairs = dataArr(data, 'pairs') as Record<string, unknown>[];
-  if (!pairs.length) return '<p class="canvas-muted">No data</p>';
+  if (!pairs.length) return '<p class="canvas-muted">暂无数据</p>';
 
   const rows = pairs
     .map((p) => {
@@ -394,7 +402,7 @@ function renderCard(data: Record<string, unknown>): string {
 
   const actionBtns = actions
     .map((a) => {
-      const label = dataStr(a, 'label', 'Action');
+      const label = dataStr(a, 'label', '操作');
       const action = dataStr(a, 'action', label);
       return `<button class="btn btn-sm btn-ghost canvas-action-btn" data-canvas-action="${escHtml(action)}">${escHtml(label)}</button>`;
     })
@@ -458,7 +466,7 @@ function renderMarkdown(data: Record<string, unknown>): string {
 
 function renderForm(data: Record<string, unknown>): string {
   const fields = dataArr(data, 'fields') as Record<string, unknown>[];
-  if (!fields.length) return '<p class="canvas-muted">No form fields</p>';
+  if (!fields.length) return '<p class="canvas-muted">暂无表单字段</p>';
 
   const inputs = fields
     .map((f) => {
@@ -474,7 +482,7 @@ function renderForm(data: Record<string, unknown>): string {
     })
     .join('');
 
-  return `<form class="canvas-form" data-canvas-form>${inputs}<button type="submit" class="btn btn-sm btn-primary canvas-form-submit">Submit</button></form>`;
+  return `<form class="canvas-form" data-canvas-form>${inputs}<button type="submit" class="btn btn-sm btn-primary canvas-form-submit">提交</button></form>`;
 }
 
 // ── Timeline ──────────────────────────────────────────────────────────
@@ -486,11 +494,11 @@ function renderTimeline(data: Record<string, unknown>): string {
   if (!events.length) events = dataArr(data, 'entries') as Record<string, unknown>[];
   if (!events.length) events = dataArr(data, 'steps') as Record<string, unknown>[];
   if (!events.length) events = dataArr(data, 'milestones') as Record<string, unknown>[];
-  if (!events.length) return '<p class="canvas-muted">No timeline events</p>';
+  if (!events.length) return '<p class="canvas-muted">暂无时间线事件</p>';
 
   const items = events
     .map((ev, i) => {
-      const label = dataStr(ev, 'label', `Step ${i + 1}`);
+      const label = dataStr(ev, 'label', `步骤 ${i + 1}`);
       const time = dataStr(ev, 'time');
       const detail = dataStr(ev, 'detail');
       const status = dataStr(ev, 'status', 'pending'); // done | active | pending
@@ -518,7 +526,7 @@ function renderTimeline(data: Record<string, unknown>): string {
 
 function renderChecklist(data: Record<string, unknown>, componentId: string): string {
   const items = dataArr(data, 'items') as Record<string, unknown>[];
-  if (!items.length) return '<p class="canvas-muted">No checklist items</p>';
+  if (!items.length) return '<p class="canvas-muted">暂无检查项</p>';
 
   const total = items.length;
   const done = items.filter((it) => it.checked === true || it.done === true).length;
@@ -526,7 +534,7 @@ function renderChecklist(data: Record<string, unknown>, componentId: string): st
 
   const rows = items
     .map((it, i) => {
-      const label = dataStr(it, 'label', `Item ${i + 1}`);
+      const label = dataStr(it, 'label', `条目 ${i + 1}`);
       const checked = it.checked === true || it.done === true;
       return `<div class="canvas-cl-item${checked ? ' canvas-cl-done' : ''}" data-cl-index="${i}" data-cl-component="${escHtml(componentId)}" role="button" tabindex="0" style="cursor:pointer">
         <span class="canvas-cl-check">${checked ? '&#10003;' : ''}</span>
@@ -591,20 +599,20 @@ function renderCountdown(data: Record<string, unknown>, componentId: string): st
   const label = dataStr(data, 'label');
   const format = dataStr(data, 'format', 'dhms'); // d | hms | dhms
 
-  if (!target) return '<p class="canvas-muted">No target date set</p>';
+  if (!target) return '<p class="canvas-muted">未设置目标日期</p>';
 
   // Render static placeholder — the animate-on-mount wiring will start the ticker
   return `
     <div class="canvas-countdown" data-countdown-id="${escHtml(componentId)}" data-target="${escHtml(target)}" data-format="${escHtml(format)}">
       ${label ? `<div class="canvas-countdown-label">${escHtml(label)}</div>` : ''}
       <div class="canvas-countdown-digits">
-        <div class="canvas-cd-unit"><span class="canvas-cd-num" data-cd="d">--</span><span class="canvas-cd-lbl">DAYS</span></div>
+        <div class="canvas-cd-unit"><span class="canvas-cd-num" data-cd="d">--</span><span class="canvas-cd-lbl">天</span></div>
         <div class="canvas-cd-sep">:</div>
-        <div class="canvas-cd-unit"><span class="canvas-cd-num" data-cd="h">--</span><span class="canvas-cd-lbl">HRS</span></div>
+        <div class="canvas-cd-unit"><span class="canvas-cd-num" data-cd="h">--</span><span class="canvas-cd-lbl">小时</span></div>
         <div class="canvas-cd-sep">:</div>
-        <div class="canvas-cd-unit"><span class="canvas-cd-num" data-cd="m">--</span><span class="canvas-cd-lbl">MIN</span></div>
+        <div class="canvas-cd-unit"><span class="canvas-cd-num" data-cd="m">--</span><span class="canvas-cd-lbl">分</span></div>
         <div class="canvas-cd-sep">:</div>
-        <div class="canvas-cd-unit"><span class="canvas-cd-num" data-cd="s">--</span><span class="canvas-cd-lbl">SEC</span></div>
+        <div class="canvas-cd-unit"><span class="canvas-cd-num" data-cd="s">--</span><span class="canvas-cd-lbl">秒</span></div>
       </div>
     </div>
   `;
@@ -614,10 +622,10 @@ function renderCountdown(data: Record<string, unknown>, componentId: string): st
 
 function renderImage(data: Record<string, unknown>): string {
   const src = dataStr(data, 'src') || dataStr(data, 'url');
-  const alt = dataStr(data, 'alt', 'Image');
+  const alt = dataStr(data, 'alt', '图片');
   const caption = dataStr(data, 'caption');
 
-  if (!src) return '<p class="canvas-muted">No image source</p>';
+  if (!src) return '<p class="canvas-muted">没有图片来源</p>';
 
   return `
     <div class="canvas-image">
@@ -636,7 +644,7 @@ function renderEmbed(data: Record<string, unknown>): string {
   const height = dataNum(data, 'height', 300);
   const libraries = dataArr(data, 'libraries') as string[];
 
-  if (!html && !js) return '<p class="canvas-muted">No embed content</p>';
+  if (!html && !js) return '<p class="canvas-muted">没有嵌入内容</p>';
 
   // Build a self-contained HTML document for the sandboxed iframe
   const libTags = libraries.map((lib) => `<script src="${lib}"><\/script>`).join('\n');
@@ -711,7 +719,7 @@ export function pushComponent(id: string, comp: CanvasComponent): void {
         <div class="canvas-card-header">
           <span class="ms ms-sm">${componentIcon(parsed.componentType)}</span>
           <span class="canvas-card-title">${escHtml(parsed.title)}</span>
-          <button class="btn btn-ghost btn-xs canvas-card-remove" data-id="${escHtml(parsed.id)}" title="Remove">
+          <button class="btn btn-ghost btn-xs canvas-card-remove" data-id="${escHtml(parsed.id)}" title="移除">
             <span class="ms ms-sm">close</span>
           </button>
         </div>
@@ -870,15 +878,15 @@ function activateLiveWidgets(scope?: HTMLElement): void {
 
       // Dispatch event for external handlers (agents, automation)
       document.dispatchEvent(new CustomEvent('canvas:form-submit', { detail: values }));
-      showToast('Form submitted', 'success');
+      showToast('表单已提交', 'success');
 
       // Visual feedback — briefly highlight submit button
       const btn = form.querySelector<HTMLButtonElement>('.canvas-form-submit');
       if (btn) {
-        btn.textContent = 'Submitted ✓';
+        btn.textContent = '已提交 ✓';
         btn.disabled = true;
         setTimeout(() => {
-          btn.textContent = 'Submit';
+          btn.textContent = '提交';
           btn.disabled = false;
         }, 2000);
       }
@@ -892,7 +900,7 @@ function activateLiveWidgets(scope?: HTMLElement): void {
     btn.addEventListener('click', () => {
       const action = btn.dataset.canvasAction ?? btn.textContent ?? 'action';
       document.dispatchEvent(new CustomEvent('canvas:action', { detail: { action } }));
-      showToast(`Action: ${action}`, 'info');
+      showToast(`操作：${action}`, 'info');
     });
   });
 
@@ -983,9 +991,9 @@ function wireEvents(): void {
         await pawEngine.canvasClearSession(sid);
         _state.setComponents([]);
         renderCanvas();
-        showToast('Canvas cleared', 'success');
+        showToast('画布已清空', 'success');
       } catch (e) {
-        showToast('Failed to clear canvas', 'error');
+        showToast('清空画布失败', 'error');
         console.error('[canvas] Clear failed:', e);
       }
     });
@@ -996,16 +1004,16 @@ function wireEvents(): void {
   if (saveBtn) {
     saveBtn.addEventListener('click', async () => {
       if (_state.getDashboardId()) {
-        showToast('Dashboard already saved', 'info');
+        showToast('仪表盘已经保存', 'info');
         return;
       }
-      const name = await promptModal('Save Dashboard', 'Dashboard name');
+      const name = await promptModal('保存仪表盘', '仪表盘名称');
       if (!name) return;
       try {
         await _state.onSave(name);
-        showToast(`Dashboard "${name}" saved`, 'success');
+        showToast(`仪表盘“${name}”已保存`, 'success');
       } catch (e) {
-        showToast('Failed to save dashboard', 'error');
+        showToast('保存仪表盘失败', 'error');
         console.error('[canvas] Save failed:', e);
       }
     });
@@ -1016,13 +1024,13 @@ function wireEvents(): void {
   if (renameBtn) {
     renameBtn.addEventListener('click', async () => {
       const current = _state.getDashboardName() ?? '';
-      const name = await promptModal('Rename Dashboard', current);
+      const name = await promptModal('重命名仪表盘', current);
       if (!name) return;
       try {
         await _state.onRename(name);
-        showToast(`Renamed to "${name}"`, 'success');
+        showToast(`已重命名为“${name}”`, 'success');
       } catch (e) {
-        showToast('Failed to rename', 'error');
+        showToast('重命名失败', 'error');
         console.error('[canvas] Rename failed:', e);
       }
     });
@@ -1035,7 +1043,7 @@ function wireEvents(): void {
       try {
         await _state.onPin();
       } catch (e) {
-        showToast('Failed to toggle pin', 'error');
+        showToast('切换固定状态失败', 'error');
         console.error('[canvas] Pin failed:', e);
       }
     });
@@ -1048,7 +1056,7 @@ function wireEvents(): void {
       try {
         await _state.onPopOut();
       } catch (e) {
-        showToast('Failed to pop out', 'error');
+        showToast('在新窗口打开失败', 'error');
         console.error('[canvas] Pop-out failed:', e);
       }
     });
@@ -1058,13 +1066,14 @@ function wireEvents(): void {
   const deleteBtn = $('canvas-delete-btn');
   if (deleteBtn) {
     deleteBtn.addEventListener('click', async () => {
-      const name = _state.getDashboardName() ?? 'this dashboard';
-      if (!confirm(`Delete "${name}" and all its components? This cannot be undone.`)) return;
+      const name = _state.getDashboardName() ?? '当前仪表盘';
+      if (!(await confirmModal(`删除“${name}”及其所有组件？此操作无法撤销。`, '删除仪表盘')))
+        return;
       try {
         await _state.onDelete();
-        showToast(`"${name}" deleted`, 'success');
+        showToast(`“${name}”已删除`, 'success');
       } catch (e) {
-        showToast('Failed to delete dashboard', 'error');
+        showToast('删除仪表盘失败', 'error');
         console.error('[canvas] Delete failed:', e);
       }
     });
@@ -1095,8 +1104,8 @@ async function toggleDashboardPicker(): Promise<void> {
     const dashboards = await pawEngine.listDashboards();
     const templates = await pawEngine.listTemplates();
 
-    if (!dashboards.length && !templates.length) {
-      picker.innerHTML = `<div class="canvas-picker-empty">No saved dashboards or templates yet</div>`;
+  if (!dashboards.length && !templates.length) {
+      picker.innerHTML = `<div class="canvas-picker-empty">当前还没有已保存的仪表盘或模板</div>`;
       picker.style.display = 'block';
       return;
     }
@@ -1105,7 +1114,7 @@ async function toggleDashboardPicker(): Promise<void> {
 
     if (dashboards.length) {
       html += `<div class="canvas-picker-section">
-        <div class="canvas-picker-section-label"><span class="ms ms-sm">folder</span> Saved Dashboards</div>
+        <div class="canvas-picker-section-label"><span class="ms ms-sm">folder</span> 已保存的仪表盘</div>
         ${dashboards
           .map(
             (d) => `
@@ -1122,7 +1131,7 @@ async function toggleDashboardPicker(): Promise<void> {
 
     if (templates.length) {
       html += `<div class="canvas-picker-section">
-        <div class="canvas-picker-section-label"><span class="ms ms-sm">auto_awesome</span> Templates</div>
+        <div class="canvas-picker-section-label"><span class="ms ms-sm">auto_awesome</span> 模板</div>
         ${templates
           .map(
             (t) => `
@@ -1153,7 +1162,7 @@ async function toggleDashboardPicker(): Promise<void> {
     picker.querySelectorAll<HTMLElement>('[data-template-id]').forEach((btn) => {
       btn.addEventListener('click', () => {
         picker.style.display = 'none';
-        showToast('Template support coming soon', 'info');
+        showToast('模板支持即将上线', 'info');
       });
     });
 
@@ -1170,7 +1179,7 @@ async function toggleDashboardPicker(): Promise<void> {
     setTimeout(() => document.addEventListener('click', dismiss), 0);
   } catch (e) {
     console.error('[canvas] Failed to load dashboard picker:', e);
-    showToast('Failed to load dashboards', 'error');
+    showToast('加载仪表盘失败', 'error');
   }
 }
 
@@ -1185,9 +1194,9 @@ function wireCardRemove(componentId: string): void {
         const card = document.querySelector(`[data-component-id="${componentId}"]`);
         card?.remove();
         if (!all.length) renderCanvas(); // switch to empty state
-        showToast('Component removed', 'success');
+        showToast('组件已移除', 'success');
       } catch (e) {
-        showToast('Failed to remove component', 'error');
+        showToast('移除组件失败', 'error');
         console.error('[canvas] Remove failed:', e);
       }
     });

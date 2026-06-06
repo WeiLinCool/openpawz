@@ -38,6 +38,8 @@ resources/node/*.tar.gz
 .env.local
 .env.build
 src-tauri/.env
+.brand/
+src-tauri/tauri.brand.generated.conf.json
 
 # Private planning docs
 .credential-architecture.md

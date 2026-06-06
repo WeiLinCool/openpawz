@@ -32,6 +32,8 @@ const ENTERPRISE_BUILD_CLIENT_ID: Option<&str> = option_env!("OPENPAWZ_ENTERPRIS
 const ENTERPRISE_BUILD_DEFAULT_MODEL: Option<&str> =
     option_env!("OPENPAWZ_ENTERPRISE_DEFAULT_MODEL");
 const ENTERPRISE_BUILD_SCOPES: Option<&str> = option_env!("OPENPAWZ_ENTERPRISE_SCOPES");
+const ENTERPRISE_BUILD_RESET_SESSION: Option<&str> =
+    option_env!("OPENPAWZ_ENTERPRISE_RESET_SESSION");
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EnterpriseConfig {
@@ -114,11 +116,17 @@ impl Default for EnterpriseConfig {
 }
 
 pub fn enterprise_build_mode_enabled() -> bool {
-    matches!(ENTERPRISE_BUILD_EDITION, Some("enterprise"))
+    build_env("OPENPAWZ_BUILD_EDITION", ENTERPRISE_BUILD_EDITION).as_deref() == Some("enterprise")
+}
+
+fn build_env(key: &str, compiled: Option<&str>) -> Option<String> {
+    compiled
+        .map(ToOwned::to_owned)
+        .or_else(|| std::env::var(key).ok())
 }
 
 fn build_scopes() -> Vec<String> {
-    ENTERPRISE_BUILD_SCOPES
+    build_env("OPENPAWZ_ENTERPRISE_SCOPES", ENTERPRISE_BUILD_SCOPES)
         .map(|s| {
             s.split_whitespace()
                 .map(str::trim)
@@ -130,40 +138,59 @@ fn build_scopes() -> Vec<String> {
         .unwrap_or_else(default_enterprise_scopes)
 }
 
+pub fn enterprise_build_reset_session_enabled() -> bool {
+    matches!(
+        build_env(
+            "OPENPAWZ_ENTERPRISE_RESET_SESSION",
+            ENTERPRISE_BUILD_RESET_SESSION
+        )
+        .as_deref(),
+        Some("1" | "true" | "yes")
+    )
+}
+
 pub fn enterprise_build_config() -> Option<EnterpriseConfig> {
     if !enterprise_build_mode_enabled() {
         return None;
     }
 
-    let issuer_url = ENTERPRISE_BUILD_ISSUER_URL
-        .unwrap_or("http://localhost:3000")
-        .trim_end_matches('/')
-        .to_string();
+    let issuer_url = build_env(
+        "OPENPAWZ_ENTERPRISE_ISSUER_URL",
+        ENTERPRISE_BUILD_ISSUER_URL,
+    )
+    .unwrap_or_else(|| "http://localhost:3000".to_string())
+    .trim_end_matches('/')
+    .to_string();
     Some(EnterpriseConfig {
         enabled: true,
-        auth_url: ENTERPRISE_BUILD_AUTH_URL
-            .map(ToOwned::to_owned)
+        auth_url: build_env("OPENPAWZ_ENTERPRISE_AUTH_URL", ENTERPRISE_BUILD_AUTH_URL)
             .unwrap_or_else(|| endpoint(&issuer_url, "/oauth/authorize")),
-        token_url: ENTERPRISE_BUILD_TOKEN_URL
-            .map(ToOwned::to_owned)
+        token_url: build_env("OPENPAWZ_ENTERPRISE_TOKEN_URL", ENTERPRISE_BUILD_TOKEN_URL)
             .unwrap_or_else(|| endpoint(&issuer_url, "/oauth/token")),
-        userinfo_url: ENTERPRISE_BUILD_USERINFO_URL
-            .map(ToOwned::to_owned)
-            .or_else(|| Some(endpoint(&issuer_url, "/oauth/userinfo"))),
-        entitlements_url: ENTERPRISE_BUILD_ENTITLEMENTS_URL
-            .map(ToOwned::to_owned)
-            .or_else(|| Some(endpoint(&issuer_url, "/api/entitlements"))),
-        gateway_url: ENTERPRISE_BUILD_GATEWAY_URL
-            .map(ToOwned::to_owned)
-            .unwrap_or_else(|| endpoint(&issuer_url, "/api/llm/v1")),
-        client_id: ENTERPRISE_BUILD_CLIENT_ID
-            .map(ToOwned::to_owned)
+        userinfo_url: build_env(
+            "OPENPAWZ_ENTERPRISE_USERINFO_URL",
+            ENTERPRISE_BUILD_USERINFO_URL,
+        )
+        .or_else(|| Some(endpoint(&issuer_url, "/oauth/userinfo"))),
+        entitlements_url: build_env(
+            "OPENPAWZ_ENTERPRISE_ENTITLEMENTS_URL",
+            ENTERPRISE_BUILD_ENTITLEMENTS_URL,
+        )
+        .or_else(|| Some(endpoint(&issuer_url, "/api/entitlements"))),
+        gateway_url: build_env(
+            "OPENPAWZ_ENTERPRISE_GATEWAY_URL",
+            ENTERPRISE_BUILD_GATEWAY_URL,
+        )
+        .unwrap_or_else(|| endpoint(&issuer_url, "/api/llm/v1")),
+        client_id: build_env("OPENPAWZ_ENTERPRISE_CLIENT_ID", ENTERPRISE_BUILD_CLIENT_ID)
             .unwrap_or_else(default_enterprise_client_id),
         scopes: build_scopes(),
         issuer_url,
-        default_model: ENTERPRISE_BUILD_DEFAULT_MODEL
-            .map(ToOwned::to_owned)
-            .or_else(|| Some("gpt-4o-mini".to_string())),
+        default_model: build_env(
+            "OPENPAWZ_ENTERPRISE_DEFAULT_MODEL",
+            ENTERPRISE_BUILD_DEFAULT_MODEL,
+        )
+        .or_else(|| Some("gpt-4o-mini".to_string())),
         ..EnterpriseConfig::default()
     })
 }
@@ -171,6 +198,7 @@ pub fn enterprise_build_config() -> Option<EnterpriseConfig> {
 #[derive(Debug, Clone, Serialize)]
 pub struct EnterpriseStatus {
     pub enabled: bool,
+    pub enterprise_build_mode: bool,
     pub configured: bool,
     pub authenticated: bool,
     pub expired: bool,
@@ -440,7 +468,7 @@ async fn wait_for_oauth_callback(
                 .write_all(
                     format!(
                         "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n\
-                        <html><body><h2>Authorization Failed</h2><p>{}</p></body></html>",
+                        <html><body><h2>授权失败</h2><p>{}</p></body></html>",
                         desc
                     )
                     .as_bytes(),
@@ -462,8 +490,9 @@ async fn wait_for_oauth_callback(
             .ok_or_else(|| "No authorization code in callback".to_string())?;
         let _ = stream
             .write_all(
-                b"HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n\
-                <html><body><h2>Enterprise login complete</h2><p>You can close this tab and return to OpenPawz.</p><script>setTimeout(()=>window.close(),2000)</script></body></html>",
+                "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n\
+                <html><body><h2>企业登录完成</h2><p>你可以关闭此标签页并返回 OpenPawz。</p><script>setTimeout(()=>window.close(),2000)</script></body></html>"
+                    .as_bytes(),
             )
             .await;
         Ok(code)
@@ -580,6 +609,7 @@ fn status_from_config(config: EnterpriseConfig) -> EnterpriseStatus {
     let expired = enterprise_session_expired(&config);
     EnterpriseStatus {
         enabled: config.enabled,
+        enterprise_build_mode: enterprise_build_mode_enabled(),
         configured,
         authenticated: config.enabled && configured && !expired,
         expired,
