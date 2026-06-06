@@ -35,11 +35,7 @@ export async function loadTailscaleSettings() {
     : status.installed
       ? '<span class="ms ms-sm" style="color:var(--warning)">circle</span>'
       : '<span class="ms ms-sm" style="color:var(--error)">circle</span>';
-  const stLabel = status.running
-    ? '已连接'
-    : status.installed
-      ? '已安装（未运行）'
-      : '未安装';
+  const stLabel = status.running ? '已连接' : status.installed ? '已安装（未运行）' : '未安装';
 
   statusSection.innerHTML = `
     <h3 class="settings-subsection-title">状态</h3>

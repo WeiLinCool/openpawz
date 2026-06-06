@@ -183,10 +183,7 @@ export function bindGitActions(
           case 'pull': {
             const out = await gitExec(path, 'pull');
             if (out !== null) {
-              showToast(
-                out.includes('Already up to date') ? '已是最新' : '拉取完成',
-                'success',
-              );
+              showToast(out.includes('Already up to date') ? '已是最新' : '拉取完成', 'success');
             } else {
               showToast('拉取失败 - 请检查远程仓库和凭据', 'error');
             }

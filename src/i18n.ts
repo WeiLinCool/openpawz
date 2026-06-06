@@ -879,7 +879,7 @@ const EN_TO_ZH: Record<string, string> = {
   'Reading page': '正在读取页面',
   'Listing files': '正在列出文件',
   'Searching code': '正在搜索代码',
-  'Using': '正在使用',
+  Using: '正在使用',
   'Agent wants to:': '智能体想要执行：',
   'Rate limit reached': '已达到速率限制',
   'Approaching rate limit': '接近速率限制',
@@ -951,7 +951,7 @@ const EN_TO_ZH: Record<string, string> = {
   'Create & Open': '创建并打开',
   'e.g. Research Team': '例如：研究团队',
   'Send failed': '发送失败',
-  'Steering': '引导中',
+  Steering: '引导中',
   '*(No response received)*': '*(未收到回复)*',
   '(Response timed out)': '(回复超时)',
   'Failed to get response': '获取回复失败',
@@ -964,7 +964,7 @@ const EN_TO_ZH: Record<string, string> = {
   'Enter a group name': '请输入群组名称',
   'Maximum mini-hubs reached': '已达到最大迷你中心数量',
   'Mini-hub error': '迷你中心错误',
-  'Group': '群组',
+  Group: '群组',
 };
 
 const ZH_TO_EN = Object.fromEntries(Object.entries(EN_TO_ZH).map(([en, zh]) => [zh, en]));

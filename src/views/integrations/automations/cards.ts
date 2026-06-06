@@ -51,7 +51,7 @@ export function renderTemplateCard(t: AutomationTemplate, connectedIds: Set<stri
       <div class="automation-card-footer">
         ${
           ready
-          ? `<button class="btn btn-primary btn-sm automation-activate-btn" data-template-id="${t.id}">
+            ? `<button class="btn btn-primary btn-sm automation-activate-btn" data-template-id="${t.id}">
               <span class="ms ms-sm">play_arrow</span> 启用
             </button>`
             : `<span class="automation-missing-label">

@@ -54,8 +54,7 @@ export async function loadSettingsLogs() {
   const section = $('settings-logs-section');
   const output = $('settings-logs-output');
   if (section) section.style.display = '';
-  if (output)
-    output.textContent = '引擎日志查看器即将上线 - 目前请先查看 Tauri 控制台';
+  if (output) output.textContent = '引擎日志查看器即将上线 - 目前请先查看 Tauri 控制台';
 }
 
 // ── Usage Dashboard ────────────────────────────────────────────────────────
@@ -643,8 +642,7 @@ export function updateSessionOverrideBanner(): void {
   if (remaining > 0) {
     const mins = Math.ceil(remaining / 60000);
     banner.style.display = 'flex';
-    if (label)
-      label.textContent = `会话覆盖已启用 - 在 ${mins} 分钟内自动批准所有工具`;
+    if (label) label.textContent = `会话覆盖已启用 - 在 ${mins} 分钟内自动批准所有工具`;
 
     if (!_state.getOverrideBannerInterval()) {
       const interval = setInterval(() => {
@@ -659,8 +657,7 @@ export function updateSessionOverrideBanner(): void {
           return;
         }
         const m = Math.ceil(r / 60000);
-        if (label)
-          label.textContent = `会话覆盖已启用 - 在 ${m} 分钟内自动批准所有工具`;
+        if (label) label.textContent = `会话覆盖已启用 - 在 ${m} 分钟内自动批准所有工具`;
       }, 30000);
       _state.setOverrideBannerInterval(interval);
     }

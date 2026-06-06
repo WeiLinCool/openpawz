@@ -214,8 +214,7 @@ export async function loadAgentDefaultsSettings() {
     autoSetupBtn.style.whiteSpace = 'nowrap';
     const autoSetupStatus = document.createElement('span');
     autoSetupStatus.style.cssText = 'font-size:12px;color:var(--text-muted);line-height:1.4';
-    autoSetupStatus.textContent =
-      '检查 Ollama，必要时启动它，并拉取嵌入模型';
+    autoSetupStatus.textContent = '检查 Ollama，必要时启动它，并拉取嵌入模型';
     autoSetupRow.appendChild(autoSetupBtn);
     autoSetupRow.appendChild(autoSetupStatus);
     ollamaSection.appendChild(autoSetupRow);
@@ -258,10 +257,7 @@ export async function loadAgentDefaultsSettings() {
       }
     });
 
-    const embUrlRow = formRow(
-      'Ollama 地址',
-      'Ollama 的运行地址（默认：http://localhost:11434）',
-    );
+    const embUrlRow = formRow('Ollama 地址', 'Ollama 的运行地址（默认：http://localhost:11434）');
     const embUrlInp = textInput(
       memConfig.embedding_base_url || 'http://localhost:11434',
       'http://localhost:11434',
@@ -320,10 +316,7 @@ export async function loadAgentDefaultsSettings() {
     embSection.appendChild(cloudSection);
 
     // ── Shared fields (dims, test, backfill) ─────────────────────────────
-    const embDimsRow = formRow(
-      '嵌入维度',
-      '在你运行“测试”或“自动配置”时自动检测',
-    );
+    const embDimsRow = formRow('嵌入维度', '在你运行“测试”或“自动配置”时自动检测');
     const embDimsInp = numberInput(memConfig.embedding_dims || 768, {
       min: 64,
       max: 4096,
@@ -420,8 +413,7 @@ export async function loadAgentDefaultsSettings() {
             autoSetupStatus.textContent = `Ollama 正在运行，但需要拉取 ${embStatus.model_name} - 请点击自动配置`;
             autoSetupStatus.style.color = 'var(--text-warning, orange)';
           } else {
-            statusSpan.textContent =
-              '未检测到 Ollama - 请点击自动配置或切换到云端提供商';
+            statusSpan.textContent = '未检测到 Ollama - 请点击自动配置或切换到云端提供商';
             statusSpan.style.color = 'var(--text-warning, orange)';
           }
         } else {

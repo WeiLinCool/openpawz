@@ -41,8 +41,7 @@ export async function loadEnvSettings() {
     if (config.providers.length === 0) {
       const empty = document.createElement('p');
       empty.style.cssText = 'color:var(--text-muted);font-size:13px;padding:8px 0';
-        empty.textContent =
-        '当前还没有配置提供商。请前往“设置 → 高级”添加提供商。';
+      empty.textContent = '当前还没有配置提供商。请前往“设置 → 高级”添加提供商。';
       provSection.appendChild(empty);
     } else {
       for (const prov of config.providers) {
@@ -95,8 +94,7 @@ export async function loadEnvSettings() {
       if (configured.length === 0) {
         const hint = document.createElement('p');
         hint.style.cssText = 'color:var(--text-muted);font-size:13px;padding:4px 0';
-          hint.textContent =
-          '当前还没有配置技能凭据。请先启用技能，然后在“技能”页面添加凭据。';
+        hint.textContent = '当前还没有配置技能凭据。请先启用技能，然后在“技能”页面添加凭据。';
         skillSection.appendChild(hint);
       } else {
         for (const skill of configured) {

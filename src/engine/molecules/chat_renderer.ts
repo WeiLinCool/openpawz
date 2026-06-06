@@ -127,8 +127,7 @@ export function renderScreenshotCard(msgContent: string): HTMLElement | null {
   ssCard.className = 'message-screenshot-card';
   ssCard.style.cssText =
     'margin:8px 0;border-radius:8px;overflow:hidden;border:1px solid var(--border-color);cursor:pointer;max-width:400px';
-  ssCard.innerHTML =
-      `<div style="padding:8px;text-align:center;color:var(--text-muted);font-size:12px">${translateUiText('Loading screenshot…')}</div>`;
+  ssCard.innerHTML = `<div style="padding:8px;text-align:center;color:var(--text-muted);font-size:12px">${translateUiText('Loading screenshot…')}</div>`;
   (async () => {
     try {
       const { pawEngine: eng } = await import('./ipc_client');

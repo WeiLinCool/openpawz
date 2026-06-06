@@ -1104,7 +1104,7 @@ async function toggleDashboardPicker(): Promise<void> {
     const dashboards = await pawEngine.listDashboards();
     const templates = await pawEngine.listTemplates();
 
-  if (!dashboards.length && !templates.length) {
+    if (!dashboards.length && !templates.length) {
       picker.innerHTML = `<div class="canvas-picker-empty">当前还没有已保存的仪表盘或模板</div>`;
       picker.style.display = 'block';
       return;

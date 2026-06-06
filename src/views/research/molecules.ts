@@ -282,7 +282,7 @@ export function renderFindings() {
       if (finding) {
         const input = $('research-topic-input') as HTMLInputElement;
         if (input) {
-            input.value = `深入研究：${finding.query}。重点关注具体细节、边界情况和详细示例。`;
+          input.value = `深入研究：${finding.query}。重点关注具体细节、边界情况和详细示例。`;
           input.focus();
         }
       }
@@ -297,7 +297,7 @@ export function renderFindings() {
       if (finding) {
         const input = $('research-topic-input') as HTMLInputElement;
         if (input) {
-            input.value = `查找与以下主题相关的内容：${finding.query}。有哪些相邻概念、替代方案或互补方法？`;
+          input.value = `查找与以下主题相关的内容：${finding.query}。有哪些相邻概念、替代方案或互补方法？`;
           input.focus();
         }
       }
@@ -337,8 +337,7 @@ export function renderSourcesPanel() {
 
   workspace.getAllSources(activeProject.id).then((sources) => {
     if (!sources.length) {
-      panel.innerHTML =
-        '<div class="research-sources-empty">研究时来源会显示在这里</div>';
+      panel.innerHTML = '<div class="research-sources-empty">研究时来源会显示在这里</div>';
       return;
     }
 
@@ -460,10 +459,7 @@ export async function runResearch() {
 
   const done = new Promise<string>((resolve) => {
     _state.setStreamResolve(resolve);
-    setTimeout(
-      () => resolve(_state.getStreamContent() || '（研究超时）'),
-      modeTimeout(mode),
-    );
+    setTimeout(() => resolve(_state.getStreamContent() || '（研究超时）'), modeTimeout(mode));
   });
 
   try {
@@ -554,10 +550,7 @@ export async function generateReport() {
 
   const done = new Promise<string>((resolve) => {
     _state.setStreamResolve(resolve);
-    setTimeout(
-      () => resolve(_state.getStreamContent() || '（报告生成超时）'),
-      180_000,
-    );
+    setTimeout(() => resolve(_state.getStreamContent() || '（报告生成超时）'), 180_000);
   });
 
   try {
@@ -605,12 +598,7 @@ export async function createNewProject() {
 export async function deleteCurrentProject() {
   const activeProject = _state.getActiveProject();
   if (!activeProject) return;
-  if (
-    !(await confirmModal(
-      `删除“${activeProject.name}”及其所有发现？此操作无法撤销。`,
-    ))
-  )
-    return;
+  if (!(await confirmModal(`删除“${activeProject.name}”及其所有发现？此操作无法撤销。`))) return;
 
   try {
     await workspace.deleteResearchProject(activeProject.id);

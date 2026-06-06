@@ -334,8 +334,7 @@ export function wireGuardrailEvents(container: HTMLElement): void {
       invoke('engine_guardrails_clear_audit').catch(() => {});
       const auditEl = container.querySelector('.guardrail-audit');
       if (auditEl)
-        auditEl.innerHTML =
-          `<div class="guardrail-audit-empty"><span class="ms">history</span> ${translateUiText('Log cleared.')}</div>`;
+        auditEl.innerHTML = `<div class="guardrail-audit-empty"><span class="ms">history</span> ${translateUiText('Log cleared.')}</div>`;
     }
   });
 

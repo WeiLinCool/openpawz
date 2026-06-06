@@ -202,7 +202,8 @@ async function renderProvidersList(): Promise<void> {
         }
         if (apiKeyInput) apiKeyInput.value = p.api_key;
         if (modelInput) modelInput.value = p.default_model ?? '';
-        if (baseUrlInput) baseUrlInput.value = p.id === 'enterprise-cloud' ? '' : p.base_url ?? '';
+        if (baseUrlInput)
+          baseUrlInput.value = p.id === 'enterprise-cloud' ? '' : (p.base_url ?? '');
       });
     });
   } catch (e) {
@@ -235,7 +236,7 @@ async function loadEngineConfig(): Promise<void> {
       }
       if (apiKeyInput) apiKeyInput.value = p.api_key;
       if (modelInput) modelInput.value = p.default_model ?? config.default_model ?? '';
-      if (baseUrlInput) baseUrlInput.value = p.id === 'enterprise-cloud' ? '' : p.base_url ?? '';
+      if (baseUrlInput) baseUrlInput.value = p.id === 'enterprise-cloud' ? '' : (p.base_url ?? '');
     }
 
     // Render the providers list

@@ -510,8 +510,7 @@ export function bindSkillEvents(): void {
       const btn = el as HTMLButtonElement;
       const skillId = btn.dataset.skill!;
 
-      if (!(await confirmModal('确定恢复默认指令吗？你的自定义内容将会丢失。')))
-        return;
+      if (!(await confirmModal('确定恢复默认指令吗？你的自定义内容将会丢失。'))) return;
 
       try {
         await pawEngine.skillSetInstructions(skillId, '');
@@ -529,11 +528,7 @@ export function bindSkillEvents(): void {
       const btn = el as HTMLButtonElement;
       const skillId = btn.dataset.skill!;
 
-      if (
-        !(await confirmModal(
-          `确定卸载“${skillId}”吗？这会从 ~/.paw/skills/ 中移除该技能文件。`,
-        ))
-      )
+      if (!(await confirmModal(`确定卸载“${skillId}”吗？这会从 ~/.paw/skills/ 中移除该技能文件。`)))
         return;
 
       try {

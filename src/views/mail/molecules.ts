@@ -147,12 +147,7 @@ export async function renderMailAccounts(
 
     const permCount = [perms.read, perms.send, perms.delete, perms.manage].filter(Boolean).length;
     const permSummary =
-      [
-        perms.read && '读取',
-        perms.send && '发送',
-        perms.delete && '删除',
-        perms.manage && '管理',
-      ]
+      [perms.read && '读取', perms.send && '发送', perms.delete && '删除', perms.manage && '管理']
         .filter(Boolean)
         .join(' · ') || '无权限';
 
@@ -520,8 +515,7 @@ export function showMailEmpty(show: boolean) {
           onSetCurrentSession?.(null);
           onSwitchView?.('chat');
           if (chatInput) {
-            chatInput.value =
-              '我想撰写一封新邮件。请帮我起草，并在准备好后发送。';
+            chatInput.value = '我想撰写一封新邮件。请帮我起草，并在准备好后发送。';
             chatInput.focus();
           }
         });
@@ -692,8 +686,7 @@ async function archiveEmail(msg: { id: string; source?: 'himalaya' | 'google' })
     _mailMessages = _mailMessages.filter((m) => m.id !== msg.id);
     renderMailList();
     const preview = $('mail-preview');
-    if (preview)
-      preview.innerHTML = '<div class="mail-preview-empty">请选择一封邮件阅读</div>';
+    if (preview) preview.innerHTML = '<div class="mail-preview-empty">请选择一封邮件阅读</div>';
   } catch (e) {
     showToast(`归档失败：${e}`, 'error');
   }
@@ -708,8 +701,7 @@ async function deleteEmail(msg: { id: string; subject: string; source?: 'himalay
     _mailMessages = _mailMessages.filter((m) => m.id !== msg.id);
     renderMailList();
     const preview = $('mail-preview');
-    if (preview)
-      preview.innerHTML = '<div class="mail-preview-empty">请选择一封邮件阅读</div>';
+    if (preview) preview.innerHTML = '<div class="mail-preview-empty">请选择一封邮件阅读</div>';
   } catch (e) {
     showToast(`删除失败：${e}`, 'error');
   }

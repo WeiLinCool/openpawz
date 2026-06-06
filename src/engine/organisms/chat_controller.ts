@@ -410,7 +410,7 @@ export function finalizeStreaming(
           }
           addMessage({
             role: 'assistant',
-              content: translateUiText('*(No response received)*'),
+            content: translateUiText('*(No response received)*'),
             timestamp: new Date(),
           });
         })
@@ -666,8 +666,13 @@ async function handleQueueReady(sessionId: string, message: string, model?: stri
   } catch (error) {
     console.error('[chat] Queue-ready error:', error);
     if (ss?.el && appState.activeStreams.has(streamKey)) {
-      const errMsg = error instanceof Error ? error.message : translateUiText('Failed to get response');
-      finalizeStreaming(ss.content || `${translateUiText('Error')}: ${errMsg}`, undefined, streamKey);
+      const errMsg =
+        error instanceof Error ? error.message : translateUiText('Failed to get response');
+      finalizeStreaming(
+        ss.content || `${translateUiText('Error')}: ${errMsg}`,
+        undefined,
+        streamKey,
+      );
     }
   } finally {
     const finalKey = appState.currentSessionKey ?? streamKey;

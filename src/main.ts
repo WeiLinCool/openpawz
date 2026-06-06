@@ -138,7 +138,9 @@ function renderEnterpriseLogin(status: EnterpriseStatus): void {
   const meta = $('enterprise-login-meta');
   if (meta) {
     const rows = status.expired
-      ? [`<span>${translateUiText('Status')}</span><strong>${translateUiText('Session expired')}</strong>`]
+      ? [
+          `<span>${translateUiText('Status')}</span><strong>${translateUiText('Session expired')}</strong>`,
+        ]
       : [];
     meta.innerHTML = rows.length ? rows.join('') : '';
   }
