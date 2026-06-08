@@ -4324,7 +4324,7 @@ export const CREDENTIAL_OVERRIDES: Record<string, CredentialOverride> = {
         type: 'password',
         placeholder: 'Paste your API key',
         required: false,
-        helpText: 'The API key for the OpenPawz instance',
+        helpText: 'The API key for the {appName} instance',
       },
       {
         key: 'baseUrl',
@@ -4332,7 +4332,7 @@ export const CREDENTIAL_OVERRIDES: Record<string, CredentialOverride> = {
         type: 'url',
         placeholder: 'https://<name>.app.my.cloud/api/v1',
         required: false,
-        helpText: 'The API URL of the OpenPawz instance',
+        helpText: 'The API URL of the {appName} instance',
       },
     ],
     guide: {

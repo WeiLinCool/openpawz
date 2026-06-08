@@ -7,6 +7,7 @@ import { isEngineMode } from '../../engine-bridge';
 import { $, escHtml } from '../../components/helpers';
 import { renderCommunitySection, setCommunityReload, bindCommunityEvents } from './community';
 import { msIcon } from './atoms';
+import { brand } from '../../brand';
 
 // ── Re-exports (backward compat) ──────────────────────────────────────────
 
@@ -29,7 +30,7 @@ export async function loadSkillsSettings(): Promise<void> {
   const list = $('skills-vault-list');
 
   if (!isEngineMode()) {
-    if (loading) loading.textContent = 'Pawz engine is required.';
+    if (loading) loading.textContent = `${brand.shortName} 引擎是必需的。`;
     if (list) list.innerHTML = '';
     return;
   }

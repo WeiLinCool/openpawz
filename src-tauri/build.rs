@@ -43,6 +43,14 @@ fn main() {
     }
     println!("cargo:rerun-if-changed=tauri.conf.json");
     for key in [
+        "OPENPAWZ_BRAND_ID",
+        "OPENPAWZ_APP_NAME",
+        "OPENPAWZ_SHORT_NAME",
+        "OPENPAWZ_PRODUCT_NAME",
+        "OPENPAWZ_WINDOW_TITLE",
+        "OPENPAWZ_REPOSITORY_URL",
+        "OPENPAWZ_TAGLINE",
+        "OPENPAWZ_ABOUT_LINE",
         "OPENPAWZ_BUILD_EDITION",
         "OPENPAWZ_ENTERPRISE_ISSUER_URL",
         "OPENPAWZ_ENTERPRISE_AUTH_URL",

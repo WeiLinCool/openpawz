@@ -4,6 +4,7 @@
 import { pawEngine } from '../../engine';
 import { showToast } from '../../components/toast';
 import { type Agent, AGENT_TEMPLATES, SPRITE_AVATARS, AVATAR_COLORS, spriteAvatar } from './atoms';
+import { t } from '../../i18n';
 
 export interface EditorCallbacks {
   /** Called after a new agent is created — push to array + persist + re-render */
@@ -170,6 +171,6 @@ export function openAgentCreator(cbs: EditorCallbacks) {
     cbs.seedSoulFiles(newAgent);
 
     close();
-    showToast(`${name} created!`, 'success');
+    showToast(`${name}${t('created!')}`, 'success');
   });
 }

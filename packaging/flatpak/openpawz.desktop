@@ -1,6 +1,6 @@
 [Desktop Entry]
-Name=Open Pawz Desktop
-Comment=Multi-agent AI desktop app — fully local, open source
+Name=太极台
+Comment=本地优先的智能桌面工作台
 Exec=openpawz
 Icon=com.openpawz.OpenPawz
 Terminal=false

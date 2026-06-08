@@ -4,6 +4,7 @@
 
 // ── Paw Atoms (constants, error types) ────────────────────────────────────
 pub mod atoms;
+pub mod brand;
 
 // ── Paw Agent Engine ───────────────────────────────────────────────────
 pub mod engine;

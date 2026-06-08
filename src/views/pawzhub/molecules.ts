@@ -11,6 +11,7 @@ import {
 } from '../../engine';
 import { $, escHtml, confirmModal } from '../../components/helpers';
 import { showToast } from '../../components/toast';
+import { formatBrandText } from '../../brand';
 import {
   renderSkillCard,
   fromPawzHubEntry,
@@ -135,7 +136,7 @@ export function renderBuiltinSkillsSection(disabledSkills: EngineSkillStatus[]):
       <span class="ph-section-count">${disabledSkills.length} available</span>
     </h3>
     <p style="color:var(--text-muted);font-size:12px;margin:0 0 12px;max-width:500px">
-      These skills are included with OpenPawz. Enable any to give your agent new capabilities.
+      ${escHtml(formatBrandText('These skills are included with {appName}. Enable any to give your agent new capabilities.'))}
     </p>
     <div class="skills-card-grid">
       ${cards.join('')}

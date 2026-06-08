@@ -33,6 +33,7 @@ import { logCredentialActivity, logSecurityEvent } from '../../db';
 import { showToast } from '../toast';
 import { pushNotification } from '../notifications';
 import { escHtml } from '../molecules/markdown';
+import { brand } from '../../brand';
 
 // ── Persist "Always Allow" per tool in localStorage ─────────────────
 const ALWAYS_ALLOW_KEY = 'paw-always-allow-tools';
@@ -352,14 +353,14 @@ async function sendOSNotification(toolName: string): Promise<void> {
   // Try the web Notification API (works in Tauri webview with permission)
   if ('Notification' in window) {
     if (Notification.permission === 'granted') {
-      new Notification('Open Pawz — Tool Approval Needed', {
+      new Notification(`${brand.appName} — Tool Approval Needed`, {
         body: `The agent wants to use: ${toolName}`,
         icon: '/icons/128x128.png',
       });
     } else if (Notification.permission !== 'denied') {
       const permission = await Notification.requestPermission();
       if (permission === 'granted') {
-        new Notification('Open Pawz — Tool Approval Needed', {
+        new Notification(`${brand.appName} — Tool Approval Needed`, {
           body: `The agent wants to use: ${toolName}`,
           icon: '/icons/128x128.png',
         });

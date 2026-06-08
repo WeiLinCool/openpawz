@@ -4,6 +4,7 @@
 // fields, "Test & Save" button, and success/error feedback.
 
 import { invoke } from '@tauri-apps/api/core';
+import { formatBrandText } from '../../brand';
 import { escHtml, type ServiceDefinition, type CredentialField } from './atoms';
 
 // ── Types ──────────────────────────────────────────────────────────────
@@ -139,17 +140,17 @@ function _renderFields(fields: CredentialField[]): string {
       (f) => `
     <div class="setup-guide-field">
       <label class="setup-guide-label" for="cred-${f.key}">
-        ${escHtml(f.label)}
+        ${escHtml(formatBrandText(f.label))}
         ${f.required ? '<span class="setup-guide-required">*</span>' : ''}
       </label>
-      ${f.helpText ? `<div class="setup-guide-help">${escHtml(f.helpText)}</div>` : ''}
+      ${f.helpText ? `<div class="setup-guide-help">${escHtml(formatBrandText(f.helpText))}</div>` : ''}
       <div class="setup-guide-input-wrap">
         <input
           type="${f.type === 'password' ? 'password' : 'text'}"
           id="cred-${f.key}"
           class="setup-guide-input"
           data-cred-key="${f.key}"
-          placeholder="${escHtml(f.placeholder ?? '')}"
+          placeholder="${escHtml(formatBrandText(f.placeholder ?? ''))}"
           ${f.required ? 'required' : ''}
           autocomplete="off"
           spellcheck="false"

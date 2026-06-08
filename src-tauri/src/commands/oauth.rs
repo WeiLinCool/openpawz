@@ -10,6 +10,7 @@
 //   Tier 5 — Manual API keys (existing flow)
 
 use crate::commands::n8n::{get_n8n_endpoint, map_integration_to_skill};
+use crate::brand;
 use crate::engine::key_vault;
 use crate::engine::oauth::{
     get_n8n_oauth_type, get_oauth_config, get_rfc7591_config, n8n_credential_url,
@@ -797,7 +798,7 @@ async fn provision_oauth_to_n8n(
         }
     });
 
-    let credential_name = format!("OpenPawz — {}", service_id);
+    let credential_name = format!("{} — {}", brand::active_brand().product_name, service_id);
 
     let client = match reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(15))

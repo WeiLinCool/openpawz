@@ -1,6 +1,8 @@
 // atoms.ts — Pure types, constants, and zero-dependency helpers
 // NO pawEngine, NO document.*, NO Tauri imports allowed here
 
+import { t } from '../../i18n';
+
 export interface Agent {
   id: string;
   name: string;
@@ -34,72 +36,72 @@ export const TOOL_GROUPS: {
   tools: { id: string; name: string; desc: string }[];
 }[] = [
   {
-    label: 'Core',
+    label: t('Core'),
     icon: 'terminal',
     tools: [
-      { id: 'exec', name: 'Run Commands', desc: 'Execute shell commands' },
-      { id: 'fetch', name: 'HTTP Fetch', desc: 'Make HTTP requests' },
+      { id: 'exec', name: t('Run Commands'), desc: t('Execute shell commands') },
+      { id: 'fetch', name: t('HTTP Fetch'), desc: t('Make HTTP requests') },
     ],
   },
   {
-    label: 'Files',
+    label: t('Files'),
     icon: 'folder_open',
     tools: [
-      { id: 'read_file', name: 'Read File', desc: 'Read file contents' },
-      { id: 'write_file', name: 'Write File', desc: 'Create and edit files' },
-      { id: 'list_directory', name: 'List Directory', desc: 'Browse file listings' },
-      { id: 'append_file', name: 'Append File', desc: 'Add content to files' },
-      { id: 'delete_file', name: 'Delete File', desc: 'Remove files' },
+      { id: 'read_file', name: t('Read File'), desc: t('Read file contents') },
+      { id: 'write_file', name: t('Write File'), desc: t('Create and edit files') },
+      { id: 'list_directory', name: t('List Directory'), desc: t('Browse file listings') },
+      { id: 'append_file', name: t('Append File'), desc: t('Add content to files') },
+      { id: 'delete_file', name: t('Delete File'), desc: t('Remove files') },
     ],
   },
   {
-    label: 'Web',
+    label: t('Web'),
     icon: 'language',
     tools: [
-      { id: 'web_search', name: 'Web Search', desc: 'Search the internet' },
-      { id: 'web_read', name: 'Web Read', desc: 'Read web page content' },
-      { id: 'web_screenshot', name: 'Web Screenshot', desc: 'Capture screenshots' },
-      { id: 'web_browse', name: 'Web Browse', desc: 'Interactive browsing' },
+      { id: 'web_search', name: t('Web Search'), desc: t('Search the internet') },
+      { id: 'web_read', name: t('Web Read'), desc: t('Read web page content') },
+      { id: 'web_screenshot', name: t('Web Screenshot'), desc: t('Capture screenshots') },
+      { id: 'web_browse', name: t('Web Browse'), desc: t('Interactive browsing') },
     ],
   },
   {
-    label: 'Soul & Memory',
+    label: t('Soul & Memory'),
     icon: 'psychology',
     tools: [
-      { id: 'soul_read', name: 'Soul Read', desc: 'Read persona files' },
-      { id: 'soul_write', name: 'Soul Write', desc: 'Write persona files' },
-      { id: 'soul_list', name: 'Soul List', desc: 'List persona files' },
-      { id: 'memory_store', name: 'Memory Store', desc: 'Save to long-term memory' },
-      { id: 'memory_search', name: 'Memory Search', desc: 'Recall from memory' },
-      { id: 'self_info', name: 'Self Info', desc: 'View own configuration' },
+      { id: 'soul_read', name: t('Soul Read'), desc: t('Read persona files') },
+      { id: 'soul_write', name: t('Soul Write'), desc: t('Write persona files') },
+      { id: 'soul_list', name: t('Soul List'), desc: t('List persona files') },
+      { id: 'memory_store', name: t('Memory Store'), desc: t('Save to long-term memory') },
+      { id: 'memory_search', name: t('Memory Search'), desc: t('Recall from memory') },
+      { id: 'self_info', name: t('Self Info'), desc: t('View own configuration') },
     ],
   },
   {
-    label: 'Agents & Tasks',
+    label: t('Agents & Tasks'),
     icon: 'group',
     tools: [
-      { id: 'update_profile', name: 'Update Profile', desc: 'Modify agent profile' },
-      { id: 'create_agent', name: 'Create Agent', desc: 'Spawn new agents' },
-      { id: 'agent_list', name: 'Agent List', desc: 'List all agents' },
-      { id: 'agent_skills', name: 'Agent Skills', desc: 'View agent skills' },
-      { id: 'agent_skill_assign', name: 'Assign Skill', desc: 'Assign skills to agents' },
-      { id: 'create_task', name: 'Create Task', desc: 'Create new tasks' },
-      { id: 'list_tasks', name: 'List Tasks', desc: 'View task list' },
-      { id: 'manage_task', name: 'Manage Task', desc: 'Update/delete tasks' },
-      { id: 'skill_search', name: 'Skill Search', desc: 'Search community skills' },
-      { id: 'skill_install', name: 'Skill Install', desc: 'Install community skills' },
-      { id: 'skill_list', name: 'Skill List', desc: 'List installed skills' },
+      { id: 'update_profile', name: t('Update Profile'), desc: t('Modify agent profile') },
+      { id: 'create_agent', name: t('Create Agent'), desc: t('Spawn new agents') },
+      { id: 'agent_list', name: t('Agent List'), desc: t('List all agents') },
+      { id: 'agent_skills', name: t('Agent Skills'), desc: t('View agent skills') },
+      { id: 'agent_skill_assign', name: t('Assign Skill'), desc: t('Assign skills to agents') },
+      { id: 'create_task', name: t('Create Task'), desc: t('Create new tasks') },
+      { id: 'list_tasks', name: t('List Tasks'), desc: t('View task list') },
+      { id: 'manage_task', name: t('Manage Task'), desc: t('Update/delete tasks') },
+      { id: 'skill_search', name: t('Skill Search'), desc: t('Search community skills') },
+      { id: 'skill_install', name: t('Skill Install'), desc: t('Install community skills') },
+      { id: 'skill_list', name: t('Skill List'), desc: t('List installed skills') },
     ],
   },
   {
-    label: 'Communication',
+    label: t('Communication'),
     icon: 'chat',
     tools: [
-      { id: 'telegram_send', name: 'Telegram Send', desc: 'Send Telegram messages' },
-      { id: 'telegram_read', name: 'Telegram Read', desc: 'Read Telegram status' },
-      { id: 'rest_api_call', name: 'REST API', desc: 'Call REST APIs' },
-      { id: 'webhook_send', name: 'Webhook', desc: 'Send webhooks' },
-      { id: 'image_generate', name: 'Image Generate', desc: 'Generate images' },
+      { id: 'telegram_send', name: t('Telegram Send'), desc: t('Send Telegram messages') },
+      { id: 'telegram_read', name: t('Telegram Read'), desc: t('Read Telegram status') },
+      { id: 'rest_api_call', name: t('REST API'), desc: t('Call REST APIs') },
+      { id: 'webhook_send', name: t('Webhook'), desc: t('Send webhooks') },
+      { id: 'image_generate', name: t('Image Generate'), desc: t('Generate images') },
     ],
   },
 ];

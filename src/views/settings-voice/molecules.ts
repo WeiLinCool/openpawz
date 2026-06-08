@@ -4,6 +4,7 @@ import { pawEngine, type TtsConfig } from '../../engine';
 import { showToast } from '../../components/toast';
 import { $ } from '../../components/helpers';
 import { LANGUAGES, voicesForProvider, providerHint } from './atoms';
+import { brand } from '../../brand';
 
 // ── State bridge ──────────────────────────────────────────────────────
 
@@ -240,7 +241,7 @@ function bindFormEvents() {
       _state.setConfig(config);
       await pawEngine.ttsSetConfig(config);
       const base64Audio = await pawEngine.ttsSpeak(
-        'Hello! I am your Pawz assistant. This is a test of the text to speech system.',
+        `Hello! I am your ${brand.shortName} assistant. This is a test of the text to speech system.`,
       );
       const audioBytes = Uint8Array.from(atob(base64Audio), (c) => c.charCodeAt(0));
       const blob = new Blob([audioBytes], { type: 'audio/mp3' });

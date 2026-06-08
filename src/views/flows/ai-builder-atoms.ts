@@ -4,6 +4,7 @@
 // No DOM, no IPC — fully testable.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { formatBrandText } from '../../brand';
 import type { FlowGraph, FlowNodeKind } from './atoms';
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -74,7 +75,7 @@ const VALID_KINDS: FlowNodeKind[] = [
  * Build the system prompt for the AI flow builder agent.
  */
 export function buildFlowBuilderSystemPrompt(): string {
-  return `You are a flow builder assistant for OpenPawz, an AI workflow automation platform.
+  return formatBrandText(`You are a flow builder assistant for {appName}, an AI workflow automation platform.
 
 When the user describes a workflow, you create a FlowGraph JSON object.
 
@@ -108,7 +109,7 @@ Respond with ONLY a JSON object:
 
 The FlowGraph must include: id, name, description, nodes[], edges[], createdAt, updatedAt.
 Each node needs: id, kind, label, x, y, width, height, status: "idle", config: {}, inputs: ["in"], outputs: ["out"].
-Each edge needs: id, kind: "forward", from, fromPort: "out", to, toPort: "in", active: false.`;
+Each edge needs: id, kind: "forward", from, fromPort: "out", to, toPort: "in", active: false.`);
 }
 
 /**

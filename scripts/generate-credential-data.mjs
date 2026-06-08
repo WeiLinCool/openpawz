@@ -99,7 +99,7 @@ function toCredentialField(prop) {
   if (prop.description) {
     let ht = prop.description.replace(/<[^>]+>/g, '').trim();
     // Remove n8n-specific references
-    ht = ht.replace(/n8n/gi, 'OpenPawz');
+    ht = ht.replace(/n8n/gi, '{appName}');
     if (ht.length > 120) ht = ht.slice(0, 117) + '...';
     if (ht.length > 0) field.helpText = ht;
   }

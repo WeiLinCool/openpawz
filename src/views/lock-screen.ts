@@ -8,6 +8,7 @@
 import { invoke } from '@tauri-apps/api/core';
 import { lockScreenUnlock, shakeElement } from '../components/animations';
 import { brand } from '../brand';
+import { pawEngine } from '../engine';
 
 const $ = (id: string) => document.getElementById(id);
 const LOCK_MODE_KEY = 'paw-lock-mode';
@@ -50,6 +51,13 @@ export function initLockScreen(): Promise<void> {
 
     _lockScreen = lockScreen;
     _resolve = resolve;
+
+    const enterprise = await pawEngine.enterpriseStatus().catch(() => null);
+    if (enterprise?.enterprise_build_mode) {
+      hideLockScreen(lockScreen);
+      resolve();
+      return;
+    }
 
     wireListeners();
 

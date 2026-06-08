@@ -13,6 +13,7 @@ import { pushNotification } from '../../components/notifications';
 import { populateModelSelect, $, escHtml, formatTimeAgo } from '../../components/helpers';
 import { spriteAvatar } from '../agents';
 import { COLUMNS } from './atoms';
+import { t } from '../../i18n';
 
 // ── State accessors (set by index.ts) ──────────────────────────────────────
 
@@ -98,15 +99,15 @@ export function createTaskCard(task: EngineTask): HTMLElement {
   const hasAgents = agents.length > 0;
   const canRun = hasAgents && ['assigned', 'inbox'].includes(task.status);
   const runBtnHtml = canRun
-    ? `<button class="task-card-action run-btn" data-action="run" title="Run now">▶</button>`
+    ? `<button class="task-card-action run-btn" data-action="run" title="${t('Run now')}">▶</button>`
     : '';
   const agentCountHtml =
-    agents.length > 1 ? `<span class="task-card-agent-count">${agents.length} agents</span>` : '';
+    agents.length > 1 ? `<span class="task-card-agent-count">${agents.length} ${t('agents')}</span>` : '';
 
   card.innerHTML = `
     <div class="task-card-actions">
       ${runBtnHtml}
-      <button class="task-card-action" data-action="edit" title="Edit"><span class="ms ms-sm">edit</span></button>
+      <button class="task-card-action" data-action="edit" title="${t('Edit')}"><span class="ms ms-sm">edit</span></button>
     </div>
     <div class="task-card-title">${escHtml(task.title)}</div>
     <div class="task-card-meta">
@@ -175,7 +176,7 @@ export function renderFeed() {
   }
 
   if (!filtered.length) {
-    list.innerHTML = '<div class="tasks-feed-empty">No activity yet</div>';
+    list.innerHTML = `<div class="tasks-feed-empty">${t('No activity yet')}</div>`;
     return;
   }
 
@@ -233,7 +234,7 @@ export function openTaskModal(task?: EngineTask) {
   const runBtn = $('tasks-modal-run');
   const activitySection = $('tasks-modal-activity-section');
 
-  if (titleEl) titleEl.textContent = isNew ? 'New Task' : 'Edit Task';
+  if (titleEl) titleEl.textContent = isNew ? t('New Task') : t('Edit Task');
   if (inputTitle) inputTitle.value = task?.title || '';
   if (inputDesc) inputDesc.value = task?.description || '';
   if (inputPriority) inputPriority.value = task?.priority || 'medium';
@@ -247,7 +248,7 @@ export function openTaskModal(task?: EngineTask) {
       .getConfig()
       .then((config) => {
         populateModelSelect(inputModel, config.providers ?? [], {
-          defaultLabel: '(use default)',
+          defaultLabel: t('(use default)'),
           currentValue: task?.model || '',
         });
       })
@@ -270,7 +271,7 @@ export function openTaskModal(task?: EngineTask) {
 
   // Also set legacy dropdown for backward compat
   if (inputAgent) {
-    inputAgent.innerHTML = '<option value="">+ Add agent</option>';
+    inputAgent.innerHTML = `<option value="">${t('+ Add agent')}</option>`;
     for (const agent of _state.getAgents()) {
       const opt = document.createElement('option');
       opt.value = agent.id;
@@ -300,7 +301,7 @@ export function renderAgentPicker() {
     const agent = _state.getAgents().find((a) => a.id === ta.agent_id);
     const tag = document.createElement('span');
     tag.className = `agent-tag${ta.role === 'lead' ? ' lead' : ''}`;
-    tag.innerHTML = `${agent ? `${spriteAvatar(agent.avatar, 18)} ` : ''}${escHtml(ta.agent_id)}${ta.role === 'lead' ? ' ★' : ''}<button class="agent-tag-remove" title="Remove">×</button>`;
+    tag.innerHTML = `${agent ? `${spriteAvatar(agent.avatar, 18)} ` : ''}${escHtml(ta.agent_id)}${ta.role === 'lead' ? ' ★' : ''}<button class="agent-tag-remove" title="${t('Remove')}">×</button>`;
 
     // Click tag → toggle lead/collaborator
     tag.addEventListener('click', (e) => {
@@ -321,7 +322,7 @@ export function renderAgentPicker() {
     container.appendChild(tag);
   }
   if (!modalSelectedAgents.length) {
-    container.innerHTML = '<span class="agent-tag-empty">No agents assigned</span>';
+    container.innerHTML = `<span class="agent-tag-empty">${t('No agents assigned')}</span>`;
   }
 }
 
@@ -339,7 +340,7 @@ async function loadTaskActivity(taskId: string) {
   try {
     const items = await pawEngine.taskActivity(taskId, 20);
     if (!items.length) {
-      container.innerHTML = '<div class="tasks-modal-activity-item">No activity yet</div>';
+      container.innerHTML = `<div class="tasks-modal-activity-item">${t('No activity yet')}</div>`;
       return;
     }
     container.innerHTML = '';
@@ -350,7 +351,7 @@ async function loadTaskActivity(taskId: string) {
       container.appendChild(el);
     }
   } catch {
-    container.innerHTML = '<div class="tasks-modal-activity-item">Failed to load activity</div>';
+    container.innerHTML = `<div class="tasks-modal-activity-item">${t('Failed to load activity')}</div>`;
   }
 }
 
@@ -373,7 +374,7 @@ export async function saveTask() {
 
   const title = inputTitle?.value.trim();
   if (!title) {
-    showToast('Task title is required', 'warning');
+    showToast(t('Task title is required'), 'warning');
     return;
   }
 
@@ -414,19 +415,19 @@ export async function saveTask() {
       if (modalSelectedAgents.length > 0) {
         await pawEngine.taskSetAgents(task.id, modalSelectedAgents);
       }
-      showToast('Task updated', 'success');
+      showToast(t('Task updated'), 'success');
     } else {
       await pawEngine.taskCreate(task);
       if (modalSelectedAgents.length > 0) {
         await pawEngine.taskSetAgents(task.id, modalSelectedAgents);
       }
-      showToast('Task created', 'success');
-      pushNotification('task', 'Task created', task.title, undefined, 'tasks');
+      showToast(t('Task created'), 'success');
+      pushNotification('task', t('Task created'), task.title, undefined, 'tasks');
     }
     closeTaskModal();
     await _state.reload();
   } catch (e) {
-    showToast(`Failed: ${e instanceof Error ? e.message : e}`, 'error');
+    showToast(`${t('Failed')}: ${e instanceof Error ? e.message : e}`, 'error');
   }
 }
 
@@ -435,26 +436,26 @@ export async function deleteTask() {
   if (!editingTask) return;
   try {
     await pawEngine.taskDelete(editingTask.id);
-    showToast('Task deleted', 'success');
+    showToast(t('Task deleted'), 'success');
     closeTaskModal();
     await _state.reload();
   } catch (e) {
-    showToast(`Failed: ${e instanceof Error ? e.message : e}`, 'error');
+    showToast(`${t('Failed')}: ${e instanceof Error ? e.message : e}`, 'error');
   }
 }
 
 export async function runTask(taskId: string) {
   try {
-    showToast('Starting agent work...', 'info');
+    showToast(t('Starting agent work...'), 'info');
     await pawEngine.taskRun(taskId);
-    showToast('Agent is working on the task', 'success');
-    pushNotification('task', 'Agent working on task', undefined, undefined, 'tasks');
+    showToast(t('Agent is working on the task'), 'success');
+    pushNotification('task', t('Agent is working on the task'), undefined, undefined, 'tasks');
     await _state.reload();
   } catch (e) {
-    showToast(`Run failed: ${e instanceof Error ? e.message : e}`, 'error');
+    showToast(`${t('Run failed')}: ${e instanceof Error ? e.message : e}`, 'error');
     pushNotification(
       'system',
-      'Task run failed',
+      t('Task run failed'),
       e instanceof Error ? e.message : String(e),
       undefined,
       'tasks',
@@ -493,7 +494,7 @@ export function setupDragAndDrop() {
         await pawEngine.taskMove(taskId, newStatus);
         await _state.reload();
       } catch (err) {
-        showToast(`Move failed: ${err instanceof Error ? err.message : err}`, 'error');
+        showToast(`${t('Move failed')}: ${err instanceof Error ? err.message : err}`, 'error');
       }
     });
   });

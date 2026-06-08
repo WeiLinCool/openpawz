@@ -16,6 +16,7 @@
 //   Tier 5 — Manual API keys (always available)
 
 use crate::atoms::error::{EngineError, EngineResult};
+use crate::brand;
 use base64::Engine as _;
 use log::{error, info, warn};
 use serde::{Deserialize, Serialize};
@@ -106,6 +107,12 @@ pub struct OAuthResult {
     pub success: bool,
     pub scopes_granted: Vec<String>,
     pub error: Option<String>,
+}
+
+pub(crate) fn parse_urlencoded_query(query_string: &str) -> HashMap<String, String> {
+    url::form_urlencoded::parse(query_string.as_bytes())
+        .into_owned()
+        .collect()
 }
 
 // ── Hybrid OAuth Tiers ──────────────────────────────────────────
@@ -287,13 +294,13 @@ pub async fn dynamic_register_client(
     let client = super::http::pinned_client();
 
     let body = serde_json::json!({
-        "client_name": "OpenPawz",
+        "client_name": brand::active_brand().product_name,
         "redirect_uris": [redirect_uri],
         "token_endpoint_auth_method": "none",
         "grant_types": ["authorization_code", "refresh_token"],
         "response_types": ["code"],
         "application_type": "native",
-        "contacts": ["support@openpawz.com"]
+        "contacts": ["support@example.com"]
     });
 
     info!("[oauth-rfc7591] Registering client at {}", registration_url);
@@ -1024,26 +1031,24 @@ async fn wait_for_callback(listener: TcpListener, expected_state: &str) -> Engin
 
         // Parse query parameters
         let query_string = path.split_once('?').map(|x| x.1).unwrap_or("");
-        let params: HashMap<&str, &str> = query_string
-            .split('&')
-            .filter_map(|pair| {
-                let mut parts = pair.splitn(2, '=');
-                Some((parts.next()?, parts.next()?))
-            })
-            .collect();
+        let params = parse_urlencoded_query(query_string);
 
         // Check for error
         if let Some(err) = params.get("error") {
-            let desc = params.get("error_description").unwrap_or(&"Unknown error");
+            let desc = params
+                .get("error_description")
+                .map(String::as_str)
+                .unwrap_or("Unknown error");
             // Send error response to browser
             let error_html = format!(
-                "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n\
-                <html><body style='font-family:system-ui;text-align:center;padding:60px'>\
+                "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nConnection: close\r\n\r\n\
+                <html><head><meta charset='utf-8'></head><body style='font-family:system-ui;text-align:center;padding:60px'>\
                 <h2 style='color:#e53e3e'>Authorization Failed</h2>\
                 <p>{}</p>\
-                <p style='color:#666'>You can close this tab and try again in OpenPawz.</p>\
+                <p style='color:#666'>You can close this tab and try again in {}.</p>\
                 </body></html>",
-                desc
+                desc,
+                brand::escape_html(brand::active_brand().app_name)
             );
             let _ = stream.write_all(error_html.as_bytes()).await;
             return Err(EngineError::Other(format!(
@@ -1053,8 +1058,11 @@ async fn wait_for_callback(listener: TcpListener, expected_state: &str) -> Engin
         }
 
         // Verify state parameter (CSRF protection)
-        let received_state = params.get("state").unwrap_or(&"");
-        if *received_state != expected_state {
+        let received_state = params
+            .get("state")
+            .map(String::as_str)
+            .unwrap_or("");
+        if received_state != expected_state {
             let _ = stream
                 .write_all(b"HTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\nState mismatch")
                 .await;
@@ -1070,13 +1078,15 @@ async fn wait_for_callback(listener: TcpListener, expected_state: &str) -> Engin
             .to_string();
 
         // Send success response to browser
-        let success_html =
-            "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n\
-            <html><body style='font-family:system-ui;text-align:center;padding:60px'>\
+        let success_html = format!(
+            "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nConnection: close\r\n\r\n\
+            <html><head><meta charset='utf-8'></head><body style='font-family:system-ui;text-align:center;padding:60px'>\
             <h2 style='color:#38a169'>Connected!</h2>\
-            <p>You can close this tab and return to OpenPawz.</p>\
+            <p>You can close this tab and return to {}.</p>\
             <script>setTimeout(()=>window.close(),2000)</script>\
-            </body></html>";
+            </body></html>",
+            brand::escape_html(brand::active_brand().app_name)
+        );
         let _ = stream.write_all(success_html.as_bytes()).await;
 
         Ok(code)
@@ -1359,6 +1369,24 @@ mod tests {
         );
         // Unreserved characters should not be encoded
         assert_eq!(urlencoding::encode("abc-123_456.789~"), "abc-123_456.789~");
+    }
+
+    #[test]
+    fn test_query_param_decoding() {
+        let params = parse_urlencoded_query(
+            "error=access_denied&error_description=Authorization+failed.&state=abc%2B123&name=%E6%8E%88%E6%9D%83",
+        );
+
+        assert_eq!(
+            params.get("error").map(String::as_str),
+            Some("access_denied")
+        );
+        assert_eq!(
+            params.get("error_description").map(String::as_str),
+            Some("Authorization failed.")
+        );
+        assert_eq!(params.get("state").map(String::as_str), Some("abc+123"));
+        assert_eq!(params.get("name").map(String::as_str), Some("授权"));
     }
 
     // ── Tier routing tests ─────────────────────────────────────────

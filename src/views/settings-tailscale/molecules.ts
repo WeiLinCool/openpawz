@@ -5,6 +5,7 @@ import { showToast } from '../../components/toast';
 import type { TailscaleStatus, TailscaleConfig } from '../../engine/atoms/types';
 import { $, confirmModal } from '../../components/helpers';
 import { esc, makeBtn } from './atoms';
+import { brand } from '../../brand';
 
 export async function loadTailscaleSettings() {
   const container = $('settings-tailscale-content');
@@ -100,7 +101,7 @@ export async function loadTailscaleSettings() {
   serveSection.className = 'settings-subsection';
   serveSection.style.marginBottom = '20px';
   serveSection.innerHTML = `<h3 class="settings-subsection-title">Serve 与 Funnel</h3>
-    <p class="settings-section-desc" style="margin-bottom:12px">通过你的 Tailscale 网络（Serve）或公开互联网（Funnel）暴露 Pawz。</p>`;
+    <p class="settings-section-desc" style="margin-bottom:12px">通过你的 Tailscale 网络（Serve）或公开互联网（Funnel）暴露 ${brand.shortName}。</p>`;
 
   const serveBtns = document.createElement('div');
   serveBtns.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap';
@@ -146,7 +147,7 @@ export async function loadTailscaleSettings() {
   } else {
     serveBtns.appendChild(
       makeBtn('启动 Funnel（公开）', 'btn-primary', async () => {
-        if (!(await confirmModal('Funnel 会将 Pawz 暴露到公开互联网。是否继续？'))) return;
+        if (!(await confirmModal(`Funnel 会将 ${brand.shortName} 暴露到公开互联网。是否继续？`))) return;
         try {
           await pawEngine.tailscaleFunnelStart(config.serve_port);
           showToast('Funnel 已启动', 'success');

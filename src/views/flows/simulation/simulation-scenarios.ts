@@ -12,6 +12,7 @@
 // No DOM, no IPC — pure data.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { formatBrandText } from '../../../brand';
 import { simNode, simEdge, simGraph, type SimScenario, type SimSuite } from './simulation-atoms';
 import { allStressScenarios } from './simulation-stress-scenarios';
 
@@ -551,7 +552,9 @@ export const tesseractScenario: SimScenario = {
       ana: {
         strategy: 'static',
         response:
-          'Gap Analysis: No tool combines local-first + multi-model + workflow automation. OpenPawz uniquely positioned to fill this.',
+          formatBrandText(
+            'Gap Analysis: No tool combines local-first + multi-model + workflow automation. {appName} is uniquely positioned to fill this.',
+          ),
       },
       str: {
         strategy: 'static',

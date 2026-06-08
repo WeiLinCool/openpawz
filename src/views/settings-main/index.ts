@@ -8,6 +8,7 @@ import { isConnected } from '../../state/connection';
 import type { ToolRule } from './atoms';
 import {
   setMoleculesState,
+  setEnterpriseMode,
   loadSettingsStatus,
   loadSettingsLogs,
   loadSettingsUsage,
@@ -136,6 +137,10 @@ export function initSettings() {
   });
   // Budget
   initBudgetSettings();
+}
+
+export function setSettingsEnterpriseMode(enabled: boolean): void {
+  setEnterpriseMode(enabled);
 }
 
 // ── Load all settings data ─────────────────────────────────────────────────

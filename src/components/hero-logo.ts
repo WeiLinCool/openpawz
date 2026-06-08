@@ -82,7 +82,7 @@ export function createHeroLogo(container: HTMLElement): HeroLogoInstance {
 
   // ── Load logo image ──
   const logo = new Image();
-  logo.src = '/images/pawz-logo-transparent.png';
+  logo.src = '/brand/logo.png';
   let logoReady = false;
   logo.onload = () => {
     logoReady = true;

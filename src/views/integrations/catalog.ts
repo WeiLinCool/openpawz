@@ -4,6 +4,7 @@
 // Top services are hand-curated with setup guides; remaining are auto-generated.
 
 import type { ServiceDefinition, ServiceCategory, CredentialField, SetupGuide } from './atoms';
+import { formatBrandText } from '../../brand';
 import API_DOCS from './api-docs';
 import { CREDENTIAL_OVERRIDES } from './credential-data';
 
@@ -106,7 +107,7 @@ const buildGuide = (id: string, name: string, docsUrl: string): SetupGuide => {
         {
           instruction: `Click the "Connect ${name}" button below to sign in with your ${name} account.`,
         },
-        { instruction: `Authorize OpenPawz to access your ${name} data.` },
+        { instruction: `Authorize {appName} to access your ${name} data.` },
         {
           instruction: `Once connected, your agent can use ${name} tools immediately — no API key needed.`,
         },
@@ -153,6 +154,18 @@ const buildGuide = (id: string, name: string, docsUrl: string): SetupGuide => {
   return { title: `Connect ${name}`, steps, estimatedTime: '2-5 minutes' };
 };
 
+function applyBrandToGuide(guide: SetupGuide): SetupGuide {
+  return {
+    ...guide,
+    title: formatBrandText(guide.title),
+    steps: guide.steps.map((step) => ({
+      ...step,
+      instruction: formatBrandText(step.instruction),
+      tip: step.tip ? formatBrandText(step.tip) : undefined,
+    })),
+  };
+}
+
 function svc(
   id: string,
   name: string,
@@ -185,7 +198,7 @@ function svc(
     docsUrl: resolvedDocsUrl,
     popular,
     credentialFields: credentialFields ?? override?.fields ?? [apiKeyField],
-    setupGuide: setupGuide ?? override?.guide ?? buildGuide(id, name, resolvedDocsUrl),
+    setupGuide: applyBrandToGuide(setupGuide ?? override?.guide ?? buildGuide(id, name, resolvedDocsUrl)),
     queryExamples: queryExamples ?? [`What's new in ${name}?`],
     automationExamples: automationExamples ?? [`When something happens in ${name}, notify me.`],
   };
@@ -228,7 +241,7 @@ const CURATED: ServiceDefinition[] = [
           instruction: 'Go to api.slack.com/apps and click "Create New App"',
           link: 'https://api.slack.com/apps',
         },
-        { instruction: 'Choose "From scratch", name it "OpenPawz", select your workspace' },
+        { instruction: 'Choose "From scratch", name it "{appName}", select your workspace' },
         {
           instruction:
             'Under OAuth & Permissions, add scopes: chat:write, channels:read, channels:history, users:read',
@@ -362,11 +375,11 @@ const CURATED: ServiceDefinition[] = [
           instruction: 'Go to notion.so/my-integrations',
           link: 'https://www.notion.so/my-integrations',
         },
-        { instruction: 'Click "New integration" and name it "OpenPawz"' },
+        { instruction: 'Click "New integration" and name it "{appName}"' },
         { instruction: 'Copy the Internal Integration Token' },
         {
           instruction: 'Share your Notion pages/databases with the integration',
-          tip: 'Click "..." on a page → Connections → Add OpenPawz',
+          tip: 'Click "..." on a page → Connections → Add {appName}',
         },
       ],
       estimatedTime: '3 minutes',
@@ -402,7 +415,7 @@ const CURATED: ServiceDefinition[] = [
           instruction: 'Go to your HubSpot account → Settings → Integrations → Private Apps',
           link: 'https://app.hubspot.com/private-apps/',
         },
-        { instruction: 'Click "Create a private app" and name it "OpenPawz"' },
+        { instruction: 'Click "Create a private app" and name it "{appName}"' },
         {
           instruction:
             'Under Scopes, enable: crm.objects.contacts, crm.objects.deals, crm.objects.companies',
@@ -454,7 +467,7 @@ const CURATED: ServiceDefinition[] = [
           instruction: 'Go to the Discord Developer Portal',
           link: 'https://discord.com/developers/applications',
         },
-        { instruction: 'Click "New Application" and name it "OpenPawz"' },
+        { instruction: 'Click "New Application" and name it "{appName}"' },
         {
           instruction: 'Go to Bot → click "Add Bot" → copy the Bot Token',
           tip: 'Enable Message Content Intent under Privileged Gateway Intents',
@@ -519,7 +532,7 @@ const CURATED: ServiceDefinition[] = [
           instruction: 'Go to Atlassian API Token management',
           link: 'https://id.atlassian.com/manage-profile/security/api-tokens',
         },
-        { instruction: 'Click "Create API token", label it "OpenPawz"' },
+        { instruction: 'Click "Create API token", label it "{appName}"' },
         { instruction: 'Copy the token and enter it below along with your Jira domain and email' },
       ],
       estimatedTime: '2 minutes',
@@ -609,11 +622,11 @@ const CURATED: ServiceDefinition[] = [
           instruction: 'Go to the Trello Power-Up Admin',
           link: 'https://trello.com/power-ups/admin',
         },
-        { instruction: 'Click "New" to create a Power-Up, name it "OpenPawz"' },
+        { instruction: 'Click "New" to create a Power-Up, name it "{appName}"' },
         { instruction: 'Copy the API Key from the Power-Up settings' },
         {
           instruction: 'Click the link to generate a Token and authorize it',
-          tip: 'The token gives OpenPawz access to your boards',
+          tip: 'The token gives {appName} access to your boards',
         },
       ],
       estimatedTime: '2 minutes',
@@ -646,7 +659,7 @@ const CURATED: ServiceDefinition[] = [
       title: 'Connect Linear',
       steps: [
         { instruction: 'Go to Linear Settings → API', link: 'https://linear.app/settings/api' },
-        { instruction: 'Click "Create key", label it "OpenPawz"' },
+        { instruction: 'Click "Create key", label it "{appName}"' },
         {
           instruction: 'Copy the API key and paste it below',
           tip: 'The key has access to your workspace — keep it secret',
@@ -747,7 +760,7 @@ const AUTO: ServiceDefinition[] = [
           instruction: 'Go to Azure Portal → App Registrations',
           link: 'https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade',
         },
-        { instruction: 'Click "New registration", name it "OpenPawz", set redirect URI' },
+        { instruction: 'Click "New registration", name it "{appName}", set redirect URI' },
         { instruction: 'Copy the Application (Client) ID and Directory (Tenant) ID' },
         {
           instruction: 'Go to Certificates & Secrets → New client secret',
@@ -1123,7 +1136,7 @@ const AUTO: ServiceDefinition[] = [
           link: 'https://app.asana.com/0/developer-console',
         },
         { instruction: 'Click "Create new token" under Personal Access Tokens' },
-        { instruction: 'Name it "OpenPawz", copy the token and paste below' },
+        { instruction: 'Name it "{appName}", copy the token and paste below' },
       ],
       estimatedTime: '1 minute',
     },
@@ -1251,7 +1264,7 @@ const AUTO: ServiceDefinition[] = [
       title: 'Connect Airtable',
       steps: [
         { instruction: 'Go to Airtable Tokens page', link: 'https://airtable.com/create/tokens' },
-        { instruction: 'Click "Create new token", name it "OpenPawz"' },
+        { instruction: 'Click "Create new token", name it "{appName}"' },
         { instruction: 'Add scopes: data.records:read, data.records:write, schema.bases:read' },
         {
           instruction: 'Select which bases to grant access to',
@@ -1437,7 +1450,7 @@ const AUTO: ServiceDefinition[] = [
       title: 'Connect Shopify',
       steps: [
         { instruction: 'Go to your Shopify Admin → Settings → Apps and sales channels' },
-        { instruction: 'Click "Develop apps" → "Create an app", name it "OpenPawz"' },
+        { instruction: 'Click "Develop apps" → "Create an app", name it "{appName}"' },
         {
           instruction:
             'Under API scopes, select: read_orders, read_products, read_customers, write_orders',
@@ -2237,7 +2250,7 @@ const AUTO: ServiceDefinition[] = [
           instruction: 'Go to Azure Portal → App Registrations',
           link: 'https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade',
         },
-        { instruction: 'Register a new app named "OpenPawz"' },
+        { instruction: 'Register a new app named "{appName}"' },
         { instruction: 'Add API permissions: Mail.ReadWrite, Calendars.ReadWrite' },
         { instruction: 'Create a client secret and copy both IDs below' },
       ],

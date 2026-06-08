@@ -102,7 +102,7 @@ export function initChannels() {
     for (const def of CHANNEL_SETUPS) {
       html += `<button class="channel-pick-btn" data-ch-pick="${def.id}">
         <span class="channel-pick-icon ${CHANNEL_CLASSES[def.id] ?? 'default'}">${def.icon}</span>
-        <span>${escHtml(def.name)}</span>
+        <span>${escHtml(translateUiText(def.name))}</span>
       </button>`;
     }
     html += '</div>';

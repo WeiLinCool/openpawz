@@ -2,6 +2,7 @@
 // Tab operations + pop-out window geometry persistence + pop-out window creation.
 
 use crate::atoms::types::{DashboardTabRow, DashboardWindowRow};
+use crate::brand;
 use crate::engine::state::EngineState;
 use tauri::{AppHandle, Manager, State, WebviewUrl, WebviewWindowBuilder};
 
@@ -157,7 +158,7 @@ pub fn engine_pop_out_dashboard(
     };
 
     let url = format!("index.html?popout={}", dashboard_id);
-    let title = format!("{} -- Open Pawz", dashboard_name);
+    let title = format!("{} -- {}", dashboard_name, brand::active_brand().window_title);
 
     let mut builder = WebviewWindowBuilder::new(&app, &label, WebviewUrl::App(url.into()))
         .title(&title)

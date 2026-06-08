@@ -3,6 +3,7 @@
 // Provides commands for listing, pulling, and creating Ollama models.
 // Used by the Zero-Gap auto-setup flow to create the worker-qwen model.
 
+use crate::brand;
 use log::info;
 use serde::{Deserialize, Serialize};
 
@@ -231,6 +232,7 @@ pub async fn engine_ollama_setup_worker(
     }
 
     // Step 3: Create worker model with embedded Modelfile
+    let worker_owner = brand::active_brand().product_name;
     let modelfile = format!(
         r#"FROM {}
 
@@ -239,7 +241,7 @@ PARAMETER num_ctx 16384
 PARAMETER stop "<|im_end|>"
 
 SYSTEM """
-You are the LOCAL FOREMAN (Worker Agent) for OpenPawz.
+You are the LOCAL FOREMAN (Worker Agent) for {}.
 
 Your job is to receive Task Orders from the Architect and translate them into
 precise MCP tool calls. You are a silent execution unit — never engage in
@@ -275,7 +277,7 @@ Only output tool calls. Never output plain text unless reporting an error
 via `report_progress`. Your response should be a tool_calls array, nothing else.
 """
 "#,
-        base
+        base, worker_owner
     );
 
     engine_ollama_create_model(app_handle, worker_name.to_string(), modelfile).await

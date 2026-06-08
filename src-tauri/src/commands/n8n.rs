@@ -1,5 +1,6 @@
 // commands/n8n.rs — Tauri IPC commands for n8n integration
 
+use crate::brand;
 use crate::engine::channels;
 use crate::engine::n8n_engine;
 use crate::engine::skills;
@@ -2479,8 +2480,8 @@ pub async fn engine_n8n_deploy_mcp_workflow(
         service_id, n8n_node_type
     );
 
-    let workflow_name = format!("OpenPawz MCP — {}", service_name);
-    let tag = format!("openpawz-mcp-{}", service_id);
+    let workflow_name = format!("{} MCP — {}", brand::protocol_name(), service_name);
+    let tag = format!("{}-mcp-{}", brand::active_brand().id, service_id);
 
     // Check if workflow already exists (by searching for our tag)
     let client = reqwest::Client::builder()
@@ -2686,7 +2687,7 @@ fn build_mcp_workflow(
         },
         "tags": [
             { "name": tag },
-            { "name": "openpawz-mcp" }
+            { "name": format!("{}-mcp", brand::active_brand().id) }
         ],
         "active": false
     })

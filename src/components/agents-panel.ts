@@ -3,6 +3,7 @@
 
 import { kineticRow, kineticStagger } from './kinetic-row';
 import { escHtml } from './helpers';
+import { t } from '../i18n';
 
 // ── Agent Template Catalog ─────────────────────────────────────────────
 
@@ -257,13 +258,13 @@ export const AGENT_TEMPLATE_CATALOG: AgentTemplate[] = [
 // ── Category metadata ──────────────────────────────────────────────────
 
 const CATEGORY_META: Record<string, { icon: string; label: string; color: string }> = {
-  productivity: { icon: 'work', label: 'Productivity', color: 'var(--accent)' },
-  engineering: { icon: 'code', label: 'Engineering', color: '#8b5cf6' },
-  creative: { icon: 'palette', label: 'Creative', color: '#ec4899' },
-  data: { icon: 'query_stats', label: 'Data & Research', color: '#06b6d4' },
-  communication: { icon: 'forum', label: 'Communication', color: '#10b981' },
-  security: { icon: 'shield', label: 'Security', color: '#ef4444' },
-  trading: { icon: 'trending_up', label: 'Trading', color: '#f59e0b' },
+  productivity: { icon: 'work', label: t('Productivity'), color: 'var(--accent)' },
+  engineering: { icon: 'code', label: t('Engineering'), color: '#8b5cf6' },
+  creative: { icon: 'palette', label: t('Creative'), color: '#ec4899' },
+  data: { icon: 'query_stats', label: t('Data & Research'), color: '#06b6d4' },
+  communication: { icon: 'forum', label: t('Communication'), color: '#10b981' },
+  security: { icon: 'shield', label: t('Security'), color: '#ef4444' },
+  trading: { icon: 'trending_up', label: t('Trading'), color: '#f59e0b' },
 };
 
 // ── Render functions ───────────────────────────────────────────────────
@@ -297,7 +298,7 @@ export function renderCapabilitiesList(agents: { skills: string[] }[]) {
   const topSkills = [...skillCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8);
 
   if (topSkills.length === 0) {
-    el.innerHTML = '<div class="agents-cap-empty">No skills assigned yet</div>';
+    el.innerHTML = `<div class="agents-cap-empty">${t('No skills assigned yet')}</div>`;
     return;
   }
 
@@ -324,7 +325,7 @@ export function renderActivityList(agents: { name: string; lastUsed?: string }[]
     .slice(0, 5);
 
   if (recent.length === 0) {
-    el.innerHTML = '<div class="agents-activity-empty">No activity yet</div>';
+    el.innerHTML = `<div class="agents-activity-empty">${t('No activity yet')}</div>`;
     return;
   }
 
@@ -364,14 +365,14 @@ export function renderTemplateGrid(onInstall: (templateId: string) => void) {
       <div class="agents-tpl-cat-cards">
         ${templates
           .map(
-            (t) => `
-        <div class="agents-tpl-card k-row k-spring" data-template-id="${t.id}">
-          ${t.popular ? '<span class="agents-tpl-popular">Popular</span>' : ''}
-          <span class="ms agents-tpl-card-icon" style="color:${meta.color}">${t.icon}</span>
-          <div class="agents-tpl-card-name">${escHtml(t.name)}</div>
-          <div class="agents-tpl-card-desc">${escHtml(t.desc)}</div>
-          <button class="agents-tpl-install-btn" data-tpl-id="${t.id}">
-            <span class="ms ms-sm">download</span> Install
+            (tpl) => `
+        <div class="agents-tpl-card k-row k-spring" data-template-id="${tpl.id}">
+          ${tpl.popular ? `<span class="agents-tpl-popular">${t('Popular')}</span>` : ''}
+          <span class="ms agents-tpl-card-icon" style="color:${meta.color}">${tpl.icon}</span>
+          <div class="agents-tpl-card-name">${escHtml(tpl.name)}</div>
+          <div class="agents-tpl-card-desc">${escHtml(tpl.desc)}</div>
+          <button class="agents-tpl-install-btn" data-tpl-id="${tpl.id}">
+            <span class="ms ms-sm">download</span> ${t('Install')}
           </button>
         </div>`,
           )
@@ -428,11 +429,11 @@ function _formatSkillName(id: string): string {
 function _timeAgo(d: Date): string {
   const diff = Date.now() - d.getTime();
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
+  if (mins < 1) return t('just now');
+  if (mins < 60) return `${mins}${t('m ago')}`;
   const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
+  if (hrs < 24) return `${hrs}${t('h ago')}`;
   const days = Math.floor(hrs / 24);
-  if (days === 1) return 'yesterday';
-  return `${days}d ago`;
+  if (days === 1) return t('yesterday');
+  return `${days}${t('d ago')}`;
 }

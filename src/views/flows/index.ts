@@ -4,6 +4,7 @@
 // Sub-modules: flows-persistence, flows-scheduler, flows-keybindings.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { t } from '../../i18n';
 import {
   type FlowGraph,
   type FlowNode,
@@ -660,7 +661,7 @@ function importFlow() {
         const json = reader.result as string;
         const graph = deserializeGraph(json);
         if (!graph) {
-          alert('Invalid flow file: could not parse graph.');
+          alert(t('Invalid flow file: could not parse graph.'));
           return;
         }
         // Assign a new ID to avoid collisions with existing flows
@@ -675,7 +676,7 @@ function importFlow() {
         renderActiveGraph();
         updateFlowList();
       } catch (err) {
-        alert(`Import failed: ${err instanceof Error ? err.message : String(err)}`);
+        alert(t('Import failed') + ': ' + (err instanceof Error ? err.message : String(err)));
       }
     };
     reader.readAsText(file);
@@ -752,7 +753,7 @@ async function runActiveFlow() {
   const graph = _graphs.find((g) => g.id === _activeGraphId);
   if (!graph) {
     const { showToast } = await import('../../components/toast');
-    showToast('No flow selected to run', 'error');
+    showToast(t('No flow selected to run'), 'error');
     return;
   }
 
@@ -778,15 +779,15 @@ async function runActiveFlow() {
 
     // If the report recommends blocking, ask for confirmation
     if (preflightReport.recommendation === 'block') {
-      const proceed = confirm(
-        `⚠ Pre-flight Safety Report: ${preflightReport.overallRisk.toUpperCase()} risk.\n\n` +
-          `${preflightReport.findings
-            .filter((f) => f.risk === 'high' || f.risk === 'critical')
-            .map((f) => `• ${f.title}`)
-            .join('\n')}\n\n` +
-          `Blast radius: ${preflightReport.blastRadius}/100\n\n` +
-          `Do you want to proceed anyway?`,
-      );
+        const proceed = confirm(
+          `⚠ ` + t('Pre-flight Safety Report: ') + `${preflightReport.overallRisk.toUpperCase()} risk.\n\n` +
+            `${preflightReport.findings
+              .filter((f) => f.risk === 'high' || f.risk === 'critical')
+              .map((f) => `• ${f.title}`)
+              .join('\n')}\n\n` +
+            `Blast radius: ${preflightReport.blastRadius}/100\n\n` +
+            t('Do you want to proceed anyway?'),
+        );
       if (!proceed) {
         const { showToast } = await import('../../components/toast');
         showToast('Flow execution cancelled after safety review', 'info');
@@ -794,9 +795,9 @@ async function runActiveFlow() {
       }
     } else if (preflightReport.recommendation === 'review') {
       const proceed = confirm(
-        `Pre-flight Safety Report: ${preflightReport.overallRisk.toUpperCase()} risk.\n\n` +
+        t('Pre-flight Safety Report: ') + `${preflightReport.overallRisk.toUpperCase()} risk.\n\n` +
           `${preflightReport.findings.map((f) => `• ${f.title}`).join('\n')}\n\n` +
-          `Continue execution?`,
+          t('Continue execution?'),
       );
       if (!proceed) {
         const { showToast } = await import('../../components/toast');
@@ -895,7 +896,7 @@ async function startDebugMode() {
   const graph = _graphs.find((g) => g.id === _activeGraphId);
   if (!graph) {
     const { showToast } = await import('../../components/toast');
-    showToast('No flow selected to debug', 'error');
+    showToast(t('No flow selected to debug'), 'error');
     return;
   }
 

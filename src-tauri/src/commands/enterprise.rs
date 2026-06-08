@@ -6,6 +6,8 @@
 // - Gate enterprise-cloud chat requests in Rust, not in the frontend.
 
 use crate::commands::state::EngineState;
+use crate::brand;
+use crate::engine::oauth::parse_urlencoded_query;
 use crate::engine::platform::{require_feature, EntitlementProvider, FEATURE_MODELS_PROXY};
 use crate::engine::types::{EngineConfig, ProviderConfig, ProviderKind};
 use base64::Engine as _;
@@ -202,6 +204,8 @@ pub struct EnterpriseStatus {
     pub configured: bool,
     pub authenticated: bool,
     pub expired: bool,
+    pub can_manage_model_providers: bool,
+    pub crypto_ready: bool,
     pub gateway_url: Option<String>,
     pub user_email: Option<String>,
     pub organization_id: Option<String>,
@@ -446,18 +450,7 @@ async fn wait_for_oauth_callback(
         let first_line = request.lines().next().unwrap_or("");
         let path = first_line.split_whitespace().nth(1).unwrap_or("");
         let query_string = path.split_once('?').map(|x| x.1).unwrap_or("");
-        let params: HashMap<String, String> = query_string
-            .split('&')
-            .filter_map(|pair| {
-                let mut parts = pair.splitn(2, '=');
-                let key = parts.next()?;
-                let value = parts.next().unwrap_or("");
-                Some((
-                    key.to_string(),
-                    urlencoding::decode(value).ok()?.to_string(),
-                ))
-            })
-            .collect();
+        let params = parse_urlencoded_query(query_string);
 
         if let Some(err) = params.get("error") {
             let desc = params
@@ -467,8 +460,8 @@ async fn wait_for_oauth_callback(
             let _ = stream
                 .write_all(
                     format!(
-                        "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n\
-                        <html><body><h2>授权失败</h2><p>{}</p></body></html>",
+                        "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nConnection: close\r\n\r\n\
+                        <html><head><meta charset='utf-8'></head><body><h2>授权失败</h2><p>{}</p></body></html>",
                         desc
                     )
                     .as_bytes(),
@@ -488,13 +481,12 @@ async fn wait_for_oauth_callback(
             .get("code")
             .cloned()
             .ok_or_else(|| "No authorization code in callback".to_string())?;
-        let _ = stream
-            .write_all(
-                "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n\
-                <html><body><h2>企业登录完成</h2><p>你可以关闭此标签页并返回 OpenPawz。</p><script>setTimeout(()=>window.close(),2000)</script></body></html>"
-                    .as_bytes(),
-            )
-            .await;
+        let success_html = format!(
+            "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nConnection: close\r\n\r\n\
+            <html><head><meta charset='utf-8'></head><body><h2>企业登录完成</h2><p>你可以关闭此标签页并返回 {}。</p><script>setTimeout(()=>window.close(),2000)</script></body></html>",
+            brand::escape_html(brand::active_brand().app_name)
+        );
+        let _ = stream.write_all(success_html.as_bytes()).await;
         Ok(code)
     })
     .await;
@@ -607,12 +599,16 @@ fn status_from_config(config: EnterpriseConfig) -> EnterpriseStatus {
     let configured =
         !config.gateway_url.trim().is_empty() && !config.access_token.trim().is_empty();
     let expired = enterprise_session_expired(&config);
+    let can_manage_model_providers = !config.enabled || !configured || expired;
+    let crypto_ready = config.enabled && configured && !expired;
     EnterpriseStatus {
         enabled: config.enabled,
         enterprise_build_mode: enterprise_build_mode_enabled(),
         configured,
         authenticated: config.enabled && configured && !expired,
         expired,
+        can_manage_model_providers,
+        crypto_ready,
         gateway_url: if config.gateway_url.is_empty() {
             None
         } else {
@@ -845,6 +841,11 @@ pub fn engine_enterprise_has_entitlement(
             && has_entitlement(&config, &feature),
         feature,
     })
+}
+
+pub fn enterprise_provider_management_locked(state: &EngineState) -> bool {
+    let config = load_enterprise_config(state);
+    config.enabled && !config.access_token.trim().is_empty() && !enterprise_session_expired(&config)
 }
 
 #[tauri::command]

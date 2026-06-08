@@ -193,6 +193,8 @@ export interface EnterpriseStatus {
   configured: boolean;
   authenticated: boolean;
   expired: boolean;
+  can_manage_model_providers: boolean;
+  crypto_ready: boolean;
   gateway_url?: string;
   user_email?: string;
   organization_id?: string;
@@ -200,6 +202,13 @@ export interface EnterpriseStatus {
   entitlements: string[];
   expires_at?: string;
   default_model?: string;
+}
+
+export interface ProviderModelInfo {
+  raw_id: string;
+  display_name: string;
+  context_window?: number;
+  max_output?: number;
 }
 
 export interface EnterpriseConfigureRequest {

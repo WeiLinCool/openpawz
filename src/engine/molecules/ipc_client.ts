@@ -16,6 +16,7 @@ import type {
   EngineStoredMessage,
   EngineEvent,
   EngineStatus,
+  ProviderModelInfo,
   EngineAgentFile,
   EngineMemory,
   EngineMemoryConfig,
@@ -252,8 +253,8 @@ export class PawEngineClient {
 
   async listProviderModels(
     providerId: string,
-  ): Promise<{ id: string; name: string; context_window?: number; max_output?: number }[]> {
-    return invoke('engine_list_provider_models', { providerId });
+  ): Promise<ProviderModelInfo[]> {
+    return invoke<ProviderModelInfo[]>('engine_list_provider_models', { providerId });
   }
 
   async status(): Promise<EngineStatus> {

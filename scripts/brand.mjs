@@ -14,7 +14,7 @@ const generatedTauriConfig = path.join(repoRoot, 'src-tauri', 'tauri.brand.gener
 const defaultIconFiles = ['32x32.png', '128x128.png', '128x128@2x.png', 'icon.icns', 'icon.ico'];
 
 function parseArgs(argv) {
-  let brand = process.env.OPENPAWZ_BRAND || 'openpawz';
+  let brand = process.env.OPENPAWZ_BRAND || 'taiji';
   const overrides = readOverridesFromEnv(process.env);
   const args = [];
 
@@ -211,6 +211,14 @@ function main() {
       ...process.env,
       OPENPAWZ_BRAND: activeBrand.id,
       OPENPAWZ_ACTIVE_BRAND_FILE: activeBrandFile,
+      OPENPAWZ_BRAND_ID: activeBrand.id,
+      OPENPAWZ_APP_NAME: activeBrand.appName,
+      OPENPAWZ_SHORT_NAME: activeBrand.shortName,
+      OPENPAWZ_PRODUCT_NAME: activeBrand.productName,
+      OPENPAWZ_WINDOW_TITLE: activeBrand.windowTitle,
+      OPENPAWZ_REPOSITORY_URL: activeBrand.repositoryUrl,
+      OPENPAWZ_TAGLINE: activeBrand.tagline,
+      OPENPAWZ_ABOUT_LINE: activeBrand.aboutLine,
       ...overridesToEnv(overrides),
     },
     shell: process.platform === 'win32',

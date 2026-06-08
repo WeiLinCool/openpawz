@@ -20,17 +20,17 @@ interface BrandConfig {
 }
 
 const fallbackBrand: BrandConfig = {
-  id: 'openpawz',
-  appName: 'OpenPawz',
-  shortName: 'Pawz',
-  productName: 'Open Pawz Desktop',
-  windowTitle: 'Open Pawz Desktop',
-  identifier: 'com.openpawz.openpawz',
-  tagline: 'Your AI command center',
-  aboutLine: 'Pawz are safer than Claws',
+  id: 'taiji',
+  appName: '太极台',
+  shortName: '太极',
+  productName: '太极台',
+  windowTitle: '太极',
+  identifier: 'com.openpawz.taiji-dragon',
+  tagline: '你的 AI 指挥中心',
+  aboutLine: '本地优先的智能桌面工作台',
   repositoryUrl: 'https://github.com/OpenPawz/openpawz',
-  logoUrl: '/images/pawz-logo-transparent.png',
-  faviconUrl: '/images/pawz-favicon.png',
+  logoUrl: '/brand/logo.png',
+  faviconUrl: '/brand/favicon.png',
 };
 
 function loadBrand(): BrandConfig {

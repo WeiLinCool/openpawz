@@ -4,6 +4,7 @@ import {
   pawEngine,
   type EngineProviderConfig,
   type EngineConfig,
+  type EnterpriseStatus,
   type ModelRouting,
 } from '../../engine';
 import { showToast } from '../../components/toast';
@@ -48,6 +49,16 @@ export async function loadModelsSettings() {
   try {
     const config = await getEngineConfig();
     const providers = config.providers ?? [];
+    let enterpriseStatus: EnterpriseStatus | null = null;
+    try {
+      enterpriseStatus = await pawEngine.enterpriseStatus();
+    } catch {
+      enterpriseStatus = null;
+    }
+    const canAddProviders =
+      !enterpriseStatus?.enterprise_build_mode ||
+      !enterpriseStatus.authenticated ||
+      enterpriseStatus.can_manage_model_providers;
 
     container.innerHTML = '';
 
@@ -196,15 +207,28 @@ export async function loadModelsSettings() {
     provHeader.style.cssText =
       'display:flex;justify-content:space-between;align-items:center;margin-top:24px';
     provHeader.innerHTML = `<h3 class="settings-subsection-title" style="margin:0">${t('Manage Providers')}</h3>`;
-    const addBtn = document.createElement('button');
-    addBtn.className = 'btn btn-primary btn-sm';
-    addBtn.textContent = `+ ${t('Add Provider')}`;
-    addBtn.addEventListener('click', () => toggleAddProviderForm());
-    provHeader.appendChild(addBtn);
+    if (canAddProviders) {
+      const addBtn = document.createElement('button');
+      addBtn.className = 'btn btn-primary btn-sm';
+      addBtn.textContent = `+ ${t('Add Provider')}`;
+      addBtn.addEventListener('click', () => toggleAddProviderForm());
+      provHeader.appendChild(addBtn);
+    }
     container.appendChild(provHeader);
 
-    // Inline add-provider form (hidden by default)
-    container.appendChild(buildAddProviderForm(config));
+    if (canAddProviders) {
+      // Inline add-provider form (hidden by default)
+      container.appendChild(buildAddProviderForm(config));
+    } else if (enterpriseStatus?.enterprise_build_mode && enterpriseStatus.authenticated) {
+      const lockedHint = document.createElement('div');
+      lockedHint.className = 'settings-card';
+      lockedHint.style.cssText =
+        'margin-top:12px;padding:14px;border:1px solid var(--border);border-radius:8px;color:var(--text-muted)';
+      lockedHint.textContent = t(
+        'Your organization manages model providers for this workspace. You can edit existing providers, but adding new ones is disabled.',
+      );
+      container.appendChild(lockedHint);
+    }
 
     // Render each provider as a card
     for (const p of providers) {
@@ -895,10 +919,13 @@ function renderProviderCard(provider: EngineProviderConfig, config: EngineConfig
           chip.className = 'btn btn-ghost btn-sm';
           chip.style.cssText =
             'font-size:11px;padding:2px 8px;border-radius:12px;border:1px solid var(--accent);color:var(--accent)';
-          chip.textContent = m.id;
-          chip.title = m.name + (m.context_window ? ` (${m.context_window} ctx)` : '');
+          chip.textContent = m.display_name || m.raw_id;
+          const rawLabel = m.raw_id !== m.display_name ? ` · ${m.raw_id}` : '';
+          chip.title = `${m.display_name || m.raw_id}${rawLabel}${
+            m.context_window ? ` (${m.context_window} ctx)` : ''
+          }`;
           chip.addEventListener('click', () => {
-            modelInp.value = m.id;
+            modelInp.value = m.raw_id;
           });
           chips.appendChild(chip);
         }

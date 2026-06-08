@@ -17,6 +17,7 @@
 // All worker tool results are scanned for prompt injection before being
 // returned to the boss model.
 
+use crate::brand;
 use crate::atoms::types::*;
 use crate::engine::providers::AnyProvider;
 use crate::engine::state::EngineState;
@@ -124,7 +125,8 @@ pub async fn delegate_to_worker(
     );
 
     // Build system prompt for the worker
-    let system_prompt = "You are the FOREMAN (Worker Agent) for OpenPawz.\n\n\
+    let system_prompt = format!(
+        "You are the FOREMAN (Worker Agent) for {}.\n\n\
         Your job is to receive Task Orders and execute them using your available tools.\n\
         You are a silent execution unit — never engage in conversation, never explain your reasoning.\n\n\
         ## Available Tools\n\
@@ -139,8 +141,9 @@ pub async fn delegate_to_worker(
         ## Important\n\
         - Execute efficiently. Minimize round trips.\n\
         - Do NOT explain what you're doing. Just execute and return the result.\n\
-        - If the task cannot be completed, say ERROR: followed by the reason."
-        .to_string();
+        - If the task cannot be completed, say ERROR: followed by the reason.",
+        brand::active_brand().product_name
+    );
 
     // Build messages
     let mut messages = vec![

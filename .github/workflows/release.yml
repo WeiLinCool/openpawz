@@ -100,8 +100,10 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           tagName: ${{ github.ref_name }}
-          releaseName: 'Open Pawz v__VERSION__'
+          releaseName: '太极台 v__VERSION__'
           releaseBody: 'See the [CHANGELOG](https://github.com/OpenPawz/openpawz/blob/main/CHANGELOG.md) for details.'
           releaseDraft: true
           prerelease: false
+          tauriScript: 'node scripts/brand.mjs tauri'
+          assetNamePattern: '[name]_[version]_[arch][setup][ext]'
           args: --target ${{ matrix.target }}

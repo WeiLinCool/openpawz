@@ -1,6 +1,7 @@
 // commands/config.rs — Thin wrappers for engine config, sandbox, and auto-setup.
 
 use crate::commands::state::EngineState;
+use crate::commands::enterprise::{enterprise_session_expired, load_enterprise_config};
 use crate::engine::types::*;
 use log::info;
 use std::sync::atomic::Ordering;
@@ -71,6 +72,24 @@ pub fn engine_set_config(
     state: State<'_, EngineState>,
     config: EngineConfig,
 ) -> Result<(), String> {
+    let enterprise_cfg = load_enterprise_config(&state);
+    let enterprise_locked =
+        enterprise_cfg.enabled && !enterprise_session_expired(&enterprise_cfg);
+    if enterprise_locked {
+        let current_cfg = state.config.lock();
+        let current_ids: std::collections::HashSet<&str> =
+            current_cfg.providers.iter().map(|p| p.id.as_str()).collect();
+        let new_ids: Vec<&str> = config.providers.iter().map(|p| p.id.as_str()).collect();
+        if new_ids
+            .iter()
+            .any(|id| !current_ids.contains(id) && *id != crate::commands::enterprise::ENTERPRISE_PROVIDER_ID)
+        {
+            return Err(
+                "This enterprise workspace does not allow adding new model providers.".into(),
+            );
+        }
+    }
+
     let json = serde_json::to_string(&config).map_err(|e| format!("Serialize error: {}", e))?;
     openpawz_core::engine::http::set_model_proxy_config(config.model_proxy.clone());
 
@@ -94,6 +113,20 @@ pub fn engine_upsert_provider(
     state: State<'_, EngineState>,
     provider: ProviderConfig,
 ) -> Result<(), String> {
+    let enterprise_cfg = load_enterprise_config(&state);
+    let enterprise_locked =
+        enterprise_cfg.enabled && !enterprise_session_expired(&enterprise_cfg);
+
+    if enterprise_locked {
+        let cfg = state.config.lock();
+        let exists = cfg.providers.iter().any(|p| p.id == provider.id);
+        if !exists && provider.id != crate::commands::enterprise::ENTERPRISE_PROVIDER_ID {
+            return Err(
+                "This enterprise workspace does not allow adding new model providers.".into(),
+            );
+        }
+    }
+
     let mut cfg = state.config.lock();
 
     // Update existing or add new
@@ -170,8 +203,8 @@ pub async fn engine_list_provider_models(
         .into_iter()
         .map(|m| {
             serde_json::json!({
-                "id": m.id,
-                "name": m.name,
+                "raw_id": m.id,
+                "display_name": m.name,
                 "context_window": m.context_window,
                 "max_output": m.max_output,
             })

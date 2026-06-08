@@ -146,6 +146,34 @@ function renderEnterpriseLogin(status: EnterpriseStatus): void {
   }
 }
 
+async function startEnterpriseLogin(
+  status: EnterpriseStatus,
+  btn: HTMLButtonElement | null,
+  error: HTMLElement | null,
+): Promise<void> {
+  if (btn) btn.disabled = true;
+  if (error) error.textContent = '';
+  try {
+    const issuerUrl = enterpriseIssuerFromStatus(status);
+    const next = await pawEngine.enterpriseOAuthStart({
+      issuer_url: issuerUrl,
+      gateway_url: status.gateway_url,
+      default_model: status.default_model,
+      make_default: true,
+    });
+
+    if (!next.authenticated) {
+      throw new Error('Enterprise sign-in completed but no authenticated session was stored.');
+    }
+    window.location.reload();
+  } catch (e) {
+    const message = e instanceof Error ? e.message : String(e);
+    if (error) error.textContent = message;
+    showToast(`Enterprise sign-in failed: ${message}`, 'error');
+    if (btn) btn.disabled = false;
+  }
+}
+
 async function maybeShowEnterpriseLoginGate(): Promise<boolean> {
   let status: EnterpriseStatus;
   try {
@@ -155,7 +183,8 @@ async function maybeShowEnterpriseLoginGate(): Promise<boolean> {
     return false;
   }
 
-  if (!status.enterprise_build_mode || status.authenticated) {
+  const enterpriseActive = status.enterprise_build_mode || status.enabled;
+  if (!enterpriseActive || status.authenticated) {
     document.body.classList.remove('enterprise-gated');
     return false;
   }
@@ -164,36 +193,32 @@ async function maybeShowEnterpriseLoginGate(): Promise<boolean> {
 
   const btn = $('enterprise-login-btn') as HTMLButtonElement | null;
   const error = $('enterprise-login-error');
+  let autoStarted = false;
   btn?.addEventListener(
     'click',
     async () => {
-      if (!btn) return;
-      btn.disabled = true;
-      if (error) error.textContent = '';
-      try {
-        const issuerUrl = enterpriseIssuerFromStatus(status);
-        const next = await pawEngine.enterpriseOAuthStart({
-          issuer_url: issuerUrl,
-          gateway_url: status.gateway_url,
-          default_model: status.default_model,
-          make_default: true,
-        });
-
-        if (!next.authenticated) {
-          throw new Error('Enterprise sign-in completed but no authenticated session was stored.');
-        }
-        window.location.reload();
-      } catch (e) {
-        const message = e instanceof Error ? e.message : String(e);
-        if (error) error.textContent = message;
-        showToast(`Enterprise sign-in failed: ${message}`, 'error');
-        btn.disabled = false;
-      }
+      await startEnterpriseLogin(status, btn, error);
     },
     { once: false },
   );
 
+  if (status.enterprise_build_mode && !status.authenticated && !autoStarted) {
+    autoStarted = true;
+    queueMicrotask(() => {
+      void startEnterpriseLogin(status, btn, error);
+    });
+  }
+
   return true;
+}
+
+async function getEnterpriseModeState(): Promise<boolean> {
+  try {
+    const status = await pawEngine.enterpriseStatus();
+    return Boolean(status.enterprise_build_mode || status.enabled);
+  } catch {
+    return false;
+  }
 }
 
 // ── Model selector ──────────────────────────────────────────────────────────────────
@@ -325,10 +350,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.debug('[main] Paw starting...');
     cleanupTransientModals();
 
-    // ── Lock screen gate — must authenticate before anything else ──
-    await initLockScreen();
-    console.debug('[main] Lock screen passed');
-
     for (const el of document.querySelectorAll<HTMLElement>('[data-icon]')) {
       const name = el.dataset.icon;
       if (name) el.innerHTML = icon(name);
@@ -338,10 +359,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     initI18n();
     setEngineMode(true);
 
-    if (await maybeShowEnterpriseLoginGate()) {
+    const enterpriseGateShown = await maybeShowEnterpriseLoginGate();
+    if (enterpriseGateShown) {
       console.debug('[main] Enterprise sign-in required');
       return;
     }
+
+    // ── Lock screen gate — must authenticate before anything else ──
+    await initLockScreen();
+    console.debug('[main] Lock screen passed');
 
     // ── Sidebar entrance animation (anime.js) ───────────────────────────
     sidebarNavEntrance('.nav-item');
@@ -534,6 +560,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     NodesModule.initNodesEvents();
     SettingsModule.initSettings();
+    SettingsModule.setSettingsEnterpriseMode(await getEnterpriseModeState());
     initSettingsTabs();
     ModelsSettings.initModelsSettings();
     AgentDefaultsSettings.initAgentDefaultsSettings();

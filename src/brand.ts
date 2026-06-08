@@ -13,17 +13,17 @@ export interface BrandConfig {
 }
 
 const fallbackBrand: BrandConfig = {
-  id: 'openpawz',
+  id: 'taiji',
   appName: '太极台',
   shortName: '太极',
   productName: '太极台',
-  windowTitle: '太极台',
-  identifier: 'com.openpawz.openpawz',
-  tagline: 'Your AI command center',
-  aboutLine: 'Pawz are safer than Claws',
+  windowTitle: '太极',
+  identifier: 'com.openpawz.taiji-dragon',
+  tagline: '你的 AI 指挥中心',
+  aboutLine: '本地优先的智能桌面工作台',
   repositoryUrl: 'https://github.com/OpenPawz/openpawz',
-  logoUrl: 'branding/taiji-dragon/logo.png',
-  faviconUrl: '/branding/taiji-dragon/favicon.png',
+  logoUrl: '/brand/logo.png',
+  faviconUrl: '/brand/favicon.png',
 };
 
 function readBrandMeta(): Partial<BrandConfig> {
@@ -44,5 +44,17 @@ export const brand: BrandConfig = {
 };
 
 export function formatBrandText(template: string): string {
-  return template.split('{appName}').join(brand.appName).split('{shortName}').join(brand.shortName);
+  return template
+    .split('{appName}')
+    .join(brand.appName)
+    .split('{shortName}')
+    .join(brand.shortName)
+    .split('{productName}')
+    .join(brand.productName)
+    .split('{windowTitle}')
+    .join(brand.windowTitle)
+    .split('Open Pawz')
+    .join(brand.appName)
+    .split('OpenPawz')
+    .join(brand.appName);
 }

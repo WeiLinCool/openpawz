@@ -5,21 +5,21 @@ definition under `branding/<brand-id>/brand.json`.
 
 ## Brand Definition
 
-Use `branding/openpawz/brand.json` as the template:
+Use `branding/taiji/brand.json` as the default template:
 
 ```json
 {
-  "id": "openpawz",
-  "appName": "OpenPawz",
-  "shortName": "Pawz",
-  "productName": "Open Pawz Desktop",
-  "windowTitle": "Open Pawz Desktop",
-  "identifier": "com.openpawz.openpawz",
-  "tagline": "Your AI command center",
-  "aboutLine": "Pawz are safer than Claws",
+  "id": "taiji",
+  "appName": "太极台",
+  "shortName": "太极",
+  "productName": "太极台",
+  "windowTitle": "太极",
+  "identifier": "com.openpawz.taiji-dragon",
+  "tagline": "你的 AI 指挥中心",
+  "aboutLine": "本地优先的智能桌面工作台",
   "repositoryUrl": "https://github.com/OpenPawz/openpawz",
-  "logo": "../../images/pawz-logo-transparent.png",
-  "favicon": "../../images/pawz-favicon.png",
+  "logo": "./logo.png",
+  "favicon": "./favicon.png",
   "iconsDir": "../../src-tauri/icons",
   "iconFiles": [
     "32x32.png",
@@ -44,7 +44,7 @@ Paths are resolved relative to the `brand.json` file.
 
 ## Build Commands
 
-Default OpenPawz build:
+Default Taiji build:
 
 ```bash
 npm run build
@@ -57,6 +57,8 @@ Build another brand:
 OPENPAWZ_BRAND=my-product npm run build
 OPENPAWZ_BRAND=my-product npm run tauri:build
 ```
+
+If `OPENPAWZ_BRAND` is not set, the build defaults to `taiji`.
 
 For direct Tauri commands, pass the brand through the wrapper:
 

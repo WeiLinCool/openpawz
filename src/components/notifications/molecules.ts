@@ -3,6 +3,7 @@
 import { escHtml } from '../helpers';
 import { relativeTime } from '../../views/today/atoms';
 import { badgePulse } from '../animations';
+import { translateUiText } from '../../i18n';
 import {
   notificationIcon,
   countUnread,
@@ -146,7 +147,7 @@ function renderList() {
   if (!list) return;
 
   if (_notifications.length === 0) {
-    list.innerHTML = `<div class="notification-empty">No notifications</div>`;
+    list.innerHTML = `<div class="notification-empty">${translateUiText('No notifications')}</div>`;
     return;
   }
 
@@ -157,11 +158,11 @@ function renderList() {
       const unreadClass = n.read ? '' : ' unread';
       const clickable = n.navigateTo ? ' clickable' : '';
       const agentTag = n.agent ? `<span class="notification-agent">${escHtml(n.agent)}</span>` : '';
-      const bodyHtml = n.body ? `<span class="notification-body">${escHtml(n.body)}</span>` : '';
+      const bodyHtml = n.body ? `<span class="notification-body">${escHtml(translateUiText(n.body))}</span>` : '';
       return `<div class="notification-item${unreadClass}${clickable}" data-notif-id="${n.id}" ${n.navigateTo ? `data-navigate="${escHtml(n.navigateTo)}"` : ''}>
         <span class="notification-icon"><span class="ms ms-sm">${iconName}</span></span>
         <div class="notification-content">
-          <span class="notification-title">${escHtml(n.title)}</span>
+          <span class="notification-title">${escHtml(translateUiText(n.title))}</span>
           ${bodyHtml}
           ${agentTag}
         </div>

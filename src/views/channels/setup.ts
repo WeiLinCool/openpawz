@@ -4,6 +4,7 @@
 import { pawEngine } from '../../engine';
 import { $, escHtml, escAttr } from '../../components/helpers';
 import { showToast } from '../../components/toast';
+import { translateUiText } from '../../i18n';
 import { CHANNEL_SETUPS, type ChannelField } from './atoms';
 import { getChannelConfig, setChannelConfig, startChannel, loadChannels } from './molecules';
 import { getChannelSetupType, saveMailImapSetup, clearChannelSetupType } from '../mail';
@@ -31,7 +32,7 @@ export async function openChannelSetup(channelType: string) {
   const modal = $('channel-setup-modal');
   if (!title || !body || !modal) return;
 
-  title.textContent = `Set Up ${def.name}`;
+  title.textContent = translateUiText(`Set Up ${def.name}`);
 
   const existingValues: Record<string, string> = {};
   try {
@@ -118,9 +119,31 @@ export async function openChannelSetup(channelType: string) {
     /* ignore */
   }
 
-  let html = def.descriptionHtml
-    ? `<div class="channel-setup-desc">${def.descriptionHtml}</div>`
-    : `<p class="channel-setup-desc">${escHtml(def.description)}</p>`;
+  const renderWhatsAppGuide = () => `
+    <div class="wa-setup-guide">
+      <div style="background:rgba(255,180,0,0.12);border:1px solid rgba(255,180,0,0.3);border-radius:8px;padding:12px 14px;margin-bottom:14px;font-size:13px;line-height:1.5">
+        <strong style="color:#ffb400">${translateUiText('Important — read before scanning')}</strong><br>
+        ${translateUiText('The phone number you scan')} <strong>${translateUiText('becomes the agent')}</strong>. ${translateUiText('Anyone who messages that number will talk to your AI, not you.')}<br><br>
+        <strong>${translateUiText("Don't use your personal number")}</strong> ${translateUiText('unless you want your agent replying to all your contacts.')}
+        ${translateUiText('Use a cheap prepaid SIM or spare number instead — you only need it for the initial WhatsApp verification.')}
+      </div>
+      <div class="wa-steps">
+        <div class="wa-step"><span class="wa-step-num">1</span> ${translateUiText('Get a separate phone number for your agent (prepaid SIM, eSIM, etc.)')}</div>
+        <div class="wa-step"><span class="wa-step-num">2</span> ${translateUiText('Register WhatsApp on that number')}</div>
+        <div class="wa-step"><span class="wa-step-num">3</span> ${translateUiText('Save this form, then click Start on the WhatsApp card')}</div>
+        <div class="wa-step"><span class="wa-step-num">4</span> ${translateUiText("A QR code will appear — scan it from the agent's phone")}</div>
+        <div class="wa-step-sub">${translateUiText('Open WhatsApp → Settings → Linked Devices → Link a Device')}</div>
+        <div class="wa-step"><span class="wa-step-num">5</span> ${translateUiText('Done! People can now message that number to talk to your agent')}</div>
+      </div>
+    </div>
+  `;
+
+  let html =
+    channelType === 'whatsapp'
+      ? `<div class="channel-setup-desc">${renderWhatsAppGuide()}</div>`
+      : def.descriptionHtml
+        ? `<div class="channel-setup-desc">${def.descriptionHtml}</div>`
+        : `<p class="channel-setup-desc">${escHtml(translateUiText(def.description))}</p>`;
 
   // Group fields: regular first, then "Advanced." hint fields in a collapsible
   const regularFields = def.fields.filter((f) => !f.hint?.startsWith('Advanced.'));
@@ -128,7 +151,7 @@ export async function openChannelSetup(channelType: string) {
 
   const renderField = (field: ChannelField) => {
     let fhtml = `<div class="form-group">`;
-    fhtml += `<label class="form-label" for="ch-field-${field.key}">${escHtml(field.label)}${field.required ? ' <span class="required">*</span>' : ''}</label>`;
+    fhtml += `<label class="form-label" for="ch-field-${field.key}">${escHtml(translateUiText(field.label))}${field.required ? ' <span class="required">*</span>' : ''}</label>`;
 
     const existVal = existingValues[field.key];
 
@@ -137,23 +160,23 @@ export async function openChannelSetup(channelType: string) {
       for (const opt of field.options) {
         const selVal = existVal ?? field.defaultValue ?? '';
         const sel = opt.value === selVal ? ' selected' : '';
-        fhtml += `<option value="${escAttr(opt.value)}"${sel}>${escHtml(opt.label)}</option>`;
+        fhtml += `<option value="${escAttr(opt.value)}"${sel}>${escHtml(translateUiText(opt.label))}</option>`;
       }
       fhtml += `</select>`;
     } else if (field.type === 'toggle') {
       const checked = field.defaultValue ? ' checked' : '';
-      fhtml += `<label class="toggle-label"><input type="checkbox" id="ch-field-${field.key}" data-ch-field="${field.key}"${checked}> Enabled</label>`;
+      fhtml += `<label class="toggle-label"><input type="checkbox" id="ch-field-${field.key}" data-ch-field="${field.key}"${checked}> ${translateUiText('Enabled')}</label>`;
     } else {
       const inputType = field.type === 'password' ? 'password' : 'text';
       const populateVal =
         existVal ?? (typeof field.defaultValue === 'string' ? field.defaultValue : '');
       const val = populateVal ? ` value="${escAttr(populateVal)}"` : '';
-      fhtml += `<input class="form-input" id="ch-field-${field.key}" data-ch-field="${field.key}" type="${inputType}" placeholder="${escAttr(field.placeholder ?? '')}"${val}>`;
+      fhtml += `<input class="form-input" id="ch-field-${field.key}" data-ch-field="${field.key}" type="${inputType}" placeholder="${escAttr(translateUiText(field.placeholder ?? ''))}"${val}>`;
     }
 
     if (field.hint) {
       const hintText = field.hint.startsWith('Advanced.') ? field.hint.slice(10) : field.hint;
-      fhtml += `<div class="form-hint">${escHtml(hintText)}</div>`;
+      fhtml += `<div class="form-hint">${escHtml(translateUiText(hintText))}</div>`;
     }
     fhtml += `</div>`;
     return fhtml;
@@ -166,11 +189,11 @@ export async function openChannelSetup(channelType: string) {
   // Phase C: common dangerous-tools toggle (always in Advanced section)
   const dangerChecked = existingValues['allowDangerousTools'] ? ' checked' : '';
   const dangerToggleHtml = `<div class="form-group">
-    <label class="toggle-label"><input type="checkbox" id="ch-field-allowDangerousTools"${dangerChecked}> Allow dangerous tools</label>
-    <div class="form-hint">⚠️ When enabled, side-effect tools (file write, shell, etc.) run without human approval for messages from this channel.</div>
+    <label class="toggle-label"><input type="checkbox" id="ch-field-allowDangerousTools"${dangerChecked}> ${translateUiText('Allow dangerous tools')}</label>
+    <div class="form-hint">⚠️ ${translateUiText('When enabled, side-effect tools (file write, shell, etc.) run without human approval for messages from this channel.')}</div>
   </div>`;
 
-  html += `<details class="advanced-toggle"><summary>Advanced settings</summary>`;
+  html += `<details class="advanced-toggle"><summary>${translateUiText('Advanced settings')}</summary>`;
   if (advancedFields.length > 0) {
     for (const field of advancedFields) {
       html += renderField(field);
@@ -215,7 +238,7 @@ export async function saveChannelSetup() {
     const saveBtn = $('channel-setup-save') as HTMLButtonElement | null;
     if (saveBtn) {
       saveBtn.disabled = true;
-      saveBtn.textContent = 'Saving...';
+      saveBtn.textContent = translateUiText('Saving...');
     }
 
     try {
@@ -228,7 +251,7 @@ export async function saveChannelSetup() {
         showToast('Bot token is required', 'error');
         if (saveBtn) {
           saveBtn.disabled = false;
-          saveBtn.textContent = 'Save & Connect';
+          saveBtn.textContent = translateUiText('Save & Connect');
         }
         return;
       }
@@ -275,10 +298,8 @@ export async function saveChannelSetup() {
       showToast(`Failed to save: ${e instanceof Error ? e.message : e}`, 'error');
     } finally {
       if (saveBtn) {
-        $('channel-setup-save') &&
-          (($('channel-setup-save') as HTMLButtonElement).disabled = false);
-        ($('channel-setup-save') as HTMLButtonElement | null) &&
-          (($('channel-setup-save') as HTMLButtonElement).textContent = 'Save & Connect');
+        saveBtn.disabled = false;
+        saveBtn.textContent = translateUiText('Save & Connect');
       }
     }
     return;
@@ -290,7 +311,7 @@ export async function saveChannelSetup() {
     const saveBtn = $('channel-setup-save') as HTMLButtonElement | null;
     if (saveBtn) {
       saveBtn.disabled = true;
-      saveBtn.textContent = 'Saving...';
+      saveBtn.textContent = translateUiText('Saving...');
     }
 
     try {
@@ -310,7 +331,7 @@ export async function saveChannelSetup() {
           showToast(`${field.label} is required`, 'error');
           if (saveBtn) {
             saveBtn.disabled = false;
-            saveBtn.textContent = 'Save & Connect';
+            saveBtn.textContent = translateUiText('Save & Connect');
           }
           return;
         }
@@ -376,7 +397,7 @@ export async function saveChannelSetup() {
       const btn = $('channel-setup-save') as HTMLButtonElement | null;
       if (btn) {
         btn.disabled = false;
-        btn.textContent = 'Save & Connect';
+        btn.textContent = translateUiText('Save & Connect');
       }
     }
     return;

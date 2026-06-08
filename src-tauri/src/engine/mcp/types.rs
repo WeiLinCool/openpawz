@@ -216,6 +216,7 @@ pub struct McpServerStatus {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::brand;
 
     #[test]
     fn test_server_config_defaults() {
@@ -290,7 +291,7 @@ mod tests {
             protocol_version: "2024-11-05".into(),
             capabilities: McpClientCapabilities::default(),
             client_info: McpClientInfo {
-                name: "OpenPawz".into(),
+                name: brand::active_brand().product_name.into(),
                 version: "0.1.0".into(),
             },
         };

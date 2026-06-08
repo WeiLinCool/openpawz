@@ -17,6 +17,7 @@ import { relaunch } from '@tauri-apps/plugin-process';
 
 /** Cached update handle between check → install steps. */
 let _pendingUpdate: Update | null = null;
+let _enterpriseMode: boolean | null = null;
 
 // ── State accessors (set by index.ts) ──────────────────────────────────────
 
@@ -33,6 +34,10 @@ let _state: MoleculesState;
 
 export function setMoleculesState(s: MoleculesState) {
   _state = s;
+}
+
+export function setEnterpriseMode(enabled: boolean | null) {
+  _enterpriseMode = enabled;
 }
 
 // ── Engine Status ──────────────────────────────────────────────────────────
@@ -543,6 +548,19 @@ export function exportAuditCSV() {
 
 export function loadSecurityPolicies() {
   const settings = loadSecuritySettings();
+  const enterpriseMode = _enterpriseMode ?? false;
+  const securitySection = $('settings-security-section');
+  const keychainBar = $('keychain-health-bar');
+  const keychainDetail = $('keychain-health-detail');
+  const keychainText = $('keychain-health-text');
+
+  if (enterpriseMode) {
+    if (securitySection) securitySection.style.display = 'none';
+    if (keychainBar) keychainBar.style.display = 'none';
+    if (keychainDetail) keychainDetail.style.display = 'none';
+    if (keychainText) keychainText.textContent = '企业 OAuth 模式下不使用本地锁屏或系统认证';
+    return;
+  }
 
   const autoDenyPriv = $('sec-auto-deny-priv') as HTMLInputElement | null;
   const autoDenyCritical = $('sec-auto-deny-critical') as HTMLInputElement | null;

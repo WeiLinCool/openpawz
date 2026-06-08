@@ -3,8 +3,8 @@
 <plist version="1.0">
 <dict>
     <key>NSCameraUsageDescription</key>
-    <string>Open Pawz needs camera access for visual AI interactions.</string>
+    <string>太极台 needs camera access for visual AI interactions.</string>
     <key>NSMicrophoneUsageDescription</key>
-    <string>Open Pawz needs microphone access for voice dictation and talk mode.</string>
+    <string>太极台 needs microphone access for voice dictation and talk mode.</string>
 </dict>
 </plist>

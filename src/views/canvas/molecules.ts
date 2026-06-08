@@ -5,6 +5,7 @@ import { pawEngine } from '../../engine';
 import { $, escHtml, promptModal, confirmModal } from '../../components/helpers';
 import { showToast } from '../../components/toast';
 import { formatMarkdown } from '../../components/molecules/markdown';
+import { t } from '../../i18n';
 import {
   type ParsedCanvasComponent,
   parseComponent,
@@ -991,9 +992,9 @@ function wireEvents(): void {
         await pawEngine.canvasClearSession(sid);
         _state.setComponents([]);
         renderCanvas();
-        showToast('画布已清空', 'success');
+        showToast(t('画布已清空'), 'success');
       } catch (e) {
-        showToast('清空画布失败', 'error');
+        showToast(t('清空画布失败'), 'error');
         console.error('[canvas] Clear failed:', e);
       }
     });
@@ -1004,16 +1005,16 @@ function wireEvents(): void {
   if (saveBtn) {
     saveBtn.addEventListener('click', async () => {
       if (_state.getDashboardId()) {
-        showToast('仪表盘已经保存', 'info');
+        showToast(t('仪表盘已经保存'), 'info');
         return;
       }
-      const name = await promptModal('保存仪表盘', '仪表盘名称');
+      const name = await promptModal(t('保存仪表盘'), t('仪表盘名称'));
       if (!name) return;
       try {
         await _state.onSave(name);
         showToast(`仪表盘“${name}”已保存`, 'success');
       } catch (e) {
-        showToast('保存仪表盘失败', 'error');
+        showToast(t('保存仪表盘失败'), 'error');
         console.error('[canvas] Save failed:', e);
       }
     });
@@ -1024,13 +1025,13 @@ function wireEvents(): void {
   if (renameBtn) {
     renameBtn.addEventListener('click', async () => {
       const current = _state.getDashboardName() ?? '';
-      const name = await promptModal('重命名仪表盘', current);
+      const name = await promptModal(t('重命名仪表盘'), current);
       if (!name) return;
       try {
         await _state.onRename(name);
         showToast(`已重命名为“${name}”`, 'success');
       } catch (e) {
-        showToast('重命名失败', 'error');
+        showToast(t('重命名失败'), 'error');
         console.error('[canvas] Rename failed:', e);
       }
     });
@@ -1043,7 +1044,7 @@ function wireEvents(): void {
       try {
         await _state.onPin();
       } catch (e) {
-        showToast('切换固定状态失败', 'error');
+        showToast(t('切换固定状态失败'), 'error');
         console.error('[canvas] Pin failed:', e);
       }
     });
@@ -1056,7 +1057,7 @@ function wireEvents(): void {
       try {
         await _state.onPopOut();
       } catch (e) {
-        showToast('在新窗口打开失败', 'error');
+        showToast(t('在新窗口打开失败'), 'error');
         console.error('[canvas] Pop-out failed:', e);
       }
     });
@@ -1067,13 +1068,13 @@ function wireEvents(): void {
   if (deleteBtn) {
     deleteBtn.addEventListener('click', async () => {
       const name = _state.getDashboardName() ?? '当前仪表盘';
-      if (!(await confirmModal(`删除“${name}”及其所有组件？此操作无法撤销。`, '删除仪表盘')))
+      if (!(await confirmModal(t(`删除“${name}”及其所有组件？此操作无法撤销。`), t('删除仪表盘'))))
         return;
       try {
         await _state.onDelete();
         showToast(`“${name}”已删除`, 'success');
       } catch (e) {
-        showToast('删除仪表盘失败', 'error');
+        showToast(t('删除仪表盘失败'), 'error');
         console.error('[canvas] Delete failed:', e);
       }
     });
@@ -1105,7 +1106,7 @@ async function toggleDashboardPicker(): Promise<void> {
     const templates = await pawEngine.listTemplates();
 
     if (!dashboards.length && !templates.length) {
-      picker.innerHTML = `<div class="canvas-picker-empty">当前还没有已保存的仪表盘或模板</div>`;
+      picker.innerHTML = `<div class="canvas-picker-empty">${t('当前还没有已保存的仪表盘或模板')}</div>`;
       picker.style.display = 'block';
       return;
     }
@@ -1179,7 +1180,7 @@ async function toggleDashboardPicker(): Promise<void> {
     setTimeout(() => document.addEventListener('click', dismiss), 0);
   } catch (e) {
     console.error('[canvas] Failed to load dashboard picker:', e);
-    showToast('加载仪表盘失败', 'error');
+    showToast(t('加载仪表盘失败'), 'error');
   }
 }
 
@@ -1194,9 +1195,9 @@ function wireCardRemove(componentId: string): void {
         const card = document.querySelector(`[data-component-id="${componentId}"]`);
         card?.remove();
         if (!all.length) renderCanvas(); // switch to empty state
-        showToast('组件已移除', 'success');
+        showToast(t('组件已移除'), 'success');
       } catch (e) {
-        showToast('移除组件失败', 'error');
+        showToast(t('移除组件失败'), 'error');
         console.error('[canvas] Remove failed:', e);
       }
     });

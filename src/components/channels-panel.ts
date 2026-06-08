@@ -1,6 +1,7 @@
 // channels-panel.ts — Channels side panel: hero stats, connection health, kinetic init
 
 import { $, escHtml } from './helpers';
+import { translateUiText } from '../i18n';
 
 // ── Hero stat counters ─────────────────────────────────────────────────────
 
@@ -27,7 +28,7 @@ export function renderHealthList(entries: ChannelHealthEntry[]): void {
   if (!container) return;
 
   if (entries.length === 0) {
-    container.innerHTML = '<div class="channels-health-empty">No active connections</div>';
+    container.innerHTML = `<div class="channels-health-empty">${translateUiText('No active connections')}</div>`;
     return;
   }
 
@@ -36,8 +37,12 @@ export function renderHealthList(entries: ChannelHealthEntry[]): void {
       (e) => `
     <div class="channels-health-row">
       <div class="channels-health-dot ${e.connected ? 'online' : 'offline'}"></div>
-      <span class="channels-health-name">${escHtml(e.name)}</span>
-      <span class="channels-health-status">${e.connected ? `${e.messageCount ?? 0} msgs` : 'offline'}</span>
+      <span class="channels-health-name">${escHtml(translateUiText(e.name))}</span>
+      <span class="channels-health-status">${
+        e.connected
+          ? translateUiText(`${e.messageCount ?? 0} msgs`)
+          : translateUiText('offline')
+      }</span>
     </div>`,
     )
     .join('');

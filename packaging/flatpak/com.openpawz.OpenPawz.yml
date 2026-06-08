@@ -34,7 +34,7 @@ modules:
       - install -Dm644 openpawz.metainfo.xml /app/share/metainfo/com.openpawz.OpenPawz.metainfo.xml
     sources:
       - type: archive
-        url: https://github.com/OpenPawz/openpawz/releases/download/v0.1.0/openpawz_0.1.0_amd64.tar.gz
+        url: https://github.com/OpenPawz/openpawz/releases/download/v0.1.0/%E5%A4%AA%E6%9E%81%E5%8F%B0_0.1.0_amd64.tar.gz
         sha256: PLACEHOLDER_SHA256
       - type: file
         path: openpawz.desktop

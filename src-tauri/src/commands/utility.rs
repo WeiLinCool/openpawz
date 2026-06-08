@@ -15,18 +15,22 @@
 //   - Passphrase hash comparison uses `subtle::ConstantTimeEq` to resist
 //     timing side-channel attacks.
 
+use crate::commands::enterprise::{enterprise_session_expired, load_enterprise_config};
+use crate::commands::state::EngineState;
 use crate::engine::key_vault;
+use crate::brand;
 use log::{error, info};
 use serde::Serialize;
 use sha2::{Digest, Sha256};
 use std::sync::RwLock;
 use subtle::ConstantTimeEq;
-use tauri::Manager;
+use tauri::{Manager, State};
 use zeroize::Zeroizing;
 
 /// In-memory cache for the DB encryption key (hex string).
 /// Wrapped in `Zeroizing` so the key material is securely zeroed on drop.
 static DB_KEY_CACHE: RwLock<Option<Zeroizing<String>>> = RwLock::new(None);
+static DB_KEY_SOURCE_CACHE: RwLock<Option<String>> = RwLock::new(None);
 
 /// In-memory cache for the lock screen passphrase hash.
 /// Updated on set/remove so verify never needs to hit the keychain twice.
@@ -165,26 +169,45 @@ pub fn keyring_delete_password(account_name: String, email: String) -> Result<bo
 /// The result is cached in-memory so the keychain is only accessed once per
 /// process session.
 #[tauri::command]
-pub fn get_db_encryption_key() -> Result<String, String> {
+pub fn get_db_encryption_key(state: State<'_, EngineState>) -> Result<String, String> {
+    let source = db_encryption_source(&state);
+
     // Fast path: return cached key (read lock — many readers allowed)
     {
+        let source_guard = DB_KEY_SOURCE_CACHE
+            .read()
+            .unwrap_or_else(|e| e.into_inner());
         let guard = DB_KEY_CACHE.read().unwrap_or_else(|e| e.into_inner());
+        if source_guard.as_deref() == Some(source.as_str()) {
+            if let Some(ref key) = *guard {
+                return Ok(key.to_string());
+            }
+        }
+    }
+
+    // Slow path: acquire write lock and double-check (prevents TOCTOU race)
+    let mut source_guard = DB_KEY_SOURCE_CACHE
+        .write()
+        .unwrap_or_else(|e| e.into_inner());
+    let mut guard = DB_KEY_CACHE.write().unwrap_or_else(|e| e.into_inner());
+    if source_guard.as_deref() == Some(source.as_str()) {
         if let Some(ref key) = *guard {
             return Ok(key.to_string());
         }
     }
-    // Slow path: acquire write lock and double-check (prevents TOCTOU race)
-    let mut guard = DB_KEY_CACHE.write().unwrap_or_else(|e| e.into_inner());
-    if let Some(ref key) = *guard {
-        return Ok(key.to_string());
-    }
-    let key = load_db_key_from_keychain()?;
+
+    let key = if enterprise_db_encryption_ready(&state) {
+        load_db_key_from_enterprise(&state)?
+    } else {
+        load_db_key_from_keychain()?
+    };
     if key.len() < 32 {
         error!("[keychain] DB key too short: {} chars (min 32)", key.len());
         return Err("DB encryption key from keychain is too short".into());
     }
     let result = key.to_string();
     *guard = Some(key);
+    *source_guard = Some(source);
     info!("[keychain] DB encryption key loaded and cached");
     Ok(result)
 }
@@ -219,19 +242,82 @@ fn load_db_key_from_keychain() -> Result<Zeroizing<String>, String> {
     Ok(key)
 }
 
+fn load_db_key_from_enterprise(state: &EngineState) -> Result<Zeroizing<String>, String> {
+    let config = load_enterprise_config(state);
+    if !enterprise_db_encryption_ready_config(&config) {
+        return Err("Enterprise session is not ready for encryption".into());
+    }
+
+    let material = enterprise_db_key_material(&config);
+    let digest = Sha256::digest(material.as_bytes());
+    let key = Zeroizing::new(
+        digest
+            .iter()
+            .map(|b| format!("{:02x}", b))
+            .collect::<String>(),
+    );
+    Ok(key)
+}
+
+fn enterprise_db_encryption_ready(state: &EngineState) -> bool {
+    enterprise_db_encryption_ready_config(&load_enterprise_config(state))
+}
+
+fn enterprise_db_encryption_ready_config(
+    config: &crate::commands::enterprise::EnterpriseConfig,
+) -> bool {
+    config.enabled
+        && !config.access_token.trim().is_empty()
+        && !enterprise_session_expired(config)
+}
+
+fn enterprise_db_key_material(config: &crate::commands::enterprise::EnterpriseConfig) -> String {
+    format!(
+        "openpawz-enterprise-db-v1|issuer={}|gateway={}|org={}|user={}|token={}|refresh={}",
+        config.issuer_url,
+        config.gateway_url,
+        config.organization_id.as_deref().unwrap_or(""),
+        config.user_email.as_deref().unwrap_or(""),
+        config.access_token,
+        config.refresh_token.as_deref().unwrap_or(""),
+    )
+}
+
+fn db_encryption_source(state: &State<'_, EngineState>) -> String {
+    let config = load_enterprise_config(state);
+    if enterprise_db_encryption_ready_config(&config) {
+        let material = enterprise_db_key_material(&config);
+        let digest = Sha256::digest(material.as_bytes());
+        return digest.iter().map(|b| format!("{:02x}", b)).collect();
+    }
+    "keychain".to_string()
+}
+
 /// Check if a DB encryption key exists (for UI indicators).
 /// Uses the in-memory cache when available to avoid keychain access.
 #[tauri::command]
-pub fn has_db_encryption_key() -> bool {
+pub fn has_db_encryption_key(state: State<'_, EngineState>) -> bool {
+    let source = db_encryption_source(&state);
     // Check cache first (read lock, poison-safe)
-    if DB_KEY_CACHE
+    if DB_KEY_SOURCE_CACHE
         .read()
         .unwrap_or_else(|e| e.into_inner())
-        .is_some()
+        .as_deref()
+        == Some(source.as_str())
     {
-        return true;
+        if DB_KEY_CACHE
+            .read()
+            .unwrap_or_else(|e| e.into_inner())
+            .is_some()
+        {
+            return true;
+        }
     }
-    key_vault::get(key_vault::PURPOSE_DB_ENCRYPTION).is_some()
+    if enterprise_db_encryption_ready(&state) {
+        true
+    } else {
+        key_vault::get(key_vault::PURPOSE_DB_ENCRYPTION).is_some()
+    }
 }
 
 // ── Lock Screen Passphrase ─────────────────────────────────────────────────
@@ -405,31 +491,38 @@ fn remove_lock_passphrase_hash() {
 pub async fn lock_screen_system_auth() -> Result<bool, String> {
     #[cfg(target_os = "macos")]
     {
-        let script = r#"
+        let reason = format!(
+            "Verify your identity to open {}",
+            brand::active_brand().app_name
+        );
+        let script = format!(
+            r#"
 ObjC.import('LocalAuthentication');
 ObjC.import('Foundation');
 var ctx = $.LAContext.alloc.init;
 var error = Ref();
 var canEval = ctx.canEvaluatePolicyError(2, error);
-if (!canEval) {
+if (!canEval) {{
     'unavailable';
-} else {
+}} else {{
     var done = false;
     var success = false;
     ctx.evaluatePolicyLocalizedReasonReply(
         2,
-        'Verify your identity to open OpenPawz',
-        function(s, e) { success = s; done = true; }
+        '{}',
+        function(s, e) {{ success = s; done = true; }}
     );
-    while (!done) {
+    while (!done) {{
         $.NSRunLoop.currentRunLoop.runUntilDate(
             $.NSDate.dateWithTimeIntervalSinceNow(0.1)
         );
-    }
+    }}
     success ? 'ok' : 'denied';
-}"#;
+}}"#,
+            brand::escape_js_single_quoted(&reason)
+        );
         let output = tokio::process::Command::new("osascript")
-            .args(["-l", "JavaScript", "-e", script])
+            .args(["-l", "JavaScript", "-e", &script])
             .output()
             .await
             .map_err(|e| format!("Failed to run system auth: {}", e))?;
@@ -500,7 +593,17 @@ pub struct KeychainHealth {
 /// Check health of the unified key vault.
 /// All encryption keys now live in a single OS keychain entry.
 #[tauri::command]
-pub fn check_keychain_health() -> KeychainHealth {
+pub fn check_keychain_health(state: State<'_, EngineState>) -> KeychainHealth {
+    let enterprise = load_enterprise_config(&state);
+    if enterprise_db_encryption_ready_config(&enterprise) {
+        return KeychainHealth {
+            status: "healthy".to_string(),
+            db_key_ok: true,
+            vault_key_ok: true,
+            message: "Enterprise session is active — database encryption uses enterprise credentials".to_string(),
+            error: None,
+        };
+    }
     keychain_health_from_state(key_vault::is_loaded(), false)
 }
 
@@ -727,7 +830,7 @@ async fn auto_detect_location(
 ) -> Result<(f64, f64, String, String), String> {
     let resp = client
         .get("https://ipapi.co/json/")
-        .header("User-Agent", "OpenPawz/1.0")
+        .header("User-Agent", brand::http_user_agent())
         .send()
         .await
         .map_err(|e| format!("IP geolocation failed: {}", e))?;

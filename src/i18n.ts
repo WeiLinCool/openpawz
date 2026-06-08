@@ -1,5 +1,7 @@
 export type AppLocale = 'en' | 'zh-CN';
 
+import { brand } from './brand';
+
 const LOCALE_KEY = 'paw-locale';
 
 const EN_TO_ZH: Record<string, string> = {
@@ -57,7 +59,7 @@ const EN_TO_ZH: Record<string, string> = {
     '数据库初始化失败，需要存储的功能将不可用。',
   'OS keychain is unavailable. Credential storage is blocked and sensitive fields cannot be encrypted. Check your keychain service.':
     '系统钥匙串不可用，凭据存储已被阻止，敏感字段无法加密。请检查你的钥匙串服务。',
-  'Welcome to OpenPawz': '欢迎使用 OpenPawz',
+  'Welcome to OpenPawz': '欢迎使用 {appName}',
   "Your open-source AI agent platform. Let's get you set up in under a minute.":
     '你的开源 AI 智能体平台。不到一分钟即可完成初始化。',
   'Multi-agent fleet with custom personas': '支持自定义角色的多智能体队列',
@@ -80,7 +82,7 @@ const EN_TO_ZH: Record<string, string> = {
     '在下方粘贴 API Key。它只会存储在本机，不会离开你的设备。',
   'Connect Provider': '连接提供商',
   "You're All Set!": '设置完成',
-  'OpenPawz is configured and ready to go.': 'OpenPawz 已配置完成，可以开始使用。',
+  'OpenPawz is configured and ready to go.': '{appName} 已配置完成，可以开始使用。',
   'Launch Mission Control': '进入控制台',
   'Integration Hub': '集成中心',
   "25,000+ services via n8n, MCP servers, and community packages — all your agent's tools in one place.":
@@ -906,7 +908,7 @@ const EN_TO_ZH: Record<string, string> = {
   Gateway: '网关',
   'Session expired': '会话已过期',
   'Enterprise Cloud': '企业云',
-  'Sign in to OpenPawz': '登录 OpenPawz',
+  'Sign in to OpenPawz': '登录 {appName}',
   'This build is managed by your organization. Authenticate with enterprise SSO to unlock cloud models, entitlements, and workspace policy.':
     '此版本由你的组织统一管理。请使用企业 SSO 完成认证，以解锁云端模型、权益和工作区策略。',
   'Sign in with SSO': '使用 SSO 登录',
@@ -943,6 +945,130 @@ const EN_TO_ZH: Record<string, string> = {
   'Summarize the key points': '总结要点',
   'Agent files managed via Memory Palace': '智能体文件由记忆宫殿管理',
   'Add Channel': '添加频道',
+  Telegram: 'Telegram',
+  Discord: 'Discord',
+  IRC: 'IRC',
+  Slack: 'Slack',
+  Matrix: 'Matrix',
+  Mattermost: 'Mattermost',
+  'Nextcloud Talk': 'Nextcloud Talk',
+  Nostr: 'Nostr',
+  Twitch: 'Twitch',
+  WhatsApp: 'WhatsApp',
+  'Web Chat': '网页聊天',
+  'Paw Chat': 'Paw 聊天',
+  Discourse: 'Discourse',
+  'Connect your agent to Telegram via a Bot token from @BotFather. No gateway or public URL needed — uses long polling.':
+    '通过 @BotFather 提供的 Bot Token 将你的智能体连接到 Telegram。无需网关或公网 URL - 使用长轮询。',
+  'Connect to Discord via the Bot Gateway (outbound WebSocket). Create a bot at discord.com/developers → New Application → Bot → Copy Token.':
+    '通过 Bot 网关（出站 WebSocket）连接到 Discord。前往 discord.com/developers 创建机器人 → 新建应用 → Bot → 复制令牌。',
+  'Connect to any IRC server via outbound TCP/TLS. The simplest chat protocol — text-based, no special API.':
+    '通过出站 TCP/TLS 连接到任意 IRC 服务器。这是最简单的聊天协议 - 基于文本，没有特殊 API。',
+  'Connect to Slack via Socket Mode (outbound WebSocket). Create an app at api.slack.com → Enable Socket Mode → get Bot + App tokens.':
+    '通过 Socket Mode（出站 WebSocket）连接到 Slack。在 api.slack.com 创建应用 → 启用 Socket Mode → 获取 Bot 和 App 令牌。',
+  'Connect to any Matrix homeserver via the Client-Server API (HTTP long-polling). Works with matrix.org, Synapse, Dendrite, etc.':
+    '通过 Client-Server API（HTTP 长轮询）连接到任意 Matrix 主服务器。兼容 matrix.org、Synapse、Dendrite 等。',
+  'Connect to a Mattermost server via WebSocket + REST API. Use a Personal Access Token or Bot Account token.':
+    '通过 WebSocket + REST API 连接到 Mattermost 服务器。可使用个人访问令牌或 Bot 账户令牌。',
+  'Connect to Nextcloud Talk via HTTP polling. Uses Basic Auth with an app password.':
+    '通过 HTTP 轮询连接到 Nextcloud Talk。使用带应用密码的 Basic Auth。',
+  'Connect to the Nostr network via relay WebSockets. The bot listens for mentions and replies with signed kind-1 notes.':
+    '通过中继 WebSocket 连接到 Nostr 网络。机器人会监听提及并回复带签名的 kind-1 note。',
+  'Connect to Twitch chat via IRC-over-WebSocket. Get an OAuth token from dev.twitch.tv or twitchapps.com/tmi/.':
+    '通过 IRC-over-WebSocket 连接到 Twitch 聊天。可从 dev.twitch.tv 或 twitchapps.com/tmi/ 获取 OAuth 令牌。',
+  'Give your agent a WhatsApp number. People message that number, your agent replies.':
+    '给你的智能体一个 WhatsApp 号码。人们向该号码发消息，你的智能体进行回复。',
+  'Share a link so friends can chat with your agent from their browser. No accounts needed — just a URL and access token.':
+    '分享一个链接，让朋友可以在浏览器里与你的智能体聊天。无需账户 - 只需一个 URL 和访问令牌。',
+  'Connect to a Discourse forum via the REST API. Your agent can read topics, reply to posts, and create new topics — great for community support.':
+    '通过 REST API 连接到 Discourse 论坛。你的智能体可以阅读主题、回复帖子并创建新主题 - 非常适合社区支持。',
+  'Get this from @BotFather on Telegram': '在 Telegram 中从 @BotFather 获取此信息',
+  'Telegram user IDs (numbers), comma-separated. Leave blank for pairing mode.':
+    'Telegram 用户 ID（数字），用英文逗号分隔。配对模式下留空即可。',
+  'Use a specific agent config. Leave blank for default.':
+    '使用特定智能体配置。留空则使用默认值。',
+  Server: '服务器',
+  'Use TLS': '使用 TLS',
+  Nickname: '昵称',
+  '0.0.0.0 (LAN accessible)': '0.0.0.0（局域网可访问）',
+  '127.0.0.1 (localhost only)': '127.0.0.1（仅本机）',
+  'Open (anyone with the link + token)': '开放（任何持有链接和令牌的人）',
+  'Only needed if you chose "Only specific phone numbers" above. Include country code.':
+    '仅在上方选择“仅限特定手机号”时需要。请包含国家/地区代码。',
+  'Discord Developer Portal → Bot → Reset Token':
+    'Discord 开发者门户 → Bot → 重置令牌',
+  'Right-click your server → Copy Server ID (enable Developer Mode in Discord settings first)':
+    '右键点击你的服务器 → 复制服务器 ID（先在 Discord 设置中启用开发者模式）',
+  'OAuth & Permissions → Bot User OAuth Token': 'OAuth 与权限 → Bot 用户 OAuth Token',
+  'Basic Information → App-Level Tokens (connections:write scope)':
+    '基本信息 → App 级令牌（connections:write 范围）',
+  'Element → Settings → Help & About → Access Token, or use a bot account':
+    'Element → 设置 → 帮助与关于 → 访问令牌，或使用机器人账户',
+  'Mattermost → Settings → Security → Personal Access Tokens, or Integrations → Bot Accounts':
+    'Mattermost → 设置 → 安全 → 个人访问令牌，或集成 → Bot 账户',
+  'Nextcloud → Settings → Security → Create App Password':
+    'Nextcloud → 设置 → 安全 → 创建应用密码',
+  'Your Nostr private key in hex format (not nsec). Keep this secret!':
+    '你的 Nostr 私钥，十六进制格式（不是 nsec）。请妥善保密！',
+  'Comma-separated relay WebSocket URLs': '用英文逗号分隔的中继 WebSocket URL',
+  'Get from dev.twitch.tv or twitchapps.com/tmi/': '可从 dev.twitch.tv 或 twitchapps.com/tmi/ 获取',
+  'Twitch username for the bot account': '机器人账户的 Twitch 用户名',
+  'Comma-separated Twitch channel names': '用英文逗号分隔的 Twitch 频道名称',
+  'Share this token with friends so they can connect': '把这个令牌分享给朋友，让他们可以连接',
+  'Auto-generated if empty': '如果留空将自动生成',
+  'Your Discourse forum URL (no trailing slash)': '你的 Discourse 论坛 URL（不要带末尾斜杠）',
+  'Admin → API → New API Key (select "All Users" scope for bot operations)':
+    '管理员 → API → 新建 API Key（机器人操作请选择 "All Users" 范围）',
+  'The Discourse username the API key is scoped to (create a dedicated bot account)':
+    'API Key 绑定的 Discourse 用户名（建议创建专用机器人账户）',
+  'Comma-separated category slugs. Leave blank to monitor all categories.':
+    '用英文逗号分隔的分类 slug。留空则监控所有分类。',
+  'How often to check for new posts (minimum 10 seconds)':
+    '检查新帖子的频率（最少 10 秒）',
+  pairings: '配对',
+  pairing: '配对',
+  allowlist: '白名单',
+  open: '开放',
+  'Allowlist only (pre-approved IDs)': '仅白名单（预先批准的 ID）',
+  'Open (anyone can message)': '开放（任何人都可发消息）',
+  'Open (anyone can DM)': '开放（任何人都可私信）',
+  'Open (respond to all mentions)': '开放（响应所有提及）',
+  'Open (respond to all posts)': '开放（响应所有帖子）',
+  'Pairing (new users must be approved)': '配对（新用户必须先批准）',
+  'Pairing (approve first-time users)': '配对（批准首次用户）',
+  'Allowlist only': '仅白名单',
+  'Allowlist only (by pubkey)': '仅白名单（按公钥）',
+  'Allowlist only (by username)': '仅白名单（按用户名）',
+  'Open (respond to all)': '开放（响应所有消息）',
+  'New contacts need my approval first': '新联系人需要我先批准',
+  'Anyone can message': '任何人都可以发消息',
+  'Only specific phone numbers': '仅限特定手机号',
+  'Leave blank to use your default agent': '留空则使用默认智能体',
+  'Optional — paste an agent ID to use a specific agent':
+    '可选 - 粘贴智能体 ID 以使用特定智能体',
+  'Change only if port 8085 is already in use.': '仅当 8085 端口已被占用时才更改。',
+  'Change only if port 8086 is already in use.': '仅当 8086 端口已被占用时才更改。',
+  'Advanced. Change only if port 8085 is already in use.':
+    '高级：仅当 8085 端口已被占用时才更改。',
+  'Advanced. Change only if port 8086 is already in use.':
+    '高级：仅当 8086 端口已被占用时才更改。',
+  'Important — read before scanning': '重要 - 扫描前请阅读',
+  'The phone number you scan': '你扫描的电话号码',
+  'becomes the agent': '会变成智能体',
+  'Anyone who messages that number will talk to your AI, not you.':
+    '任何给该号码发消息的人都会与你的 AI 对话，而不是你。',
+  "Don't use your personal number": '不要使用你的个人号码',
+  'unless you want your agent replying to all your contacts.':
+    '除非你希望你的智能体回复你所有联系人。',
+  'Use a cheap prepaid SIM or spare number instead — you only need it for the initial WhatsApp verification.':
+    '请改用便宜的预付费 SIM 或备用号码 - 你只在首次 WhatsApp 验证时需要它。',
+  'Get a separate phone number for your agent (prepaid SIM, eSIM, etc.)':
+    '为你的智能体准备一个独立电话号码（预付费 SIM、eSIM 等）',
+  'Register WhatsApp on that number': '在那个号码上注册 WhatsApp',
+  "A QR code will appear — scan it from the agent's phone":
+    '会出现二维码 - 请用智能体手机扫描',
+  'Done! People can now message that number to talk to your agent':
+    '完成！现在人们可以向该号码发送消息，与你的智能体对话',
   Unknown: '未知',
   ERR: '错误',
   EXP: '过期',
@@ -965,6 +1091,742 @@ const EN_TO_ZH: Record<string, string> = {
   'Maximum mini-hubs reached': '已达到最大迷你中心数量',
   'Mini-hub error': '迷你中心错误',
   Group: '群组',
+  Start: '启动',
+  Stop: '停止',
+  'Save & Connect': '保存并连接',
+  'Saving...': '保存中...',
+  'Starting...': '启动中...',
+  'Confirm?': '确认？',
+  'Advanced settings': '高级设置',
+  'Pending Requests': '待处理请求',
+  Approved: '已批准',
+  Approve: '批准',
+  'No active connections': '暂无活动连接',
+  offline: '离线',
+  'Not running': '未运行',
+  'Bot token is required': '需要 Bot Token',
+  'Channel is now online': '频道已上线',
+  'Channel is now offline': '频道已离线',
+  'Telegram configured!': 'Telegram 配置完成！',
+  'Telegram bridge started': 'Telegram 桥接已启动',
+  'Telegram started': 'Telegram 已启动',
+  'Telegram stopped': 'Telegram 已停止',
+  'Telegram removed': 'Telegram 已移除',
+  'Set Up ': '设置 ',
+  'Allowed User IDs': '允许的用户 ID',
+  'Access Policy': '访问策略',
+  'Agent ID (optional)': '智能体 ID（可选）',
+  'Bot Token': '机器人令牌',
+  'Bot Token (xoxb-...)': '机器人令牌（xoxb-...）',
+  'App Token (xapp-...)': '应用令牌（xapp-...）',
+  'Server (Guild) ID': '服务器（公会）ID',
+  'Respond to @mentions in servers': '在服务器中响应 @提及',
+  'Respond to @mentions in channels': '在频道中响应 @提及',
+  'Respond in group rooms (when mentioned)': '在群组房间中响应（被提及）',
+  'Respond in group conversations': '在群组对话中响应',
+  'Server Password (optional)': '服务器密码（可选）',
+  'Channels to Join': '要加入的频道',
+  'Comma-separated channel names': '用英文逗号分隔的频道名称',
+  'Homeserver URL': '主服务器 URL',
+  'Server URL': '服务器 URL',
+  'Nextcloud URL': 'Nextcloud URL',
+  'Forum URL': '论坛 URL',
+  'Username': '用户名',
+  'Bot Username': '机器人用户名',
+  'Page Title': '页面标题',
+  'Access Token': '访问令牌',
+  'App Password': '应用密码',
+  'Private Key (hex)': '私钥（十六进制）',
+  'Relay URLs': '中继 URL',
+  'OAuth Token': 'OAuth 令牌',
+  'Allowed phone numbers': '允许的手机号',
+  'API Port': 'API 端口',
+  'Webhook Port': 'Webhook 端口',
+  'FAQ?': '常见问题？',
+  'Who can message your agent?': '谁可以给你的智能体发消息？',
+  'Reply in group chats too': '也回复群聊',
+  'Only respond when @mentioned': '仅在被 @提及时响应',
+  'Reply to new topics automatically': '自动回复新主题',
+  'Allow agent to create new topics': '允许智能体创建新主题',
+  'Categories to Monitor': '要监控的分类',
+  'Poll Interval (seconds)': '轮询间隔（秒）',
+  'Save this form, then click Start on the WhatsApp card':
+    '保存此表单，然后在 WhatsApp 卡片上点击 Start',
+  'Open WhatsApp → Settings → Linked Devices → Link a Device':
+    '打开 WhatsApp → 设置 → 已连接设备 → 连接设备',
+  'When enabled, side-effect tools (file write, shell, etc.) run without human approval for messages from this channel.':
+    '启用后，来自该频道的消息将无需人工批准即可运行会产生副作用的工具（文件写入、Shell 等）。',
+  'Setting up WhatsApp...': '正在设置 WhatsApp...',
+  'Starting WhatsApp...': '正在启动 WhatsApp...',
+  'Installing WhatsApp service (first time only — this may take a minute)...':
+    '正在安装 WhatsApp 服务（仅首次需要，这可能要花一点时间）...',
+  "Couldn't set up WhatsApp automatically. Check your internet connection and try again.":
+    '无法自动设置 WhatsApp。请检查你的网络连接后重试。',
+  "WhatsApp is still loading. Give it a moment and click Start again.":
+    'WhatsApp 仍在加载。请稍等片刻后再次点击 Start。',
+  'First-time setup — downloading WhatsApp service (this may take a minute)...':
+    '首次设置 - 正在下载 WhatsApp 服务（这可能要花一点时间）...',
+  'Connecting to WhatsApp...': '正在连接 WhatsApp...',
+  "Scan with the agent's phone — not your personal one":
+    '请用智能体手机扫描，不要用你的个人手机',
+  'The number you scan becomes the agent. Use a separate number.':
+    '你扫描的号码会成为智能体。请使用独立号码。',
+  'WhatsApp connected!': 'WhatsApp 已连接！',
+  'Something went wrong': '出了点问题',
+  "Couldn't set up WhatsApp. Check your internet connection and try again.":
+    '无法设置 WhatsApp。请检查你的网络连接后重试。',
+  'WhatsApp QR code': 'WhatsApp 二维码',
+  'Save and Connect': '保存并连接',
+  
+  // === 新增翻译（从 index.html 提取） ===
+  
+  // 设置与通用
+  'Loading engine status…': '正在加载引擎状态...',
+  'Trading Dashboard': '交易仪表板',
+  'Enable the Coinbase skill and let your agents trade. Activity will appear here.':
+    '启用 Coinbase 技能，让你的智能体进行交易。活动会在此显示。',
+  'Prerequisites': '前提条件',
+  'Enable the Coinbase skill': '启用 Coinbase 技能',
+  'Add Coinbase API keys': '添加 Coinbase API 密钥',
+  'Go to Skills': '前往技能',
+  'Research': '研究',
+  'Research Assistant': '研究助手',
+  'Create a project, ask questions...':
+    '创建项目、提出问题，你的 AI 智能体将研究网页...',
+  'New Research Project': '新建研究项目',
+  'Your findings are saved...': '你的研究结果会保存为 markdown 文件...',
+  'Recent Queries': '最近查询',
+  'Open Folder': '打开文件夹',
+  'What do you want to research?': '你想研究什么？',
+  'Researching...': '研究中...',
+  'Sources being checked:': '正在检查的来源：',
+  'Live output:': '实时输出：',
+  'Findings': '发现',
+  'Generate Report': '生成报告',
+  'All Sources': '所有来源',
+  'Finding Details': '发现详情',
+  'Research Report': '研究报告',
+  'Enable Long-Term Memory': '启用长期记忆',
+  'Give your agent persistent vector memory...':
+    '为你的智能体提供持久向量记忆，自动捕获和语义召回...',
+  'Azure Endpoint': 'Azure 端点',
+  'Your Azure resource endpoint...': '你的 Azure 资源端点...',
+  'Custom Endpoint': '自定义端点',
+  'Enable Memory': '启用记忆',
+  'Skip — use file editor only': '跳过 - 仅使用文件编辑器',
+  'Memory settings': '记忆设置',
+  'Export all memories': '导出所有记忆',
+  'Refresh memories': '刷新记忆',
+  'Types': '类型',
+  'Links': '链接',
+  'Search memories…': '搜索记忆...',
+  'All agents': '所有智能体',
+  'System (shared)': '系统（共享）',
+  'All types': '所有类型',
+  'Facts': '事实',
+  'Preferences': '偏好',
+  'Architecture': '架构',
+  'Decisions': '决策',
+  'Insights': '洞察',
+  'Gotchas': '陷阱',
+  'Events': '事件',
+  'Solutions': '解决方案',
+  'All projects': '所有项目',
+  'Agent Files': '智能体文件',
+  'Refresh files': '刷新文件',
+  'Recall': '召回',
+  'Map': '图谱',
+  'Atlas': '地图集',
+  'Forge': '锻造',
+  'Remember': '记忆',
+  'Files': '文件',
+  'Search by meaning… e.g. \'How does authentication work?\'':
+    '按含义搜索…例如"身份验证如何工作？"',
+  'Semantic search': '语义搜索',
+  'Search your agent\'s memories by meaning — not just keywords':
+    '按含义搜索智能体的记忆，不仅仅是关键词',
+  'Knowledge graph': '知识图谱',
+  'Visual map of how your agent\'s memories connect to each other':
+    '智能体记忆之间连接关系的可视化图谱',
+  'Memory Atlas': '记忆地图集',
+  '3D embedding space visualization...': '3D 嵌入空间可视化...',
+  'Skill Certification': '技能认证',
+  'Training domains and certified procedural memories from THE FORGE':
+    '来自 THE FORGE 的训练领域和认证过程记忆',
+  'Other': '其他',
+  'Procedure': '过程',
+  'Concept': '概念',
+  'Person': '人物',
+  'Content': '内容',
+  'What should the agent remember?': '智能体应该记住什么？',
+  'Importance (1–10)': '重要性（1-10）',
+  '3 – Low': '3 - 低',
+  '5 – Normal': '5 - 正常',
+  '7 – High': '7 - 高',
+  '10 – Critical': '10 - 关键',
+  'Store Memory': '存储记忆',
+  'Agent files': '智能体文件',
+  'Raw filesystem used by your agent for persistent storage':
+    '智能体用于持久存储的原始文件系统',
+  'Loading memory…': '正在加载记忆...',
+  'FORGE Training': 'FORGE 训练',
+  'Loading certification data…': '正在加载认证数据...',
+  'What Are Skills?': '什么是技能？',
+  'Skills are markdown prompt files...':
+    '技能是 markdown 提示文件（.md），教会智能体如何执行特定任务...',
+  'Unlike integrations...': '与集成不同（调用 API）或内置工具（编译进引擎）...',
+  'is the community skill directory...': '是社区技能目录...',
+  'Skills work across all channels...': '技能适用于所有渠道...',
+  'How It Works': '工作原理',
+  'Skill .md files are loaded...': '技能 .md 文件被加载到智能体的上下文窗口...',
+  'The agent reads the instructions...': '智能体读取指令并在对话中遵循...',
+  'Multiple skills combine...': '多个技能可以组合，一个智能体可以同时激活多个技能...',
+  'Assign skills to specific agents...': '为特定智能体分配技能或跨所有智能体共享...',
+  'Loading skills...': '正在加载技能...',
+  'Installed': '已安装',
+  'Refresh All': '刷新全部',
+  'Browse skills.sh': '浏览 skills.sh',
+  
+  // 任务与工作流
+  'e.g. build a landing page': '例如：构建落地页',
+  'Describe what this project should accomplish...': '描述此项目应该实现什么...',
+  'The agent responsible for coordinating the project. It must have a soul file in Foundry.':
+    '负责协调项目的智能体。它必须在工坊中有一个灵魂文件。',
+  'use routing default': '使用路由默认值',
+  'Cron-based recurring task scheduling': '基于 Cron 的周期性任务调度',
+  'Morning Brief template for daily summaries': '晨间简报模板用于每日摘要',
+  'Trigger automatic agent runs on a schedule': '按计划触发智能体自动运行',
+  'Full run history and duration tracking': '完整的运行历史和持续时间跟踪',
+  'Orchestrate multiple agents around a shared goal...':
+    '围绕共同目标协调多个智能体...',
+  'Daily noon': '每日中午',
+  'Daily 18:00': '每日 18:00',
+  'every 5m, every 1h, daily 09:00': '每 5 分钟、每 1 小时、每天 09:00',
+  'e.g. every 1h, daily 09:00': '例如：每 1 小时、每天 09:00',
+  
+  // 通信与频道
+  'Set Up Channel': '设置频道',
+  'Send Direct Message': '发送直接消息',
+  'Channel': '频道',
+  'Type a message…': '输入消息...',
+  'What Are Channels?': '什么是频道？',
+  'Channels let you talk to your AI agent from anywhere...':
+    '频道让你可以从任何地方与 AI 智能体对话...',
+  'Each channel is a bridge...': '每个频道都是一个桥梁...',
+  'Message from your phone': '从手机发送消息',
+  'Let friends & team chat with your agent': '让朋友和团队与智能体聊天',
+  'Access control — approve who can talk': '访问控制 - 批准谁可以对话',
+  'Always on — agent responds 24/7': '始终在线 - 智能体 24/7 响应',
+  'Platform Types': '平台类型',
+  'Chat Apps': '聊天应用',
+  'Self-Hosted': '自托管',
+  'Social & Streaming': '社交与直播',
+  'Open Protocols': '开放协议',
+  'Setup Guides': '设置指南',
+  
+  // Flows 视图
+  'Visualize and build AI workflows': '可视化并构建 AI 工作流',
+  'Describe a flow… e.g. webhook -> agent -> send email':
+    '描述流程…例如：webhook -> 智能体 -> 发送邮件',
+  'Flow Architect': '流程架构师',
+  'Close (Ctrl+J)': '关闭（Ctrl+J）',
+  'Flow Architect option': '流程架构师选项',
+  'Thinking level: Off': '思考级别：关闭',
+  'Clear conversation': '清空对话',
+  'Ask about this flow, or tell me what to build…':
+    '询问此流程，或告诉我该构建什么...',
+  'Show flow list': '显示流程列表',
+  'Show properties panel': '显示属性面板',
+  
+  // Foundry 与模型
+  'Configure AI providers, models, and agent behaviour modes':
+    '配置 AI 供应商、模型和智能体行为模式',
+  'Chat Modes': '聊天模式',
+  'Modes': '模式',
+  'No models available': '暂无可用模型',
+  'Configure your AI provider in Settings to see available models':
+    '在设置中配置 AI 供应商以查看可用模型',
+  'Loading models…': '正在加载模型...',
+  'Agent modes are named configurations...': '智能体模式是命名的配置...',
+  'No modes yet': '暂无模式',
+  'Create modes to quickly switch your agent\'s behavior': '创建模式以快速切换智能体行为',
+  'The Foundry is your AI configuration hub...': '工坊是你的 AI 配置中心...',
+  'Connect multiple AI providers at once': '同时连接多个 AI 供应商',
+  'Set default model for all conversations': '为所有对话设置默认模型',
+  'API key management per provider': '每个供应商的 API 密钥管理',
+  'Local models via Ollama support': '通过 Ollama 支持本地模型',
+  'Named presets with a custom model...': '带自定义模型的命名预设...',
+  'Refresh Models': '刷新模型',
+'New Agent Mode': '新建智能体模式',
+  'Icon': '图标',
+  'Code Review placeholder': '代码审查',
+  'Color': '颜色',
+  'Model (leave blank for default)': '模型（留空则使用默认值）',
+  'System Prompt': '系统提示词',
+  'You are a careful code reviewer... placeholder': '你是一个细致的代码审查者...',
+  'Thinking Level': '思考级别',
+  'None': '无',
+  'Temperature': '温度',
+  '1.0': '1.0',
+  'Auto-Approve All Tools': '自动批准所有工具',
+  'Autonomous badge': '自主',
+  'This agent will execute all tools without asking...': '此智能体将执行所有工具而不询问...',
+  'Save Mode': '保存模式',
+
+  // === Today View (今日面板) ===
+
+  // 时间格式
+  'just now': '刚刚',
+  'm ago': '分钟前',
+  'h ago': '小时前',
+  'd ago': '天前',
+  'Last recap': '上次回顾',
+
+  // 天气卡片
+  'Enter city (e.g. New York, London, Tokyo)': '输入城市（例如 New York, London, Tokyo）',
+  'Click to set your location': '点击设置位置',
+  'Clear sky': '晴朗',
+  'Mainly clear': '基本晴朗',
+  'Partly cloudy': '部分多云',
+  'Overcast': '阴天',
+  'Fog': '雾',
+  'Depositing rime fog': '雾凇雾',
+  'Light drizzle': '轻微毛毛雨',
+  'Moderate drizzle': '中度毛毛雨',
+  'Dense drizzle': '浓密毛毛雨',
+  'Freezing drizzle': '冻毛毛雨',
+  'Dense freezing drizzle': '浓密冻毛毛雨',
+  'Slight rain': '小雨',
+  'Moderate rain': '中雨',
+  'Heavy rain': '大雨',
+  'Light freezing rain': '轻微冻雨',
+  'Heavy freezing rain': '重度冻雨',
+  'Slight snow': '小雪',
+  'Moderate snow': '中雪',
+  'Heavy snow': '大雪',
+  'Snow grains': '雪粒',
+  'Slight rain showers': '轻微阵雨',
+  'Moderate rain showers': '中度阵雨',
+  'Violent rain showers': '暴雨',
+  'Slight snow showers': '轻微阵雪',
+  'Heavy snow showers': '重度阵雪',
+  'Thunderstorm': '雷暴',
+  'Thunderstorm with slight hail': '雷暴伴轻微冰雹',
+  'Thunderstorm with heavy hail': '雷暴伴重度冰雹',
+  'Feels like': '体感温度',
+
+  // 邮件卡片
+  'Email requires the desktop app': '邮件功能需要桌面应用',
+  'Set up email in the Mail view to see messages here': '在邮件视图中设置邮箱，以在此处查看消息',
+  'No unread emails — you\'re all caught up!': '没有未读邮件 - 你已经处理完了！',
+  'more unread': '更多未读',
+  'Could not load emails — check Mail settings': '无法加载邮件 - 请检查邮件设置',
+
+  // 日历卡片
+  'Calendar requires the desktop app': '日历功能需要桌面应用',
+  'Connect a calendar integration via Integrations to see events here': '通过集成视图连接日历集成，以在此处查看事件',
+  'No events today': '今天没有事件',
+  'All day': '全天',
+  'Could not load calendar': '无法加载日历',
+
+  // 技能卡片
+  'No skills enabled — add some in Settings → Skills': '没有启用技能 - 请在设置 → 技能中添加',
+  'Could not load skills': '无法加载技能',
+  'more': '更多',
+
+  // 智能体队列
+  'No agents configured — create one': '没有配置智能体 - 创建一个',
+  'Could not load agents — try refreshing': '无法加载智能体 - 尝试刷新',
+  'Open chat with': '打开与以下智能体的聊天',
+
+  // 任务卡片
+  'Add Task': '添加任务',
+  'What needs to be done?': '需要做什么？',
+  'No tasks yet. Add one to get started!': '暂无任务。添加一个开始吧！',
+  'completed today': '今天已完成',
+  'Failed to add task': '添加任务失败',
+  'Failed to update task': '更新任务失败',
+  'Failed to delete task': '删除任务失败',
+  'Task added': '任务已添加',
+
+  // 回忆卡片
+  'Hit ↺ Recap to see what you\'ve been up to': '点击 ↺ 回顾查看你最近在做什么',
+  'No activity found yet — start a chat or save some memories!': '尚未找到活动 - 开始聊天或保存一些记忆！',
+  'Could not generate recap — check your AI provider.': '无法生成回顾 - 请检查你的 AI 供应商。',
+  'Recap': '回顾',
+  'Generating…': '生成中…',
+  'Untitled': '未命名',
+  'Session': '会话',
+
+  // 会话列表
+  'No sessions yet — start a chat to begin': '暂无会话 - 开始聊天',
+  'Untitled Session': '未命名会话',
+  'msgs': '条消息',
+  'Could not load sessions': '无法加载会话',
+
+  // Engram 卡片
+  'memories stored': '条记忆',
+  'vector search active': '向量搜索已激活',
+  'memory engine offline': '记忆引擎离线',
+  'Configure in Settings → Memory': '在设置 → 记忆中配置',
+  'Ctrl+M · click brain to store': 'Ctrl+M · 点击大脑存储',
+  'What do you want Engram to remember? (Ctrl+Enter to save)': '你想让 Engram 记住什么？（Ctrl+Enter 保存）',
+  'Store a Memory in Engram': '在 Engram 中存储记忆',
+  'Storing…': '存储中…',
+  'Memory stored in Engram': '记忆已存储在 Engram',
+  'Failed to store memory': '存储记忆失败',
+  'Ctrl+Enter to store': 'Ctrl+Enter 存储',
+  'importance': '重要性',
+
+  // 统计标签
+  'MISSION CONTROL': '任务控制中心',
+  'TODAY': '今天',
+  'turns': '轮次',
+  'tool calls': '工具调用',
+  'tokens': 'tokens',
+  'avg latency': '平均延迟',
+  'cost / day': '成本/天',
+  'tokens / day': 'tokens/天',
+  'MODELS TODAY': '今日模型',
+  'No model usage today': '今日无模型使用',
+  '14d': '14 天',
+  'No telemetry data yet — start a chat to generate metrics': '暂无遥测数据 - 开始聊天以生成指标',
+
+  // 使用统计
+  'cost': '成本',
+  'in': '输入',
+  'out': '输出',
+
+  // 卡片标题
+  'TASKS': '任务',
+  'CALENDAR': '日历',
+  'RECALL': '回顾',
+  'RECENT SESSIONS': '最近会话',
+  'ENGRAM': '记忆库',
+  'AGENT FLEET': '智能体队列',
+  'SKILLS': '技能',
+  'ACTIVITY': '活动',
+  'INTEGRATIONS': '集成',
+  'TELEMETRY': '遥测',
+
+  // 快捷操作按钮
+  '▸ New Chat': '▸ 新建聊天',
+  '▸ Research': '▸ 研究',
+  '▸ Orchestration': '▸ 编排',
+  '▸ Memory Vault': '▸ 记忆库',
+
+  // 集成卡片
+  'No services connected': '没有连接的服务',
+  'Browse integrations': '浏览集成',
+  '25,000+ integrations available': '25,000+ 集成可用',
+  'Browse all': '浏览全部',
+
+  // 用户设置
+  'Upload profile picture': '上传头像',
+  'Set your name': '设置你的名字',
+  'Your name': '你的名字',
+  'Welcome': '欢迎',
+  'Profile picture updated': '头像已更新',
+  'Failed to save profile picture': '保存头像失败',
+  'Image must be under 5 MB': '图片必须小于 5 MB',
+
+  // 问候语与消息
+  'Good morning': '早上好',
+  'Good afternoon': '下午好',
+  'Good evening': '晚上好',
+  'Happy': '快乐',
+  'Ready to make today count?': '准备好让今天更有意义了吗？',
+  'Hope your': '希望你的',
+  'is going well.': '过得顺利。',
+  'Winding down this': '放松一下，',
+  'You crushed it —': '太棒了 —',
+  'task': '个任务',
+  'tasks': '个任务',
+  'done and nothing pending!': '已完成，没有待办任务！',
+  'Nice progress!': '进展不错！',
+  'down,': '已完成，',
+  'to go.': '剩余待办。',
+  'You\'ve got': '你有',
+  'lined up. Let\'s knock them out.': '待办任务。让我们一一搞定。',
+  'No tasks on the board yet. Add something or hit Morning Briefing to get started.': '看板上暂时没有任务。添加一些，或者点击晨间简报开始吧。',
+
+  // 能力分类标签
+  'Web & Research': '网页与研究',
+  'Media & Content': '媒体与内容',
+  'Storage': '存储',
+  'Search': '搜索',
+  'Automation': '自动化',
+
+  // 导览步骤
+  'Chat with AI': '与 AI 聊天',
+  'Talk to your agents, ask questions, and get tasks done through natural conversation.':
+    '与智能体对话、提问，并通过自然对话完成任务。',
+  'Your Agent Fleet': '你的智能体队列',
+  'Create AI agents with unique personas, specialized tools, and custom instructions.':
+    '创建具有独特角色、专业工具和自定义指令的 AI 智能体。',
+  'Skills & Integrations': '技能与集成',
+  'Enable capabilities like email, web browsing, coding, trading, and hundreds more.':
+    '启用邮件、网页浏览、编程、交易等功能，还有数百种其他能力。',
+  'Task Board': '任务看板',
+  'Organize work on a kanban board. Assign tasks to agents and track progress.':
+    '在看板上组织工作。将任务分配给智能体并跟踪进度。',
+  'Configure AI providers, models, security policies, and customize your workspace.':
+    '配置 AI 供应商、模型、安全策略，并自定义你的工作区。',
+
+  // 智能体模板名称与描述
+  'Executive Assistant': '执行助理',
+  'Calendar management, email triage, meeting prep, and daily briefings': '日程管理、邮件整理、会议准备和每日简报',
+  'Project Manager': '项目经理',
+  'Track tasks, deadlines, blockers, and generate status reports': '跟踪任务、截止日期、阻塞项，并生成状态报告',
+  'Meeting Scribe': '会议记录员',
+  'Summarize meetings, extract action items, and distribute notes': '总结会议、提取行动事项并分发会议记录',
+  'Code Reviewer': '代码审查员',
+  'Review PRs, suggest improvements, catch bugs and security issues': '审查 PR、提出改进建议、发现 bug 和安全问题',
+  'DevOps Engineer': 'DevOps 工程师',
+  'CI/CD pipelines, Docker, Kubernetes, infrastructure as code': 'CI/CD 流水线、Docker、Kubernetes、基础设施即代码',
+  'Full-Stack Dev': '全栈开发者',
+  'Build features across frontend and backend with modern frameworks': '使用现代框架构建前后端功能',
+  'API Architect': 'API 架构师',
+  'Design RESTful APIs, GraphQL schemas, and integration patterns': '设计 RESTful API、GraphQL schema 和集成模式',
+  'Content Writer': '内容撰稿人',
+  'Blog posts, documentation, marketing copy, and social media': '博客文章、文档、营销文案和社交媒体内容',
+  'UX Designer': 'UX 设计师',
+  'User flows, wireframes, accessibility audits, and design systems': '用户流程、线框图、可访问性审查和设计系统',
+  'Copy Editor': '文案编辑',
+  'Proofread, edit for clarity, check style guides, and improve readability': '校对、编辑清晰度、检查风格指南并提高可读性',
+  'Data Analyst': '数据分析师',
+  'SQL queries, data visualization, statistical analysis, and reports': 'SQL 查询、数据可视化、统计分析和报告',
+  'Research Analyst': '研究分析师',
+  'Deep web research, competitive analysis, and literature reviews': '深度网络研究、竞争分析和文献综述',
+  'Community Manager': '社区经理',
+  'Discord/Slack moderation, engagement, and community health monitoring': 'Discord/Slack 管理、互动和社区健康监控',
+  'Security Auditor': '安全审计员',
+  'Vulnerability scanning, dependency audits, and security best practices': '漏洞扫描、依赖审计和安全最佳实践',
+  'Trading Analyst': '交易分析师',
+  'Market analysis, portfolio tracking, and trading strategy research': '市场分析、投资组合跟踪和交易策略研究',
+  'DeFi Scout': 'DeFi 探索者',
+  'Monitor DeFi protocols, yield opportunities, and token launches': '监控 DeFi 协议、收益机会和代币发布',
+
+  // 智能体模板分类标签
+  'Engineering': '工程',
+  'Creative': '创意',
+  'Data & Research': '数据与研究',
+
+  // 模板卡片UI文本
+  'Install': '安装',
+
+  // 智能体面板空状态
+  'No skills assigned yet': '尚未分配技能',
+
+  // 智能体工具组标签
+  'Core': '核心',
+  'Soul & Memory': '灵魂与记忆',
+  'Agents & Tasks': '智能体与任务',
+
+  // 智能体工具名称与描述
+  'Run Commands': '运行命令',
+  'Execute shell commands': '执行 Shell 命令',
+  'HTTP Fetch': 'HTTP 请求',
+  'Make HTTP requests': '发起 HTTP 请求',
+  'Read File': '读取文件',
+  'Read file contents': '读取文件内容',
+  'Write File': '写入文件',
+  'Create and edit files': '创建和编辑文件',
+  'List Directory': '列出目录',
+  'Browse file listings': '浏览文件列表',
+  'Append File': '追加文件',
+  'Add content to files': '向文件添加内容',
+  'Remove files': '移除文件',
+  'Web Search': '网页搜索',
+  'Search the internet': '搜索互联网',
+  'Web Read': '网页读取',
+  'Read web page content': '读取网页内容',
+  'Web Screenshot': '网页截图',
+  'Capture screenshots': '捕获截图',
+  'Web Browse': '网页浏览',
+  'Interactive browsing': '交互式浏览',
+  'Soul Read': '灵魂读取',
+  'Read persona files': '读取角色文件',
+  'Soul Write': '灵魂写入',
+  'Write persona files': '写入角色文件',
+  'Soul List': '灵魂列表',
+  'List persona files': '列出角色文件',
+  'Memory Store': '记忆存储',
+  'Save to long-term memory': '保存到长期记忆',
+  'Memory Search': '记忆搜索',
+  'Recall from memory': '从记忆中召回',
+  'Self Info': '自身信息',
+  'View own configuration': '查看自身配置',
+  'Update Profile': '更新配置',
+  'Modify agent profile': '修改智能体配置',
+  'Spawn new agents': '生成新智能体',
+  'Agent List': '智能体列表',
+  'List all agents': '列出所有智能体',
+  'Agent Skills': '智能体技能',
+  'View agent skills': '查看智能体技能',
+  'Assign Skill': '分配技能',
+  'Assign skills to agents': '为智能体分配技能',
+  'Create new tasks': '创建新任务',
+  'List Tasks': '列出任务',
+  'View task list': '查看任务列表',
+  'Manage Task': '管理任务',
+  'Update/delete tasks': '更新/删除任务',
+  'Skill Search': '技能搜索',
+  'Search community skills': '搜索社区技能',
+  'Skill Install': '技能安装',
+  'Install community skills': '安装社区技能',
+  'Skill List': '技能列表',
+  'List installed skills': '列出已安装技能',
+  'Telegram Send': 'Telegram 发送',
+  'Send Telegram messages': '发送 Telegram 消息',
+  'Telegram Read': 'Telegram 读取',
+  'Read Telegram status': '读取 Telegram 状态',
+  'REST API': 'REST API',
+  'Call REST APIs': '调用 REST API',
+  'Send webhooks': '发送 Webhook',
+  'Image Generate': '图片生成',
+  'Generate images': '生成图片',
+
+  // 智能体创建提示
+  'created!': '已创建！',
+
+  // 任务视图文本
+  'Run now': '立即运行',
+  'agents': '个智能体',
+  'No agents assigned': '未分配智能体',
+  'Failed to load activity': '加载活动记录失败',
+  'Task title is required': '任务标题为必填项',
+  'Task updated': '任务已更新',
+  'Task created': '任务已创建',
+  'Task deleted': '任务已删除',
+  'Starting agent work...': '智能体正在启动工作...',
+  'Agent is working on the task': '智能体正在处理任务',
+  'Task run failed': '任务运行失败',
+  'Move failed': '移动失败',
+  'Edit Task': '编辑任务',
+  '+ Add agent': '+ 添加智能体',
+  'cron task(s) triggered': '个定时任务已触发',
+  'already running': '已在运行',
+
+  // === 流程视图（Flows） ===
+
+  // 流程文件和执行
+  'Invalid flow file: could not parse graph.': '流程文件无效：无法解析图形。',
+  'Import failed': '导入失败',
+  'No flow selected to run': '尚未选择要运行的流程',
+  'Flow execution cancelled after safety review': '流程执行因安全审核被取消',
+  'No flow selected to debug': '尚未选择要调试的流程',
+  '⚠ Pre-flight Safety Report: ': '⚠ 预飞行安全报告：',
+  'Do you want to proceed anyway?': '是否仍要继续？',
+  'Pre-flight Safety Report: ': '预飞行安全报告：',
+  'Continue execution?': '继续执行？',
+
+  // 流程架构师AI助手
+  'You are a flow builder assistant for {appName}, an AI workflow automation platform.': '你是 {appName} 的流程构建助手，一个 AI 工作流自动化平台。',
+  'Every flow MUST start with a trigger node': '每个流程必须以触发器节点开始',
+  'Every flow MUST end with an output node': '每个流程必须以输出节点结束',
+  'Agent/tool/data nodes do AI work — use them for reasoning, drafting, analysis': '代理/工具/数据节点执行 AI 工作 - 用于推理、起草、分析',
+  'Use http for direct API calls, mcp-tool for MCP integrations (no LLM needed)': '使用 http 进行直接 API 调用，使用 mcp-tool 进行 MCP 集成（无需 LLM）',
+  'Use code for data transformation via JavaScript': '使用 code 通过 JavaScript 进行数据转换',
+  'Use condition for branching logic': '使用 condition 进行分支逻辑',
+  'Use loop for iterating over arrays': '使用 loop 对数组进行迭代',
+  'Use squad to invoke multi-agent teams for complex tasks': '使用 squad 调用多代理团队处理复杂任务',
+  'Use memory to write information to long-term memory': '使用 memory 将信息写入长期记忆',
+  'Use memory-recall to search/retrieve from long-term memory': '使用 memory-recall 从长期记忆中搜索/检索',
+  'Use error nodes for error handling paths': '使用 error 节点处理错误路径',
+  'Use group to embed sub-flows': '使用 group 嵌入子流程',
+  'Nodes should have clear, descriptive labels': '节点应具有清晰、描述性的标签',
+  'Add appropriate edge labels for condition branches (true/false)': '为条件分支添加适当的边标签（true/false）',
+  'Position nodes in a readable left-to-right layout (x increases by ~240, y by ~100 for branches)': '将节点定位为可读的从左到右布局（x 增加约240，分支 y 增加约100）',
+  'Respond with ONLY a JSON object:': '仅用 JSON 对象响应：',
+  'Brief description of what the flow does': '流程功能的简要描述',
+  'Optional improvement suggestions': '可选的改进建议',
+
+  // 流程工具栏
+  'Run Flow': '运行流程',
+  'Running…': '运行中…',
+  'Debug (Step-by-Step)': '调试（逐步）',
+  'Debugging…': '调试中…',
+  'Step to Next Node': '步进到下一节点',
+  'Pause': '暂停',
+  'Resume': '恢复',
+  'Add Trigger': '添加触发器',
+  'Add Tool': '添加工具',
+  'Add Condition': '添加条件',
+  'Add Data': '添加数据',
+  'Add Code': '添加代码',
+  'Add Error Handler': '添加错误处理器',
+  'Add Output': '添加输出',
+  'Add HTTP Request (Direct)': '添加 HTTP 请求（直接）',
+  'Add MCP Tool (Direct)': '添加 MCP 工具（直接）',
+  'Add Loop (Iterate)': '添加循环（迭代）',
+  'Add Event Horizon (Tesseract Sync)': '添加事件地平线（Tesseract 同步）',
+  'Auto Layout': '自动布局',
+  'Fit to View': '适合视图',
+  'Zoom In': '放大',
+  'Zoom Out': '缩小',
+  'Undo (Ctrl+Z)': '撤销（Ctrl+Z）',
+  'Redo (Ctrl+Shift+Z)': '重做（Ctrl+Shift+Z）',
+  'Export Flow (.pawflow.json)': '导出流程（.pawflow.json）',
+  'Import Flow': '导入流程',
+  'Delete Selected': '删除选中',
+  'Toggle Flow List (Ctrl+B)': '切换流程列表（Ctrl+B）',
+  'Toggle Minimap (M)': '切换小地图（M）',
+  'Toggle Data Labels (Ctrl+L)': '切换数据标签（Ctrl+L）',
+  'Keyboard Shortcuts (?)': '键盘快捷键（?）',
+  'Flow Architect Agent (Ctrl+J)': '流程架构师代理（Ctrl+J）',
+  'Toggle Properties Panel (Ctrl+P)': '切换属性面板（Ctrl+P）',
+
+  // 流程配置字段
+  'Instructions for this step…': '此步骤的指令…',
+  '* * * * *': '* * * * *',
+  'inherit from agent': '继承自代理',
+  'e.g. Does the input contain valid data?': '例如：输入是否包含有效数据？',
+  'e.g. Extract the top 3 results': '例如：提取前3个结果',
+  '// Input available as: input (string), data (parsed JSON)\n// Output should be a JSON-serializable value\n\n': '// 输入可用为：input（字符串），data（解析的 JSON）\n// 输出应为可 JSON 序列化的值\n\n',
+  'https://api.example.com/endpoint': 'https://api.example.com/endpoint',
+  '{"Content-Type": "application/json"}': '{"Content-Type": "application/json"}',
+  'Request body — use {{input}} for upstream output': '请求体 - 使用 {{input}} 作为上游输出',
+  'e.g. openai-key, github-token': '例如：openai-key、github-token',
+  'e.g. search_web, read_file': '例如：search_web、read_file',
+  'e.g. data.items, results': '例如：data.items、results',
+  'item': '项目',
+  'Paste flow ID to execute': '粘贴要执行的流程 ID',
+  'Select or enter squad ID': '选择或输入团队 ID',
+  'Task or goal for the squad (uses upstream input if empty)': '团队的任务或目标（如果为空则使用上游输入）',
+  'Custom content to store (when source is Custom)': '要存储的自定义内容（当来源为 Custom 时）',
+  'Optional — scopes memory to agent': '可选 - 将记忆范围限定到代理',
+  'Search query (when source is Custom)': '搜索查询（当来源为 Custom 时）',
+  'e.g. summary, lastResult': '例如：summary、lastResult',
+  'Leave empty to use node output': '留空以使用节点输出',
+  'Folder name:': '文件夹名称：',
+
+  // 画布相关
+  'Edge': '连线',
+  'Add node': '添加节点',
+  'Delete node': '删除节点',
+  'Connect nodes': '连接节点',
+  '保存仪表盘': '保存仪表盘',
+  '仪表盘名称': '仪表盘名称',
+  '仪表盘已经保存': '仪表盘已经保存',
+  '仪表盘"${name}"已保存': '仪表盘"${name}"已保存',
+  '重命名仪表盘': '重命名仪表盘',
+  '已重命名为"${name}"': '已重命名为"${name}"',
+  '删除仪表盘': '删除仪表盘',
+  '删除"${name}"及其所有组件？此操作无法撤销。': '删除"${name}"及其所有组件？此操作无法撤销。',
+  '"${name}"已删除': '"${name}"已删除',
+  '表单已提交': '表单已提交',
+  '操作：${action}': '操作：${action}',
+  '画布已清空': '画布已清空',
+  '清空画布失败': '清空画布失败',
+  '切换固定状态失败': '切换固定状态失败',
+  '在新窗口打开失败': '在新窗口打开失败',
+  '删除仪表盘失败': '删除仪表盘失败',
+  '模板支持即将上线': '模板支持即将上线',
+  '加载仪表盘失败': '加载仪表盘失败',
+  '组件已移除': '组件已移除',
+  '移除组件失败': '移除组件失败',
+  '当前还没有已保存的仪表盘或模板': '当前还没有已保存的仪表盘或模板',
 };
 
 const ZH_TO_EN = Object.fromEntries(Object.entries(EN_TO_ZH).map(([en, zh]) => [zh, en]));
@@ -975,7 +1837,69 @@ const UI_MESSAGE_PATTERNS: Array<{
 }> = [
   {
     en: /^Using (.+)$/,
-    zh: (tool) => `正在使用 ${tool}`,
+    zh: (tool) => `正在使用 ${translateUiText(tool)}`,
+  },
+  {
+    en: /^Set Up (.+)$/,
+    zh: (name) => `设置 ${translateUiText(name)}`,
+  },
+  {
+    en: /^(.+) — Pending Requests$/,
+    zh: (name) => `${translateUiText(name)} — 待处理请求`,
+  },
+  {
+    en: /^(\d+) msgs$/,
+    zh: (count) => `${count} 条消息`,
+  },
+  {
+    en: /^(\d+) messages · Policy: (.+)$/,
+    zh: (count, policy) => {
+      const translatedPolicy =
+        policy === 'pairing'
+          ? '配对'
+          : policy === 'allowlist'
+            ? '仅白名单'
+            : policy === 'open'
+              ? '开放'
+              : policy;
+      return `${count} 条消息 · 策略：${translatedPolicy}`;
+    },
+  },
+  {
+    en: /^(.+) started$/,
+    zh: (name) => `${translateUiText(name)} 已启动`,
+  },
+  {
+    en: /^(.+) stopped$/,
+    zh: (name) => `${translateUiText(name)} 已停止`,
+  },
+  {
+    en: /^(.+) removed$/,
+    zh: (name) => `${translateUiText(name)} 已移除`,
+  },
+  {
+    en: /^(.+) configured!$/,
+    zh: (name) => `${translateUiText(name)} 配置完成！`,
+  },
+  {
+    en: /^(.+) bridge started$/,
+    zh: (name) => `${translateUiText(name)} 桥接已启动`,
+  },
+  {
+    en: /^Send failed: (.+)$/,
+    zh: (reason) => `发送失败：${translateUiText(reason)}`,
+  },
+  {
+    en: /^Unknown channel type: (.+)$/,
+    zh: (channelType) => `未知频道类型：${translateUiText(channelType)}`,
+  },
+  {
+    en: /^(.+) is required$/,
+    zh: (label) => `${translateUiText(label)} 为必填项`,
+  },
+  {
+    en: /^Confirm\?$/,
+    zh: () => '确认？',
   },
   {
     en: /^Show (\d+) more$/,
@@ -1171,27 +2095,27 @@ const UI_MESSAGE_PATTERNS: Array<{
   },
   {
     en: /^Failed to save: (.+)$/,
-    zh: (reason) => `保存失败：${reason}`,
+    zh: (reason) => `保存失败：${translateUiText(reason)}`,
   },
   {
     en: /^Failed to save squad: (.+)$/,
-    zh: (reason) => `保存团队失败：${reason}`,
+    zh: (reason) => `保存团队失败：${translateUiText(reason)}`,
   },
   {
     en: /^Failed to add member: (.+)$/,
-    zh: (reason) => `添加成员失败：${reason}`,
+    zh: (reason) => `添加成员失败：${translateUiText(reason)}`,
   },
   {
     en: /^Failed to create project: (.+)$/,
-    zh: (reason) => `创建项目失败：${reason}`,
+    zh: (reason) => `创建项目失败：${translateUiText(reason)}`,
   },
   {
     en: /^Failed to delete: (.+)$/,
-    zh: (reason) => `删除失败：${reason}`,
+    zh: (reason) => `删除失败：${translateUiText(reason)}`,
   },
   {
     en: /^Failed to connect: (.+)$/,
-    zh: (reason) => `连接失败：${reason}`,
+    zh: (reason) => `连接失败：${translateUiText(reason)}`,
   },
   {
     en: /^Failed to load dashboards$/,
@@ -1211,27 +2135,31 @@ const UI_MESSAGE_PATTERNS: Array<{
   },
   {
     en: /^Start failed: (.+)$/,
-    zh: (reason) => `启动失败：${reason}`,
+    zh: (reason) => `启动失败：${translateUiText(reason)}`,
   },
   {
     en: /^Stop failed: (.+)$/,
-    zh: (reason) => `停止失败：${reason}`,
+    zh: (reason) => `停止失败：${translateUiText(reason)}`,
   },
   {
     en: /^Install failed: (.+)$/,
-    zh: (reason) => `安装失败：${reason}`,
+    zh: (reason) => `安装失败：${translateUiText(reason)}`,
   },
   {
     en: /^Uninstall failed: (.+)$/,
-    zh: (reason) => `卸载失败：${reason}`,
+    zh: (reason) => `卸载失败：${translateUiText(reason)}`,
   },
   {
     en: /^Cancel failed: (.+)$/,
-    zh: (reason) => `取消失败：${reason}`,
+    zh: (reason) => `取消失败：${translateUiText(reason)}`,
   },
   {
     en: /^Search failed: (.+)$/,
-    zh: (reason) => `搜索失败：${reason}`,
+    zh: (reason) => `搜索失败：${translateUiText(reason)}`,
+  },
+  {
+    en: /^Remove failed: (.+)$/,
+    zh: (reason) => `移除失败：${translateUiText(reason)}`,
   },
   {
     en: /^Confirm$/,
@@ -1257,18 +2185,18 @@ export function setLocale(locale: AppLocale): void {
 }
 
 export function t(text: string): string {
-  if (currentLocale === 'zh-CN') return EN_TO_ZH[text] ?? text;
-  return ZH_TO_EN[text] ?? text;
+  if (currentLocale === 'zh-CN') return applyBrandTokens(EN_TO_ZH[text] ?? text);
+  return applyBrandTokens(ZH_TO_EN[text] ?? text);
 }
 
 export function translateUiText(text: string): string {
-  if (currentLocale !== 'zh-CN') return text;
-  if (text in EN_TO_ZH) return EN_TO_ZH[text];
+  if (currentLocale !== 'zh-CN') return applyBrandTokens(text);
+  if (text in EN_TO_ZH) return applyBrandTokens(EN_TO_ZH[text]);
   for (const pattern of UI_MESSAGE_PATTERNS) {
     const match = text.match(pattern.en);
-    if (match) return pattern.zh(...match.slice(1));
+    if (match) return applyBrandTokens(pattern.zh(...match.slice(1)));
   }
-  return text;
+  return applyBrandTokens(text);
 }
 
 export function initI18n(): void {
@@ -1377,7 +2305,7 @@ function translateAttributes(root: ParentNode): void {
 }
 
 function translateElementAttributes(el: Element): void {
-  for (const attr of ['title', 'placeholder']) {
+  for (const attr of ['title', 'placeholder', 'alt']) {
     const value = el.getAttribute(attr);
     if (!value) continue;
     const translated = translateExact(value);
@@ -1386,8 +2314,22 @@ function translateElementAttributes(el: Element): void {
 }
 
 function translateExact(text: string): string {
-  if (currentLocale === 'zh-CN') return EN_TO_ZH[text] ?? text;
-  return ZH_TO_EN[text] ?? text;
+  if (currentLocale === 'zh-CN') return applyBrandTokens(EN_TO_ZH[text] ?? text);
+  return applyBrandTokens(ZH_TO_EN[text] ?? text);
+}
+
+function applyBrandTokens(text: string): string {
+  return text
+    .split('{appName}')
+    .join(brand.appName)
+    .split('{shortName}')
+    .join(brand.shortName)
+    .split('{productName}')
+    .join(brand.productName)
+    .split('Open Pawz')
+    .join(brand.appName)
+    .split('OpenPawz')
+    .join(brand.appName);
 }
 
 function shouldSkip(el: Element): boolean {

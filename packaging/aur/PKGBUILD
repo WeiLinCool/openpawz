@@ -5,7 +5,7 @@
 pkgname=openpawz-bin
 pkgver=0.1.0
 pkgrel=1
-pkgdesc="Multi-agent AI desktop app — 10 providers, 11 channels, hybrid memory, 10 security layers"
+pkgdesc="本地优先的智能桌面工作台"
 arch=('x86_64')
 url="https://github.com/OpenPawz/openpawz"
 license=('MIT')
@@ -16,18 +16,18 @@ optdepends=(
 )
 provides=('openpawz')
 conflicts=('openpawz')
-source=("https://github.com/OpenPawz/openpawz/releases/download/v${pkgver}/openpawz_${pkgver}_amd64.AppImage")
+source=("taiji-${pkgver}_amd64.AppImage::https://github.com/OpenPawz/openpawz/releases/download/v${pkgver}/%E5%A4%AA%E6%9E%81%E5%8F%B0_${pkgver}_amd64.AppImage")
 sha256sums=('PLACEHOLDER_SHA256')
 options=('!strip')
 
 package() {
-  install -Dm755 "${srcdir}/openpawz_${pkgver}_amd64.AppImage" "${pkgdir}/opt/openpawz/openpawz"
+  install -Dm755 "${srcdir}/taiji-${pkgver}_amd64.AppImage" "${pkgdir}/opt/openpawz/openpawz"
 
   # Desktop entry
   install -Dm644 /dev/stdin "${pkgdir}/usr/share/applications/openpawz.desktop" <<EOF
 [Desktop Entry]
-Name=Open Pawz Desktop
-Comment=Multi-agent AI desktop app
+Name=太极台
+Comment=本地优先的智能桌面工作台
 Exec=/opt/openpawz/openpawz
 Icon=openpawz
 Terminal=false

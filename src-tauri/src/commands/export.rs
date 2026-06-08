@@ -12,6 +12,7 @@
 // or GDPR data-subject access requests.
 
 use crate::atoms::engram_types::MemoryScope;
+use crate::brand;
 use crate::commands::action_log::IntegrationActionLog;
 use crate::commands::guardrails::CredentialUsageLog;
 use crate::commands::state::EngineState;
@@ -322,7 +323,7 @@ pub fn engine_compliance_export(
         metadata: ExportMetadata {
             export_id: uuid::Uuid::new_v4().to_string(),
             generated_at: Utc::now().format("%Y-%m-%dT%H:%M:%SZ").to_string(),
-            generator: "OpenPawz Compliance Export".to_string(),
+            generator: format!("{} Compliance Export", brand::active_brand().product_name),
             version: "1.0.0".to_string(),
             scope: ExportScope {
                 agent_id,

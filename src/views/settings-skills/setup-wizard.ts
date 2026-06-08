@@ -6,6 +6,7 @@
 
 import { pawEngine, type EngineSkillStatus } from '../../engine';
 import { showToast } from '../../components/toast';
+import { brand } from '../../brand';
 
 // ── Category definitions ───────────────────────────────────────────────────
 
@@ -100,7 +101,7 @@ export function renderSetupWizard(): string {
     <div class="sw-dialog">
       <div class="sw-header">
         <span class="ms sw-logo">auto_awesome</span>
-        <h2>Welcome to OpenPawz</h2>
+        <h2>Welcome to ${brand.appName}</h2>
         <p>What do you want your agent to help with? Pick a few categories to get started. You can always change this later.</p>
       </div>
 

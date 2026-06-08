@@ -4,22 +4,22 @@ OpenPawz可以通过在`branding/<brand-id>/brand.json`下添加品牌定义，�
 
 ## 品牌定义
 
-使用`branding/openpawz/brand.json`作为模板：
+使用`branding/taiji/brand.json`作为默认模板：
 
 ```json
 
 {
-"id": "openpawz",
-"appName": "OpenPawz",
-"shortName": "Pawz",
-"productName": "Open Pawz Desktop",
-"windowTitle": "Open Pawz Desktop",
-"identifier": "com.openpawz.openpawz",
-"tagline": "您的AI指挥中心",
-"aboutLine": "Pawz比Claws更安全",
+"id": "taiji",
+"appName": "太极台",
+"shortName": "太极",
+"productName": "太极台",
+"windowTitle": "太极",
+"identifier": "com.openpawz.taiji-dragon",
+"tagline": "你的 AI 指挥中心",
+"aboutLine": "本地优先的智能桌面工作台",
 "repositoryUrl": "https://github.com/OpenPawz/openpawz",
-"logo": "../../images/pawz-logo-transparent.png",
-"favicon": "../../images/pawz-favicon.png",
+"logo": "./logo.png",
+"favicon": "./favicon.png",
 "iconsDir": "../../src-tauri/icons",
 "iconFiles": [
 "32x32.png",
@@ -45,7 +45,7 @@ OpenPawz可以通过在`branding/<brand-id>/brand.json`下添加品牌定义，�
 
 ## 构建命令
 
-默认OpenPawz构建：
+默认Taiji构建：
 
 ```bash
 npm run build
@@ -58,6 +58,8 @@ npm run tauri:build
 OPENPAWZ_BRAND=my-product npm run build
 OPENPAWZ_BRAND=my-product npm run tauri:build
 ```
+
+如果没有设置`OPENPAWZ_BRAND`，构建会默认使用`taiji`。
 
 对于直接Tauri命令，通过包装器传递品牌：
 

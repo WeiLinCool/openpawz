@@ -6,6 +6,7 @@
 
 use super::transport::McpTransportHandle;
 use super::types::*;
+use crate::brand;
 use log::{info, warn};
 use std::sync::atomic::{AtomicU64, Ordering};
 
@@ -91,7 +92,7 @@ impl McpClient {
             protocol_version: PROTOCOL_VERSION.into(),
             capabilities: McpClientCapabilities::default(),
             client_info: McpClientInfo {
-                name: "OpenPawz".into(),
+                name: brand::active_brand().product_name.into(),
                 version: env!("CARGO_PKG_VERSION").into(),
             },
         };

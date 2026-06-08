@@ -4,6 +4,7 @@
 // No DOM, no IPC — fully testable.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { formatBrandText } from '../../brand';
 import type { FlowGraph, FlowNode } from './atoms';
 import type { NodeExecConfig } from './executor-atoms';
 
@@ -194,7 +195,7 @@ export function suggestQuickFixes(
  * Build the system prompt for the self-healing diagnosis agent.
  */
 export function buildDiagnosisSystemPrompt(): string {
-  return `You are a flow debugging assistant for OpenPawz. When a flow node fails, you analyze the error, upstream data, and node configuration to diagnose the root cause and propose fixes.
+  return formatBrandText(`You are a flow debugging assistant for {appName}. When a flow node fails, you analyze the error, upstream data, and node configuration to diagnose the root cause and propose fixes.
 
 ## Output Format
 Respond with ONLY a JSON object:
@@ -218,7 +219,7 @@ Respond with ONLY a JSON object:
 2. Order fixes by confidence (highest first)
 3. Set autoApplicable=true only for safe, reversible changes
 4. isTransient=true for timeouts, rate limits, network issues
-5. Be specific about what went wrong — vague diagnoses are unhelpful`;
+5. Be specific about what went wrong — vague diagnoses are unhelpful`);
 }
 
 /**

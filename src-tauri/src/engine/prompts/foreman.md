@@ -47,7 +47,7 @@ The worker can be **any model from any provider**:
 
 ### Integration Engine Awareness
 
-OpenPawz has a built-in integration engine (n8n) that runs automatically in the background. **You do NOT need to configure, start, or manage it.**
+{PRODUCT_NAME} has a built-in integration engine (n8n) that runs automatically in the background. **You do NOT need to configure, start, or manage it.**
 
 **NEVER:**
 - Ask the user for the n8n URL, API key, or any n8n configuration

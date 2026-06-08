@@ -5,6 +5,7 @@ import { getAgents, loadAgents, setSelectedAgent } from '../agents';
 import { switchView } from '../router';
 import { $, escHtml, parseDate } from '../../components/helpers';
 import { showToast } from '../../components/toast';
+import { t } from '../../i18n';
 import {
   type Task,
   getWeatherIcon,
@@ -57,11 +58,11 @@ function skelLines(n = 3): string {
 function _timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
   const min = Math.floor(diff / 60_000);
-  if (min < 1) return 'just now';
-  if (min < 60) return `${min}m ago`;
+  if (min < 1) return t('just now');
+  if (min < 60) return `${min}${t('m ago')}`;
   const hr = Math.floor(min / 60);
-  if (hr < 24) return `${hr}h ago`;
-  return `${Math.floor(hr / 24)}d ago`;
+  if (hr < 24) return `${hr}${t('h ago')}`;
+  return `${Math.floor(hr / 24)}${t('d ago')}`;
 }
 
 // ── Hero logo + Engram brain instances ─────────────────────────────────
@@ -125,17 +126,17 @@ function showLocationEditor(weatherEl: HTMLElement, currentLocation: string) {
   const inp = document.createElement('input');
   inp.type = 'text';
   inp.value = currentLocation;
-  inp.placeholder = 'Enter city (e.g. New York, London, Tokyo)';
+  inp.placeholder = t('Enter city (e.g. New York, London, Tokyo)');
   inp.className = 'form-input';
   inp.style.cssText =
     'font-size:12px;padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text);width:200px;outline:none';
   const saveBtn = document.createElement('button');
   saveBtn.className = 'btn btn-sm';
-  saveBtn.textContent = 'Save';
+  saveBtn.textContent = t('Save');
   saveBtn.style.cssText = 'font-size:11px;padding:2px 10px';
   const cancelBtn = document.createElement('button');
   cancelBtn.className = 'btn btn-ghost btn-sm';
-  cancelBtn.textContent = 'Cancel';
+  cancelBtn.textContent = t('Cancel');
   cancelBtn.style.cssText = 'font-size:11px;padding:2px 8px';
   editor.appendChild(inp);
   editor.appendChild(saveBtn);
@@ -204,34 +205,34 @@ export async function fetchWeather() {
 
     // WMO weather code to human-readable description
     const wmoDesc: Record<number, string> = {
-      0: 'Clear sky',
-      1: 'Mainly clear',
-      2: 'Partly cloudy',
-      3: 'Overcast',
-      45: 'Fog',
-      48: 'Depositing rime fog',
-      51: 'Light drizzle',
-      53: 'Moderate drizzle',
-      55: 'Dense drizzle',
-      56: 'Freezing drizzle',
-      57: 'Dense freezing drizzle',
-      61: 'Slight rain',
-      63: 'Moderate rain',
-      65: 'Heavy rain',
-      66: 'Light freezing rain',
-      67: 'Heavy freezing rain',
-      71: 'Slight snow',
-      73: 'Moderate snow',
-      75: 'Heavy snow',
-      77: 'Snow grains',
-      80: 'Slight rain showers',
-      81: 'Moderate rain showers',
-      82: 'Violent rain showers',
-      85: 'Slight snow showers',
-      86: 'Heavy snow showers',
-      95: 'Thunderstorm',
-      96: 'Thunderstorm with slight hail',
-      99: 'Thunderstorm with heavy hail',
+      0: t('Clear sky'),
+      1: t('Mainly clear'),
+      2: t('Partly cloudy'),
+      3: t('Overcast'),
+      45: t('Fog'),
+      48: t('Depositing rime fog'),
+      51: t('Light drizzle'),
+      53: t('Moderate drizzle'),
+      55: t('Dense drizzle'),
+      56: t('Freezing drizzle'),
+      57: t('Dense freezing drizzle'),
+      61: t('Slight rain'),
+      63: t('Moderate rain'),
+      65: t('Heavy rain'),
+      66: t('Light freezing rain'),
+      67: t('Heavy freezing rain'),
+      71: t('Slight snow'),
+      73: t('Moderate snow'),
+      75: t('Heavy snow'),
+      77: t('Snow grains'),
+      80: t('Slight rain showers'),
+      81: t('Moderate rain showers'),
+      82: t('Violent rain showers'),
+      85: t('Slight snow showers'),
+      86: t('Heavy snow showers'),
+      95: t('Thunderstorm'),
+      96: t('Thunderstorm with slight hail'),
+      99: t('Thunderstorm with heavy hail'),
     };
     const desc = wmoDesc[current.weather_code] ?? '';
 
@@ -245,11 +246,11 @@ export async function fetchWeather() {
       </div>
       <div class="today-weather-desc">${desc}</div>
       <div class="today-weather-details">
-        ${feelsLikeC != null ? `<span>Feels like ${feelsLikeC}°C</span>` : ''}
+        ${feelsLikeC != null ? `<span>${t('Feels like')} ${feelsLikeC}°C</span>` : ''}
         ${humidity != null ? `<span><span class="ms ms-sm">water_drop</span> ${humidity}%</span>` : ''}
         ${windKmph != null ? `<span><span class="ms ms-sm">air</span> ${windKmph} km/h</span>` : ''}
       </div>
-      ${location ? `<div class="today-weather-location" id="weather-location-text" style="cursor:pointer;display:inline-flex;align-items:center;gap:4px" title="Click to change location"><span class="ms" style="font-size:14px">edit_location_alt</span> ${escHtml(location)}</div>` : ''}
+      ${location ? `<div class="today-weather-location" id="weather-location-text" style="cursor:pointer;display:inline-flex;align-items:center;gap:4px" title="${t('Click to set your location')}"><span class="ms" style="font-size:14px">edit_location_alt</span> ${escHtml(location)}</div>` : ''}
     `;
 
     // Wire location click → inline editor
@@ -267,7 +268,7 @@ export async function fetchWeather() {
         <span class="today-weather-temp">--</span>
       </div>
       <div class="today-weather-desc" style="cursor:pointer" id="weather-set-location">
-        Click to set your location
+        ${t('Click to set your location')}
       </div>
     `;
     // Wire "set location" click
@@ -288,7 +289,7 @@ export async function fetchUnreadEmails() {
 
   const invoke = getInvoke();
   if (!invoke) {
-    emailsEl.innerHTML = `<div class="today-section-empty">Email requires the desktop app</div>`;
+    emailsEl.innerHTML = `<div class="today-section-empty">${t('Email requires the desktop app')}</div>`;
     return;
   }
 
@@ -379,7 +380,7 @@ export async function fetchUnreadEmails() {
 
     // ── No email sources configured ───────────────────────────────
     if (unreadItems.length === 0 && himalayaAccounts.length === 0 && !hasGmail) {
-      emailsEl.innerHTML = `<div class="today-section-empty">Set up email in the <a href="#" class="today-link-mail">Mail</a> view to see messages here</div>`;
+      emailsEl.innerHTML = `<div class="today-section-empty">${t('Set up email in the Mail view to see messages here')}</div>`;
       emailsEl.querySelector('.today-link-mail')?.addEventListener('click', (e) => {
         e.preventDefault();
         const mailNav = document.querySelector('[data-view="mail"]') as HTMLElement;
@@ -389,7 +390,7 @@ export async function fetchUnreadEmails() {
     }
 
     if (unreadItems.length === 0) {
-      emailsEl.innerHTML = `<div class="today-section-empty"><span class="ms ms-sm">mark_email_read</span> No unread emails — you're all caught up!</div>`;
+      emailsEl.innerHTML = `<div class="today-section-empty"><span class="ms ms-sm">mark_email_read</span> ${t('No unread emails — you\'re all caught up!')}</div>`;
       return;
     }
 
@@ -413,11 +414,11 @@ export async function fetchUnreadEmails() {
       .join('');
 
     if (unreadItems.length > 8) {
-      emailsEl.innerHTML += `<div class="today-email-more">+${unreadItems.length - 8} more unread</div>`;
+      emailsEl.innerHTML += `<div class="today-email-more">+${unreadItems.length - 8} ${t('more unread')}</div>`;
     }
   } catch (e) {
     console.warn('[today] Email fetch failed:', e);
-    emailsEl.innerHTML = `<div class="today-section-empty">Could not load emails — check Mail settings</div>`;
+    emailsEl.innerHTML = `<div class="today-section-empty">${t('Could not load emails — check Mail settings')}</div>`;
   }
 }
 
@@ -438,7 +439,7 @@ export async function fetchCalendarEvents() {
 
   const invoke = getInvoke();
   if (!invoke) {
-    calEl.innerHTML = `<div class="today-section-empty">Calendar requires the desktop app</div>`;
+    calEl.innerHTML = `<div class="today-section-empty">${t('Calendar requires the desktop app')}</div>`;
     return;
   }
 
@@ -457,13 +458,13 @@ export async function fetchCalendarEvents() {
       if (calCountEl) calCountEl.textContent = '0';
 
       if (!connected.includes('google-calendar') && !connected.includes('google-workspace')) {
-        calEl.innerHTML = `<div class="today-section-empty">Connect a calendar integration via <a href="#" class="today-link-integrations">Integrations</a> to see events here</div>`;
+        calEl.innerHTML = `<div class="today-section-empty">${t('Connect a calendar integration via Integrations to see events here')}</div>`;
         calEl.querySelector('.today-link-integrations')?.addEventListener('click', (e) => {
           e.preventDefault();
           switchView('integrations');
         });
       } else {
-        calEl.innerHTML = `<div class="today-section-empty"><span class="ms ms-sm">event_available</span> No events today</div>`;
+        calEl.innerHTML = `<div class="today-section-empty"><span class="ms ms-sm">event_available</span> ${t('No events today')}</div>`;
       }
       return;
     }
@@ -472,7 +473,7 @@ export async function fetchCalendarEvents() {
       .map((ev) => {
         let timeStr = '';
         if (ev.allDay) {
-          timeStr = 'All day';
+          timeStr = t('All day');
         } else if (ev.start) {
           try {
             const d = new Date(ev.start);
@@ -499,7 +500,7 @@ export async function fetchCalendarEvents() {
     if (calCountEl) calCountEl.textContent = String(events.length);
   } catch (e) {
     console.warn('[today] Calendar fetch failed:', e);
-    calEl.innerHTML = `<div class="today-section-empty">Could not load calendar</div>`;
+    calEl.innerHTML = `<div class="today-section-empty">${t('Could not load calendar')}</div>`;
   }
 }
 
@@ -552,7 +553,7 @@ export async function fetchActiveSkills() {
     if (countEl) countEl.textContent = String(_activeSkills.length);
 
     if (_activeSkills.length === 0) {
-      container.innerHTML = `<div class="today-section-empty">No skills enabled — add some in Settings → Skills</div>`;
+      container.innerHTML = `<div class="today-section-empty">${t('No skills enabled — add some in Settings → Skills')}</div>`;
       return;
     }
 
@@ -570,7 +571,7 @@ export async function fetchActiveSkills() {
           })
           .join('')}
       </div>
-      ${remaining > 0 ? `<div class="cmd-skills-more">+ ${remaining} more</div>` : ''}
+      ${remaining > 0 ? `<div class="cmd-skills-more">+ ${remaining} ${t('more')}</div>` : ''}
       ${
         buildCapabilityGroups(_activeSkills).length > 0
           ? `<div class="cmd-skills-cats">${buildCapabilityGroups(_activeSkills)
@@ -584,7 +585,7 @@ export async function fetchActiveSkills() {
   } catch (e) {
     console.warn('[today] Skills list fetch failed:', e);
     if (container)
-      container.innerHTML = `<div class="today-section-empty">Could not load skills</div>`;
+      container.innerHTML = `<div class="today-section-empty">${t('Could not load skills')}</div>`;
   }
 }
 
@@ -627,7 +628,7 @@ export async function fetchFleetStatus(retries = 3) {
       }
     }
     if (agents.length === 0) {
-      container.innerHTML = `<div class="today-section-empty">No agents configured — <a href="#" data-view="agents" style="color:var(--accent)">create one</a></div>`;
+      container.innerHTML = `<div class="today-section-empty">${t('No agents configured — create one')}</div>`;
       container.querySelector('[data-view="agents"]')?.addEventListener('click', (e) => {
         e.preventDefault();
         switchView('agents');
@@ -639,7 +640,7 @@ export async function fetchFleetStatus(retries = 3) {
       .map((a) => {
         const status = agentStatus(a.lastUsed);
         const kStatus: KineticStatus = status === 'active' ? 'healthy' : 'idle';
-        return `<div class="cmd-fleet-item k-row k-breathe k-materialise k-status-${kStatus}" data-agent-id="${escHtml(a.id)}" title="Open chat with ${escHtml(a.name)}">
+        return `<div class="cmd-fleet-item k-row k-breathe k-materialise k-status-${kStatus}" data-agent-id="${escHtml(a.id)}" title="${t('Open chat with')} ${escHtml(a.name)}">
           ${kineticDot()}
           <span class="cmd-fleet-name">${escHtml(a.name)}</span>
           <span class="cmd-fleet-status">[${status}]</span>
@@ -661,7 +662,7 @@ export async function fetchFleetStatus(retries = 3) {
     if (fleetStagger) kineticStagger(fleetStagger as HTMLElement, '.cmd-fleet-item');
   } catch (e) {
     console.warn('[today] Fleet status failed:', e);
-    container.innerHTML = `<div class="today-section-empty">Could not load agents — try refreshing</div>`;
+    container.innerHTML = `<div class="today-section-empty">${t('Could not load agents — try refreshing')}</div>`;
   }
 }
 
@@ -669,11 +670,11 @@ export async function fetchFleetStatus(retries = 3) {
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - parseDate(dateStr).getTime();
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
+  if (mins < 1) return t('just now');
+  if (mins < 60) return `${mins}${t('m ago')}`;
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  return `${Math.floor(hours / 24)}d ago`;
+  if (hours < 24) return `${hours}${t('h ago')}`;
+  return `${Math.floor(hours / 24)}${t('d ago')}`;
 }
 
 /** Fetch Engram memory stats and render the ENGRAM card stats column. */
@@ -690,18 +691,18 @@ export async function fetchEngramStats() {
     if (statsCol) {
       const topCats = stats.categories.slice(0, 8);
       const embBadge = stats.has_embeddings
-        ? `<div class="engram-embed-badge"><span class="ms ms-xs">hub</span> vector search active</div>`
+        ? `<div class="engram-embed-badge"><span class="ms ms-xs">hub</span> ${t('vector search active')}</div>`
         : '';
       statsCol.innerHTML = `
         <div>
           <div class="engram-stat-total">${stats.total_memories.toLocaleString()}</div>
-          <div class="engram-stat-label">memories stored</div>
+          <div class="engram-stat-label">${t('memories stored')}</div>
           ${embBadge}
         </div>
         <div class="engram-categories">
           ${topCats.map(([cat, count]) => `<span class="engram-cat-chip">${escHtml(cat)}<span class="engram-cat-count">${count}</span></span>`).join('')}
         </div>
-        <div class="engram-hint">Ctrl+M · click brain to store</div>
+        <div class="engram-hint">${t('Ctrl+M · click brain to store')}</div>
       `;
     }
   } catch (e) {
@@ -710,8 +711,8 @@ export async function fetchEngramStats() {
     if (statsCol) {
       statsCol.innerHTML = `
         <div class="engram-stat-total">—</div>
-        <div class="engram-stat-label">memory engine offline</div>
-        <div class="engram-hint">Configure in Settings → Memory</div>
+        <div class="engram-stat-label">${t('memory engine offline')}</div>
+        <div class="engram-hint">${t('Configure in Settings → Memory')}</div>
       `;
     }
   }
@@ -734,7 +735,7 @@ async function _generateRecall() {
   _recallUnsub = null;
 
   btn.disabled = true;
-  btn.textContent = '⟳ Generating…';
+  btn.textContent = `⟳ ${t('Generating…')}`;
   out.innerHTML = '<span class="recall-cursor"></span>';
 
   try {
@@ -781,9 +782,9 @@ async function _generateRecall() {
 
     if (lines.length <= 2) {
       out.innerHTML =
-        '<div class="recall-empty">No activity found yet — start a chat or save some memories!</div>';
+        `<div class="recall-empty">${t('No activity found yet — start a chat or save some memories!')}</div>`;
       btn.disabled = false;
-      btn.textContent = '↺ Recap';
+      btn.textContent = `↺ ${t('Recap')}`;
       return;
     }
 
@@ -822,7 +823,7 @@ async function _generateRecall() {
         localStorage.setItem('paw-recall-ts', new Date().toISOString());
       }
       btn.disabled = false;
-      btn.textContent = '↺ Recap';
+      btn.textContent = `↺ ${t('Recap')}`;
     });
 
     const unError = pawEngine.on('error', (ev: EngineEvent) => {
@@ -830,9 +831,9 @@ async function _generateRecall() {
       cleanup();
       out.innerHTML = accumulated
         ? escHtml(accumulated)
-        : '<div class="recall-empty">Could not generate recap — check your AI provider.</div>';
+        : `<div class="recall-empty">${t('Could not generate recap — check your AI provider.')}</div>`;
       btn.disabled = false;
-      btn.textContent = '↺ Recap';
+      btn.textContent = `↺ ${t('Recap')}`;
     });
 
     // Bundle all three so a subsequent click cancels them atomically
@@ -855,9 +856,9 @@ async function _generateRecall() {
     _recallUnsub?.();
     _recallUnsub = null;
     out.innerHTML =
-      '<div class="recall-empty">Could not generate recap — check your AI provider.</div>';
+      `<div class="recall-empty">${t('Could not generate recap — check your AI provider.')}</div>`;
     btn.disabled = false;
-    btn.textContent = '↺ Recap';
+    btn.textContent = `↺ ${t('Recap')}`;
   }
 }
 
@@ -872,7 +873,7 @@ export async function fetchRecentSessions() {
 
     if (sessions.length === 0) {
       if (countEl) countEl.textContent = '0';
-      container.innerHTML = `<div class="today-section-empty">No sessions yet — start a chat to begin</div>`;
+      container.innerHTML = `<div class="today-section-empty">${t('No sessions yet — start a chat to begin')}</div>`;
       return;
     }
 
@@ -885,13 +886,13 @@ export async function fetchRecentSessions() {
         const agentName = s.agent_id
           ? (agents.find((a) => a.id === s.agent_id)?.name ?? null)
           : null;
-        const label = s.label || 'Untitled Session';
+        const label = s.label || t('Untitled Session');
         const rawModel = s.model ?? '';
         const modelShort = rawModel.includes('/') ? rawModel.split('/').pop()! : rawModel;
         const meta = [
           agentName,
           modelShort,
-          `${s.message_count} msg${s.message_count !== 1 ? 's' : ''}`,
+          `${s.message_count} ${t('msgs')}`,
         ]
           .filter(Boolean)
           .join(' · ');
@@ -918,7 +919,7 @@ export async function fetchRecentSessions() {
     });
   } catch (e) {
     console.warn('[today] Recent sessions failed:', e);
-    container.innerHTML = `<div class="today-section-empty">Could not load sessions</div>`;
+    container.innerHTML = `<div class="today-section-empty">${t('Could not load sessions')}</div>`;
   }
 }
 
@@ -933,31 +934,31 @@ function showQuickMemoryModal() {
 
   const overlay = document.createElement('div');
   overlay.className = 'qmem-overlay';
-  overlay.innerHTML = `
-    <div class="qmem-modal" role="dialog" aria-label="Store Memory">
+overlay.innerHTML = `
+    <div class="qmem-modal" role="dialog" aria-label="${t('Store a Memory in Engram')}">
       <div class="qmem-header">
         <span class="ms ms-sm">psychology</span>
-        <span class="qmem-title">Store a Memory in Engram</span>
-        <button class="qmem-close" aria-label="Close">×</button>
+        <span class="qmem-title">${t('Store a Memory in Engram')}</span>
+        <button class="qmem-close" aria-label="${t('Close')}">×</button>
       </div>
       <div class="qmem-body">
         <textarea class="qmem-textarea" id="qmem-content"
-          placeholder="What do you want Engram to remember? (Ctrl+Enter to save)"></textarea>
+          placeholder="${t('What do you want Engram to remember? (Ctrl+Enter to save)')}"></textarea>
         <div class="qmem-row">
           <select class="qmem-select" id="qmem-category">
             ${allCats.map((c) => `<option value="${escHtml(c)}">${escHtml(c)}</option>`).join('')}
           </select>
           <div class="qmem-importance">
-            <span>importance</span>
+            <span>${t('importance')}</span>
             <input type="range" id="qmem-importance" min="1" max="10" value="5">
             <span id="qmem-importance-val">5</span>
           </div>
         </div>
       </div>
       <div class="qmem-footer">
-        <span class="qmem-hint">Ctrl+Enter to store</span>
-        <button class="btn btn-ghost" id="qmem-cancel">Cancel</button>
-        <button class="btn btn-primary" id="qmem-submit">Store Memory</button>
+        <span class="qmem-hint">${t('Ctrl+Enter to store')}</span>
+        <button class="btn btn-ghost" id="qmem-cancel">${t('Cancel')}</button>
+        <button class="btn btn-primary" id="qmem-submit">${t('Store Memory')}</button>
       </div>
     </div>
   `;
@@ -987,17 +988,17 @@ function showQuickMemoryModal() {
       return;
     }
     submitBtn.disabled = true;
-    submitBtn.textContent = 'Storing…';
+    submitBtn.textContent = t('Storing…');
     try {
       await pawEngine.memoryStore(content, categoryEl.value, parseInt(importanceEl.value));
-      showToast('Memory stored in Engram', 'success');
+      showToast(t('Memory stored in Engram'), 'success');
       close();
       fetchEngramStats().catch(() => {});
     } catch (e) {
       console.error('[today] memoryStore failed:', e);
-      showToast('Failed to store memory', 'error');
+      showToast(t('Failed to store memory'), 'error');
       submitBtn.disabled = false;
-      submitBtn.textContent = 'Store Memory';
+      submitBtn.textContent = t('Store Memory');
     }
   };
 
@@ -1106,29 +1107,29 @@ export async function fetchTelemetry() {
 
         <!-- Col 1: Today stats -->
         <div class="telem-col telem-col-stats">
-          <div class="telem-col-label">TODAY</div>
+          <div class="telem-col-label">${t('TODAY')}</div>
           <div class="telem-stat">
             <span class="telem-stat-val" id="telem-turns">—</span>
-            <span class="telem-stat-lbl">turns</span>
+            <span class="telem-stat-lbl">${t('turns')}</span>
           </div>
           <div class="telem-stat">
             <span class="telem-stat-val" id="telem-tools">—</span>
-            <span class="telem-stat-lbl">tool calls</span>
+            <span class="telem-stat-lbl">${t('tool calls')}</span>
           </div>
           <div class="telem-stat">
             <span class="telem-stat-val" id="telem-tokens">—</span>
-            <span class="telem-stat-lbl">tokens</span>
+            <span class="telem-stat-lbl">${t('tokens')}</span>
           </div>
           <div class="telem-stat">
             <span class="telem-stat-val" id="telem-latency">—</span>
-            <span class="telem-stat-lbl">avg latency</span>
+            <span class="telem-stat-lbl">${t('avg latency')}</span>
           </div>
         </div>
 
         <!-- Col 2: Sparklines -->
         <div class="telem-col telem-col-charts">
           <div class="telem-chart-row">
-            <span class="telem-chart-label">cost / day</span>
+            <span class="telem-chart-label">${t('cost / day')}</span>
             <div class="telem-chart-wrap">
               ${sparkline(costData, 'var(--accent,#d4654a)', 260, 36)}
             </div>
@@ -1136,11 +1137,11 @@ export async function fetchTelemetry() {
           </div>
           <div class="telem-chart-ticks">
             <span>${escHtml(tickFirst)}</span>
-            <span>14d</span>
+            <span>${t('14d')}</span>
             <span>${escHtml(tickLast)}</span>
           </div>
           <div class="telem-chart-row" style="margin-top:8px">
-            <span class="telem-chart-label">tokens / day</span>
+            <span class="telem-chart-label">${t('tokens / day')}</span>
             <div class="telem-chart-wrap">
               ${sparkline(tokenData, 'var(--kinetic-sage,#8fb0a0)', 260, 36)}
             </div>
@@ -1150,8 +1151,8 @@ export async function fetchTelemetry() {
 
         <!-- Col 3: Model breakdown -->
         <div class="telem-col telem-col-models">
-          <div class="telem-col-label">MODELS TODAY</div>
-          ${modelBars || `<div class="today-section-empty" style="text-align:left">No model usage today</div>`}
+          <div class="telem-col-label">${t('MODELS TODAY')}</div>
+          ${modelBars || `<div class="today-section-empty" style="text-align:left">${t('No model usage today')}</div>`}
         </div>
 
       </div>
@@ -1186,7 +1187,7 @@ export async function fetchTelemetry() {
     }
   } catch (e) {
     console.warn('[today] Telemetry fetch failed:', e);
-    container.innerHTML = `<div class="today-section-empty">No telemetry data yet — start a chat to generate metrics</div>`;
+    container.innerHTML = `<div class="today-section-empty">${t('No telemetry data yet — start a chat to generate metrics')}</div>`;
   }
 }
 
@@ -1223,13 +1224,13 @@ export function renderToday() {
     <div class="today-header bento-row">
       <div class="today-greeting-cell">
         <div class="today-profile-row">
-          <button class="today-avatar" id="today-avatar" title="Upload profile picture">
+          <button class="today-avatar" id="today-avatar" title="${t('Upload profile picture')}">
             ${avatarInner}
             <span class="today-avatar-overlay"><span class="ms ms-xs">photo_camera</span></span>
           </button>
           <div class="today-profile-text">
-            <div class="today-label">MISSION CONTROL</div>
-            <div class="today-greeting">${greeting}${userName ? `, <span class="today-user-name" id="today-user-name" title="Click to edit">${escHtml(userName)}</span>` : '<button class="today-set-name-btn" id="today-set-name">Set your name</button>'}</div>
+            <div class="today-label">${t('MISSION CONTROL')}</div>
+            <div class="today-greeting">${greeting}${userName ? `, <span class="today-user-name" id="today-user-name" title="${t('Click to edit name')}">${escHtml(userName)}</span>` : `<button class="today-set-name-btn" id="today-set-name">${t('Set your name')}</button>`}</div>
             <div class="today-date">${dateStr}</div>
             <div class="today-pawz-msg">${escHtml(getPawzMessage(pendingTasks.length, completedToday.length))}</div>
           </div>
@@ -1238,11 +1239,11 @@ export function renderToday() {
       <div class="today-tesseract-cell" id="today-tesseract"></div>
       <div class="today-header-right">
         <div class="today-usage-strip">
-          <span class="today-usage-item"><span class="today-usage-val" id="cmd-cost">${formatCost(cost)}</span> <span class="today-usage-lbl">cost</span></span>
+          <span class="today-usage-item"><span class="today-usage-val" id="cmd-cost">${formatCost(cost)}</span> <span class="today-usage-lbl">${t('cost')}</span></span>
           <span class="today-usage-sep">·</span>
-          <span class="today-usage-item"><span class="today-usage-val" id="cmd-input-tokens">${formatTokens(appState.sessionInputTokens)}</span> <span class="today-usage-lbl">in</span></span>
+          <span class="today-usage-item"><span class="today-usage-val" id="cmd-input-tokens">${formatTokens(appState.sessionInputTokens)}</span> <span class="today-usage-lbl">${t('in')}</span></span>
           <span class="today-usage-sep">·</span>
-          <span class="today-usage-item"><span class="today-usage-val" id="cmd-output-tokens">${formatTokens(appState.sessionOutputTokens)}</span> <span class="today-usage-lbl">out</span></span>
+          <span class="today-usage-item"><span class="today-usage-val" id="cmd-output-tokens">${formatTokens(appState.sessionOutputTokens)}</span> <span class="today-usage-lbl">${t('out')}</span></span>
         </div>
         <div class="today-weather-cell" id="today-weather">
           <span class="today-loading">…</span>
@@ -1254,34 +1255,34 @@ export function renderToday() {
       <!-- Row 1: Tasks + Calendar (your day) -->
       <div class="cmd-card bento-cell bento-span-6">
         <div class="today-card-header">
-          <span class="today-card-title">TASKS</span>
+          <span class="today-card-title">${t('TASKS')}</span>
           <span class="today-card-count">${pendingTasks.length}</span>
-          <button class="btn btn-ghost btn-sm today-add-task-btn">+ Add</button>
+          <button class="btn btn-ghost btn-sm today-add-task-btn">+ ${t('Add')}</button>
         </div>
         <div class="today-card-body">
           <div class="today-tasks" id="today-tasks">
             ${
               pendingTasks.length === 0
-                ? `<div class="today-section-empty">No tasks yet. Add one to get started!</div>`
+                ? `<div class="today-section-empty">${t('No tasks yet. Add one to get started!')}</div>`
                 : pendingTasks
                     .map(
                       (task) => `
                 <div class="today-task" data-id="${task.id}">
                   <input type="checkbox" class="today-task-check" ${task.done ? 'checked' : ''}>
                   <span class="today-task-text">${escHtml(task.text)}</span>
-                  <button class="today-task-delete" title="Delete">×</button>
+                  <button class="today-task-delete" title="${t('Delete')}">×</button>
                 </div>`,
                     )
                     .join('')
             }
           </div>
-          ${completedToday.length > 0 ? `<div class="today-completed-label">${completedToday.length} completed today</div>` : ''}
+          ${completedToday.length > 0 ? `<div class="today-completed-label">${completedToday.length} ${t('completed today')}</div>` : ''}
         </div>
       </div>
 
       <div class="cmd-card bento-cell bento-span-6">
         <div class="today-card-header">
-          <span class="today-card-title">CALENDAR</span>
+          <span class="today-card-title">${t('CALENDAR')}</span>
           <span class="today-card-count" id="today-calendar-count">…</span>
         </div>
         <div class="today-card-body" id="today-calendar">
@@ -1292,8 +1293,8 @@ export function renderToday() {
       <!-- Row 2: Recall + Recent Sessions -->
       <div class="cmd-card bento-cell bento-span-6 recall-card" id="recall-card">
         <div class="today-card-header">
-          <span class="today-card-title">RECALL</span>
-          <button class="btn btn-ghost btn-sm" id="recall-btn">↺ Recap</button>
+          <span class="today-card-title">${t('RECALL')}</span>
+          <button class="btn btn-ghost btn-sm" id="recall-btn">↺ ${t('Recap')}</button>
         </div>
         <div class="today-card-body recall-body" id="recall-body">
           <div class="recall-output" id="recall-output"></div>
@@ -1302,7 +1303,7 @@ export function renderToday() {
 
       <div class="cmd-card bento-cell bento-span-6">
         <div class="today-card-header">
-          <span class="today-card-title">RECENT SESSIONS</span>
+          <span class="today-card-title">${t('RECENT SESSIONS')}</span>
           <span class="today-card-count" id="today-sessions-count">…</span>
         </div>
         <div class="today-card-body" id="today-sessions">
@@ -1313,9 +1314,9 @@ export function renderToday() {
       <!-- Row 3: Engram + Quick Actions -->
       <div class="cmd-card bento-cell bento-span-8 engram-card" id="engram-card">
         <div class="today-card-header">
-          <span class="today-card-title">ENGRAM</span>
+          <span class="today-card-title">${t('ENGRAM')}</span>
           <span class="today-card-count" id="engram-memory-count">…</span>
-          <button class="btn btn-ghost btn-sm" id="engram-store-btn">+ Memory</button>
+          <button class="btn btn-ghost btn-sm" id="engram-store-btn">+ ${t('Memory')}</button>
         </div>
         <div class="engram-card-body">
           <div class="engram-brain-wrap" id="engram-brain-wrap"></div>
@@ -1327,20 +1328,20 @@ export function renderToday() {
 
       <div class="cmd-card bento-cell bento-span-4">
         <div class="today-card-header">
-          <span class="today-card-title">QUICK ACTIONS</span>
+          <span class="today-card-title">${t('QUICK ACTIONS')}</span>
         </div>
         <div class="today-card-body">
           <button class="today-quick-action" id="today-new-chat-btn">
-            ▸ New Chat
+            ${t('▸ New Chat')}
           </button>
           <button class="today-quick-action" id="today-research-btn">
-            ▸ Research
+            ${t('▸ Research')}
           </button>
           <button class="today-quick-action" id="today-orchestrate-btn">
-            ▸ Orchestration
+            ${t('▸ Orchestration')}
           </button>
           <button class="today-quick-action" id="today-memory-vault-btn">
-            ▸ Memory Vault
+            ${t('▸ Memory Vault')}
           </button>
         </div>
       </div>
@@ -1348,7 +1349,7 @@ export function renderToday() {
       <!-- Row 4: Fleet + Skills + Activity -->
       <div class="cmd-card bento-cell bento-span-4">
         <div class="today-card-header">
-          <span class="today-card-title">AGENT FLEET</span>
+          <span class="today-card-title">${t('AGENT FLEET')}</span>
         </div>
         <div class="today-card-body" id="cmd-fleet-body">
           ${skelLines(3)}
@@ -1357,7 +1358,7 @@ export function renderToday() {
 
       <div class="cmd-card bento-cell bento-span-4">
         <div class="today-card-header">
-          <span class="today-card-title">SKILLS</span>
+          <span class="today-card-title">${t('SKILLS')}</span>
           <span class="today-card-count" id="cmd-skills-count">…</span>
         </div>
         <div class="today-card-body" id="cmd-skills-body">
@@ -1367,7 +1368,7 @@ export function renderToday() {
 
       <div class="cmd-card bento-cell bento-span-4">
         <div class="today-card-header">
-          <span class="today-card-title">ACTIVITY</span>
+          <span class="today-card-title">${t('ACTIVITY')}</span>
         </div>
         <div class="today-card-body" id="today-activity">
           ${skelLines(3)}
@@ -1377,7 +1378,7 @@ export function renderToday() {
       <!-- Integrations (full width) -->
       <div class="cmd-card bento-cell bento-span-full">
         <div class="today-card-header">
-          <span class="today-card-title">INTEGRATIONS</span>
+          <span class="today-card-title">${t('INTEGRATIONS')}</span>
           <span class="today-card-count" id="cmd-integrations-count">…</span>
         </div>
         <div class="today-card-body" id="cmd-integrations-body">
@@ -1388,8 +1389,8 @@ export function renderToday() {
       <!-- Row 5: Telemetry (full width) -->
       <div class="cmd-card bento-cell bento-span-full">
         <div class="today-card-header">
-          <span class="today-card-title">TELEMETRY</span>
-          <span class="today-card-count" id="cmd-telemetry-label" style="margin-left:auto;font-size:10px;opacity:0.5">14-day</span>
+          <span class="today-card-title">${t('TELEMETRY')}</span>
+          <span class="today-card-count" id="cmd-telemetry-label" style="margin-left:auto;font-size:10px;opacity:0.5">${t('14d')}</span>
         </div>
         <div class="today-card-body" style="max-height:none" id="cmd-telemetry-body">
           ${skelLines(2)}
@@ -1423,10 +1424,10 @@ export function renderToday() {
     const storedTs = localStorage.getItem('paw-recall-ts');
     if (storedText) {
       const ago = storedTs ? _timeAgo(storedTs) : '';
-      recallOut.innerHTML = `${escHtml(storedText)}${ago ? `<div class="recall-ts">Last recap ${ago}</div>` : ''}`;
+      recallOut.innerHTML = `${escHtml(storedText)}${ago ? `<div class="recall-ts">${t('Last recap')} ${ago}</div>` : ''}`;
     } else {
       recallOut.innerHTML =
-        '<div class="recall-empty">Hit ↺ Recap to see what you\'ve been up to</div>';
+        `<div class="recall-empty">${t('Hit ↺ Recap to see what you\'ve been up to')}</div>`;
     }
   }
 
@@ -1443,7 +1444,7 @@ function showNameEditor(anchor: HTMLElement) {
   const input = document.createElement('input');
   input.type = 'text';
   input.value = current;
-  input.placeholder = 'Your name';
+  input.placeholder = t('Your name');
   input.className = 'today-name-input';
   input.maxLength = 40;
   wrapper.appendChild(input);
@@ -1452,7 +1453,7 @@ function showNameEditor(anchor: HTMLElement) {
     const name = input.value.trim();
     if (name) {
       localStorage.setItem('paw-user-name', name);
-      showToast(`Welcome, ${name}!`, 'success');
+      showToast(`${t('Welcome')}, ${name}!`, 'success');
     } else {
       localStorage.removeItem('paw-user-name');
     }
@@ -1534,17 +1535,17 @@ function bindEvents() {
       input.remove();
       if (!file) return;
       if (file.size > 5 * 1024 * 1024) {
-        showToast('Image must be under 5 MB', 'error');
+        showToast(t('Image must be under 5 MB'), 'error');
         return;
       }
       try {
         const dataUrl = await resizeAvatarImage(file);
         localStorage.setItem('paw-user-avatar', dataUrl);
-        showToast('Profile picture updated', 'success');
+        showToast(t('Profile picture updated'), 'success');
         _state.getRenderToday()();
       } catch (e) {
         console.error('[today] Avatar upload failed:', e);
-        showToast('Failed to save profile picture', 'error');
+        showToast(t('Failed to save profile picture'), 'error');
       }
     });
     input.click();
@@ -1609,15 +1610,15 @@ function openAddTaskModal() {
   modal.innerHTML = `
     <div class="today-modal-dialog">
       <div class="today-modal-header">
-        <span>Add Task</span>
+        <span>${t('Add Task')}</span>
         <button class="btn-icon today-modal-close">×</button>
       </div>
       <div class="today-modal-body">
-        <input type="text" class="form-input" id="task-input" placeholder="What needs to be done?" autofocus>
+        <input type="text" class="form-input" id="task-input" placeholder="${t('What needs to be done?')}" autofocus>
       </div>
       <div class="today-modal-footer">
-        <button class="btn btn-ghost today-modal-cancel">Cancel</button>
-        <button class="btn btn-primary" id="task-submit">Add Task</button>
+        <button class="btn btn-ghost today-modal-cancel">${t('Cancel')}</button>
+        <button class="btn btn-primary" id="task-submit">${t('Add Task')}</button>
       </div>
     </div>
   `;
@@ -1662,10 +1663,10 @@ async function addTask(text: string) {
       updated_at: new Date().toISOString(),
     });
     await reloadTodayTasks();
-    showToast('Task added');
+    showToast(t('Task added'));
   } catch (e) {
     console.error('[today] addTask failed:', e);
-    showToast('Failed to add task', 'error');
+    showToast(t('Failed to add task'), 'error');
   }
 }
 
@@ -1679,7 +1680,7 @@ async function toggleTask(taskId: string) {
     await reloadTodayTasks();
   } catch (e) {
     console.error('[today] toggleTask failed:', e);
-    showToast('Failed to update task', 'error');
+    showToast(t('Failed to update task'), 'error');
   }
 }
 
@@ -1689,7 +1690,7 @@ async function deleteTask(taskId: string) {
     await reloadTodayTasks();
   } catch (e) {
     console.error('[today] deleteTask failed:', e);
-    showToast('Failed to delete task', 'error');
+    showToast(t('Failed to delete task'), 'error');
   }
 }
 
@@ -1711,14 +1712,14 @@ export async function reloadTodayTasks(inPlace = false) {
 
       tasksContainer.innerHTML =
         pendingTasks.length === 0
-          ? `<div class="today-section-empty">No tasks yet. Add one to get started!</div>`
+          ? `<div class="today-section-empty">${t('No tasks yet. Add one to get started!')}</div>`
           : pendingTasks
               .map(
                 (task) => `
             <div class="today-task" data-id="${task.id}">
               <input type="checkbox" class="today-task-check" ${task.done ? 'checked' : ''}>
               <span class="today-task-text">${escHtml(task.text)}</span>
-              <button class="today-task-delete" title="Delete">×</button>
+              <button class="today-task-delete" title="${t('Delete')}">×</button>
             </div>`,
               )
               .join('');
@@ -1734,7 +1735,7 @@ export async function reloadTodayTasks(inPlace = false) {
       if (completedToday.length > 0 && parent) {
         parent.insertAdjacentHTML(
           'beforeend',
-          `<div class="today-completed-label">${completedToday.length} completed today</div>`,
+          `<div class="today-completed-label">${completedToday.length} ${t('completed today')}</div>`,
         );
       }
 
@@ -1809,7 +1810,7 @@ export async function loadIntegrationsDashboard() {
       body.innerHTML = `
         <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary)">
           <span class="ms ms-sm">hub</span>
-          <span>No services connected · <a href="#" class="integ-browse" style="color:var(--accent);text-decoration:none">Browse integrations</a></span>
+          <span>${t('No services connected')} · <a href="#" class="integ-browse" style="color:var(--accent);text-decoration:none">${t('Browse integrations')}</a></span>
         </div>`;
       body.querySelector('.integ-browse')?.addEventListener('click', (e) => {
         e.preventDefault();
@@ -1825,7 +1826,7 @@ export async function loadIntegrationsDashboard() {
     body.innerHTML = `
       <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary)">
         <span class="ms ms-sm">hub</span>
-        <span>25,000+ integrations available · <a href="#" class="integ-browse" style="color:var(--accent);text-decoration:none">Browse all</a></span>
+        <span>${t('25,000+ integrations available')} · <a href="#" class="integ-browse" style="color:var(--accent);text-decoration:none">${t('Browse all')}</a></span>
       </div>`;
     body.querySelector('.integ-browse')?.addEventListener('click', (e) => {
       e.preventDefault();

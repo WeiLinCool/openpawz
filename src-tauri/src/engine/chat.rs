@@ -16,6 +16,7 @@ use crate::engine::tool_index;
 use crate::engine::tools;
 use crate::engine::types::*;
 use crate::engine::util::safe_truncate;
+use crate::brand;
 use log::{info, warn};
 
 // ── Tool builder ───────────────────────────────────────────────────────────────
@@ -208,7 +209,7 @@ pub fn build_runtime_context(
         ## Environment\n\
         OS: {} ({}) | Shell: {}\n\
         Host: {} | User: {} | Home: {}\n\
-        OpenPawz: v{}",
+        {}: v{}",
         agent_display_name,
         agent_id,
         model,
@@ -222,6 +223,7 @@ pub fn build_runtime_context(
         hostname,
         username,
         home_dir,
+        brand::active_brand().product_name,
         app_version,
     )
 }
@@ -242,7 +244,11 @@ pub fn build_platform_awareness() -> String {
     // Template loaded from prompts/platform.md at compile time.
     // Contains a {DOMAINS} placeholder for the dynamic skill listing.
     const TEMPLATE: &str = include_str!("prompts/platform.md");
-    TEMPLATE.replace("{DOMAINS}", &domains.join("\n"))
+    TEMPLATE
+        .replace("{PRODUCT_NAME}", brand::active_brand().product_name)
+        .replace("{APP_NAME}", brand::active_brand().app_name)
+        .replace("{SHORT_NAME}", brand::active_brand().short_name)
+        .replace("{DOMAINS}", &domains.join("\n"))
 }
 
 // ── Code-generation discipline ─────────────────────────────────────────────────
@@ -263,7 +269,11 @@ pub fn build_coding_guidelines() -> &'static str {
 ///
 /// Loaded from `prompts/foreman.md` at compile time.
 pub fn build_foreman_awareness() -> &'static str {
-    include_str!("prompts/foreman.md")
+    Box::leak(
+        include_str!("prompts/foreman.md")
+            .replace("{PRODUCT_NAME}", brand::active_brand().product_name)
+            .into_boxed_str(),
+    )
 }
 
 /// Build the Action DAG (execute_plan) awareness block.

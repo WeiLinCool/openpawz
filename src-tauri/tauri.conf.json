@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Open Pawz Desktop",
+  "productName": "太极台",
   "version": "0.1.0",
-  "identifier": "com.openpawz.openpawz",
+  "identifier": "com.openpawz.taiji-dragon",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
@@ -13,7 +13,7 @@
     "withGlobalTauri": false,
     "windows": [
       {
-        "title": "Open Pawz Desktop",
+        "title": "太极",
         "width": 800,
         "height": 600,
         "resizable": true,

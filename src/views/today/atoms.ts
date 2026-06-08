@@ -7,6 +7,7 @@ import type {
   EngineSkillStatus,
 } from '../../engine/atoms/types';
 import { parseDate } from '../../components/helpers';
+import { t } from '../../i18n';
 
 export interface Task {
   id: string;
@@ -80,33 +81,33 @@ export function getWeatherIcon(code: string): string {
 
 export function getGreeting(): string {
   const hour = new Date().getHours();
-  if (hour < 12) return 'Good morning';
-  if (hour < 17) return 'Good afternoon';
-  return 'Good evening';
+  if (hour < 12) return t('Good morning');
+  if (hour < 17) return t('Good afternoon');
+  return t('Good evening');
 }
 
 export function getPawzMessage(pendingTasks: number, completedToday: number): string {
   const hour = new Date().getHours();
-  const day = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+  const day = new Date().toLocaleDateString('zh-CN', { weekday: 'long' });
 
   let message = '';
 
   if (hour < 12) {
-    message = `Happy ${day}! Ready to make today count? `;
+    message = `${t('Happy')}${day}！${t('Ready to make today count?')} `;
   } else if (hour < 17) {
-    message = `Hope your ${day} is going well. `;
+    message = `${t('Hope your')}${day}${t('is going well.')} `;
   } else {
-    message = `Winding down this ${day}. `;
+    message = `${t('Winding down this')}${day}。 `;
   }
 
   if (completedToday > 0 && pendingTasks === 0) {
-    message += `You crushed it — ${completedToday} task${completedToday > 1 ? 's' : ''} done and nothing pending!`;
+    message += `${t('You crushed it —')}${completedToday}${t('task')}${completedToday > 1 ? t('s') : ''}${t('done and nothing pending!')}`;
   } else if (completedToday > 0) {
-    message += `Nice progress! ${completedToday} down, ${pendingTasks} to go.`;
+    message += `${t('Nice progress!')}${completedToday}${t('down,')}${pendingTasks}${t('to go.')}`;
   } else if (pendingTasks > 0) {
-    message += `You've got ${pendingTasks} task${pendingTasks > 1 ? 's' : ''} lined up. Let's knock them out.`;
+    message += `${t('You\'ve got')}${pendingTasks}${t('task')}${pendingTasks > 1 ? t('s') : ''}${t('lined up. Let\'s knock them out.')}`;
   } else {
-    message += `No tasks on the board yet. Add something or hit Morning Briefing to get started.`;
+    message += t('No tasks on the board yet. Add something or hit Morning Briefing to get started.');
   }
 
   return message;
@@ -147,12 +148,12 @@ export function activityIcon(kind: string): string {
 export function relativeTime(isoStr: string): string {
   const diff = Date.now() - parseDate(isoStr).getTime();
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
+  if (mins < 1) return t('just now');
+  if (mins < 60) return `${mins}${t('m ago')}`;
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24) return `${hours}${t('h ago')}`;
   const days = Math.floor(hours / 24);
-  return `${days}d ago`;
+  return `${days}${t('d ago')}`;
 }
 
 /** Truncate content to maxLen characters, adding ellipsis. */
@@ -193,16 +194,16 @@ export interface CapabilityGroup {
 }
 
 const CATEGORY_META: Record<string, { icon: string; label: string }> = {
-  communication: { icon: 'mail', label: 'Communication' },
-  web: { icon: 'language', label: 'Web & Research' },
-  development: { icon: 'code', label: 'Development' },
-  trading: { icon: 'candlestick_chart', label: 'Trading' },
-  productivity: { icon: 'task_alt', label: 'Productivity' },
-  media: { icon: 'image', label: 'Media & Content' },
-  system: { icon: 'settings', label: 'System' },
-  storage: { icon: 'cloud', label: 'Storage' },
-  search: { icon: 'search', label: 'Search' },
-  automation: { icon: 'smart_toy', label: 'Automation' },
+  communication: { icon: 'mail', label: t('Communication') },
+  web: { icon: 'language', label: t('Web & Research') },
+  development: { icon: 'code', label: t('Development') },
+  trading: { icon: 'candlestick_chart', label: t('Trading') },
+  productivity: { icon: 'task_alt', label: t('Productivity') },
+  media: { icon: 'image', label: t('Media & Content') },
+  system: { icon: 'settings', label: t('System') },
+  storage: { icon: 'cloud', label: t('Storage') },
+  search: { icon: 'search', label: t('Search') },
+  automation: { icon: 'smart_toy', label: t('Automation') },
 };
 
 /** Group enabled skills into human-readable capability categories. */
@@ -242,35 +243,32 @@ export interface TourStep {
 export const TOUR_STEPS: TourStep[] = [
   {
     target: '[data-view="chat"]',
-    title: 'Chat with AI',
-    description:
-      'Talk to your agents, ask questions, and get tasks done through natural conversation.',
+    title: t('Chat with AI'),
+    description: t('Talk to your agents, ask questions, and get tasks done through natural conversation.'),
     position: 'right',
   },
   {
     target: '[data-view="agents"]',
-    title: 'Your Agent Fleet',
-    description:
-      'Create AI agents with unique personas, specialized tools, and custom instructions.',
+    title: t('Your Agent Fleet'),
+    description: t('Create AI agents with unique personas, specialized tools, and custom instructions.'),
     position: 'right',
   },
   {
     target: '[data-view="settings-skills"]',
-    title: 'Skills & Integrations',
-    description:
-      'Enable capabilities like email, web browsing, coding, trading, and hundreds more.',
+    title: t('Skills & Integrations'),
+    description: t('Enable capabilities like email, web browsing, coding, trading, and hundreds more.'),
     position: 'right',
   },
   {
     target: '[data-view="tasks"]',
-    title: 'Task Board',
-    description: 'Organize work on a kanban board. Assign tasks to agents and track progress.',
+    title: t('Task Board'),
+    description: t('Organize work on a kanban board. Assign tasks to agents and track progress.'),
     position: 'right',
   },
   {
     target: '[data-view="settings"]',
-    title: 'Settings',
-    description: 'Configure AI providers, models, security policies, and customize your workspace.',
+    title: t('Settings'),
+    description: t('Configure AI providers, models, security policies, and customize your workspace.'),
     position: 'right',
   },
 ];
