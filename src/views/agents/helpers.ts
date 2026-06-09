@@ -1,8 +1,10 @@
 // helpers.ts — Internal helpers for the agents module (IPC, no DOM)
 // seedSoulFiles + refreshAvailableModels
 
-import { pawEngine } from '../../engine';
+import { pawEngine, type EnterpriseStatus } from '../../engine';
 import { type Agent } from './atoms';
+
+export type AvailableModelOption = { id: string; name: string };
 
 /**
  * Seed initial soul files for a new agent so it knows who it is from the first conversation.
@@ -73,11 +75,63 @@ export async function seedSoulFiles(agent: Agent): Promise<void> {
   }
 }
 
-/** Fetch configured models from the engine and populate the model picker. */
-export async function refreshAvailableModels(): Promise<{ id: string; name: string }[]> {
+function isEnterpriseModelAccessManaged(status: EnterpriseStatus | null): boolean {
+  return Boolean(
+    status?.enterprise_build_mode &&
+      status.authenticated &&
+      !status.can_manage_model_providers,
+  );
+}
+
+/** Fetch models exposed by the enterprise OAuth gateway. */
+async function refreshEnterpriseModels(status: EnterpriseStatus): Promise<AvailableModelOption[]> {
+  const models: AvailableModelOption[] = [
+    {
+      id: 'default',
+      name: status.default_model
+        ? `Default (${status.default_model})`
+        : 'Default (Enterprise account setting)',
+    },
+  ];
+  const seen = new Set<string>(['default']);
+
+  const addModel = (id: string, name?: string) => {
+    if (!id || seen.has(id)) return;
+    seen.add(id);
+    models.push({ id, name: name || id });
+  };
+
+  if (status.default_model) {
+    addModel(status.default_model, `${status.default_model} (default)`);
+  }
+
   try {
+    const gatewayModels = await pawEngine.listProviderModels('enterprise-cloud');
+    for (const model of gatewayModels) {
+      addModel(model.raw_id, model.display_name || model.raw_id);
+    }
+  } catch (e) {
+    console.warn('[agents] Could not load enterprise gateway models:', e);
+  }
+
+  return models;
+}
+
+/** Fetch configured models from the engine and populate the model picker. */
+export async function refreshAvailableModels(): Promise<AvailableModelOption[]> {
+  try {
+    let enterpriseStatus: EnterpriseStatus | null = null;
+    try {
+      enterpriseStatus = await pawEngine.enterpriseStatus();
+    } catch {
+      enterpriseStatus = null;
+    }
+    if (enterpriseStatus && isEnterpriseModelAccessManaged(enterpriseStatus)) {
+      return refreshEnterpriseModels(enterpriseStatus);
+    }
+
     const config = await pawEngine.getConfig();
-    const models: { id: string; name: string }[] = [
+    const models: AvailableModelOption[] = [
       { id: 'default', name: 'Default (Use account setting)' },
     ];
     // Add each provider's default model, plus well-known models per provider kind

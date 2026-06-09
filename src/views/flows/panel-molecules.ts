@@ -16,6 +16,25 @@ import {
 } from './molecule-state';
 import { renderGraph } from './canvas-molecules';
 import { buildConfigFieldsHtml } from './panel-config-fields';
+import { refreshAvailableModels } from '../agents/helpers';
+
+async function populateFlowPanelModelDatalist(container: HTMLElement): Promise<void> {
+  const datalist = container.querySelector<HTMLDataListElement>('#flow-panel-model-datalist');
+  if (!datalist) return;
+  try {
+    const models = await refreshAvailableModels();
+    datalist.innerHTML = '';
+    for (const model of models) {
+      if (model.id === 'default') continue;
+      const opt = document.createElement('option');
+      opt.value = model.id;
+      opt.label = model.name;
+      datalist.appendChild(opt);
+    }
+  } catch (e) {
+    console.warn('[flows] Could not load model options:', e);
+  }
+}
 
 // ── Node Properties Panel ──────────────────────────────────────────────────
 
@@ -218,6 +237,8 @@ export function renderNodePanel(
       ${debugHtml}
     </div>
   `;
+
+  populateFlowPanelModelDatalist(container).catch(() => {});
 
   // Bind direct node fields
   container.querySelectorAll('[data-field]').forEach((el) => {

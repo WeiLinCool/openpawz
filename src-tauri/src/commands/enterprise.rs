@@ -131,7 +131,7 @@ impl Default for EnterpriseConfig {
             user_points: None,
             entitlements: Vec::new(),
             expires_at: None,
-            default_model: Some("gpt-4o-mini".to_string()),
+            default_model: None,
         }
     }
 }
@@ -210,8 +210,7 @@ pub fn enterprise_build_config() -> Option<EnterpriseConfig> {
         default_model: build_env(
             "OPENPAWZ_ENTERPRISE_DEFAULT_MODEL",
             ENTERPRISE_BUILD_DEFAULT_MODEL,
-        )
-        .or_else(|| Some("gpt-4o-mini".to_string())),
+        ),
         ..EnterpriseConfig::default()
     })
 }
@@ -421,12 +420,46 @@ pub fn enterprise_configured_provider(config: &EnterpriseConfig) -> Option<Provi
         kind: ProviderKind::Custom,
         api_key: config.access_token.clone(),
         base_url: Some(config.gateway_url.trim_end_matches('/').to_string()),
-        default_model: config
-            .default_model
-            .clone()
-            .filter(|m| !m.trim().is_empty())
-            .or_else(|| Some("gpt-4o-mini".to_string())),
+        default_model: config.default_model.clone().filter(|m| !m.trim().is_empty()),
     })
+}
+
+async fn list_enterprise_model_ids(gateway_url: &str, access_token: &str) -> Option<Vec<String>> {
+    let base = gateway_url.trim_end_matches('/');
+    if base.is_empty() || access_token.trim().is_empty() {
+        return None;
+    }
+
+    let response = reqwest::Client::new()
+        .get(format!("{}/models", base))
+        .bearer_auth(access_token)
+        .header("Accept", "application/json")
+        .send()
+        .await
+        .ok()?;
+
+    if !response.status().is_success() {
+        return None;
+    }
+
+    let body = response.json::<Value>().await.ok()?;
+    let ids = body
+        .get("data")?
+        .as_array()?
+        .iter()
+        .filter_map(|item| item.get("id").and_then(Value::as_str))
+        .map(str::trim)
+        .filter(|id| !id.is_empty())
+        .map(ToOwned::to_owned)
+        .collect::<Vec<_>>();
+    Some(ids)
+}
+
+async fn discover_enterprise_default_model(gateway_url: &str, access_token: &str) -> Option<String> {
+    list_enterprise_model_ids(gateway_url, access_token)
+        .await?
+        .into_iter()
+        .next()
 }
 
 pub fn enterprise_session_expired(config: &EnterpriseConfig) -> bool {
@@ -819,6 +852,52 @@ fn upsert_enterprise_provider(config: &mut EngineConfig, provider: ProviderConfi
     }
 }
 
+async fn refresh_enterprise_default_model_if_needed(
+    state: &EngineState,
+    mut config: EnterpriseConfig,
+) -> EnterpriseConfig {
+    if !config.enabled
+        || config.gateway_url.trim().is_empty()
+        || config.access_token.trim().is_empty()
+        || enterprise_session_expired(&config)
+    {
+        return config;
+    }
+
+    let Some(models) = list_enterprise_model_ids(&config.gateway_url, &config.access_token).await
+    else {
+        return config;
+    };
+    let Some(first_model) = models.first().cloned() else {
+        return config;
+    };
+
+    let current_model = config
+        .default_model
+        .as_deref()
+        .map(str::trim)
+        .filter(|m| !m.is_empty());
+    if current_model.is_some_and(|model| models.iter().any(|available| available == model)) {
+        return config;
+    }
+
+    config.default_model = Some(first_model);
+    let _ = save_enterprise_config(state, &config);
+
+    if let Some(provider) = enterprise_configured_provider(&config) {
+        let mut engine_cfg = state.config.lock();
+        let was_default = engine_cfg.default_provider.as_deref() == Some(ENTERPRISE_PROVIDER_ID);
+        upsert_enterprise_provider(&mut engine_cfg, provider);
+        if was_default || engine_cfg.default_provider.is_none() {
+            engine_cfg.default_provider = Some(ENTERPRISE_PROVIDER_ID.to_string());
+            engine_cfg.default_model = config.default_model.clone();
+        }
+        let _ = persist_engine_config(state, &engine_cfg);
+    }
+
+    config
+}
+
 fn persist_engine_config(state: &EngineState, config: &EngineConfig) -> Result<(), String> {
     let json = serde_json::to_string(config).map_err(|e| format!("Serialize error: {e}"))?;
     state
@@ -832,15 +911,26 @@ pub async fn engine_enterprise_status(
     state: State<'_, EngineState>,
 ) -> Result<EnterpriseStatus, String> {
     let config = refresh_enterprise_userinfo(&state, load_enterprise_config(&state)).await;
+    let config = refresh_enterprise_default_model_if_needed(&state, config).await;
     Ok(status_from_config(config))
 }
 
 #[tauri::command]
-pub fn engine_enterprise_configure(
+pub async fn engine_enterprise_configure(
     state: State<'_, EngineState>,
     request: EnterpriseConfigureRequest,
 ) -> Result<EnterpriseStatus, String> {
     let previous = load_enterprise_config(&state);
+    let gateway_url = request.gateway_url.trim_end_matches('/').to_string();
+    let default_model = if let Some(model) = request
+        .default_model
+        .clone()
+        .filter(|m| !m.trim().is_empty())
+    {
+        Some(model)
+    } else {
+        discover_enterprise_default_model(&gateway_url, &request.access_token).await
+    };
     let mut config = EnterpriseConfig {
         enabled: true,
         issuer_url: request.issuer_url.unwrap_or_default(),
@@ -857,7 +947,7 @@ pub fn engine_enterprise_configure(
         } else {
             request.scopes
         },
-        gateway_url: request.gateway_url.trim_end_matches('/').to_string(),
+        gateway_url,
         access_token: request.access_token,
         refresh_token: request.refresh_token,
         data_token: request.data_token,
@@ -869,10 +959,7 @@ pub fn engine_enterprise_configure(
         user_points: request.user_points,
         entitlements: request.entitlements,
         expires_at: request.expires_at,
-        default_model: request
-            .default_model
-            .filter(|m| !m.trim().is_empty())
-            .or_else(|| Some("gpt-4o-mini".to_string())),
+        default_model,
     };
     apply_data_token_rotation(&previous, &mut config);
 
@@ -983,6 +1070,16 @@ pub async fn engine_enterprise_oauth_start(
     );
 
     let previous = load_enterprise_config(&state);
+    let gateway_url = gateway_url.trim_end_matches('/').to_string();
+    let default_model = if let Some(model) = request
+        .default_model
+        .clone()
+        .filter(|m| !m.trim().is_empty())
+    {
+        Some(model)
+    } else {
+        discover_enterprise_default_model(&gateway_url, &token.access_token).await
+    };
     let mut config = EnterpriseConfig {
         enabled: true,
         issuer_url: request.issuer_url.trim_end_matches('/').to_string(),
@@ -992,7 +1089,7 @@ pub async fn engine_enterprise_oauth_start(
         entitlements_url,
         client_id,
         scopes,
-        gateway_url: gateway_url.trim_end_matches('/').to_string(),
+        gateway_url,
         access_token: token.access_token,
         refresh_token: token.refresh_token,
         data_token,
@@ -1012,10 +1109,7 @@ pub async fn engine_enterprise_oauth_start(
             .and_then(|v| number_field(v, &["points", "credits", "balance"])),
         entitlements,
         expires_at,
-        default_model: request
-            .default_model
-            .filter(|m| !m.trim().is_empty())
-            .or_else(|| Some("gpt-4o-mini".to_string())),
+        default_model,
     };
     apply_data_token_rotation(&previous, &mut config);
 

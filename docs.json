@@ -137,19 +137,19 @@
           {
             "group": "Channels",
             "pages": [
-              "channels/overview",
-              "channels/telegram",
-              "channels/discord",
-              "channels/slack",
-              "channels/matrix",
-              "channels/irc",
-              "channels/mattermost",
-              "channels/nextcloud",
-              "channels/nostr",
-              "channels/twitch",
-              "channels/webchat",
-              "channels/whatsapp",
-              "channels/discourse"
+              "docs/guides/channels/overview",
+              "docs/guides/channels/telegram",
+              "docs/guides/channels/discord",
+              "docs/guides/channels/slack",
+              "docs/guides/channels/matrix",
+              "docs/guides/channels/irc",
+              "docs/guides/channels/mattermost",
+              "docs/guides/channels/nextcloud",
+              "docs/guides/channels/nostr",
+              "docs/guides/channels/twitch",
+              "docs/guides/channels/webchat",
+              "docs/guides/channels/whatsapp",
+              "docs/guides/channels/discourse"
             ]
           }
         ]

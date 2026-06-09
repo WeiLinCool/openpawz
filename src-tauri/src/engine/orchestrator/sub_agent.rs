@@ -25,6 +25,10 @@ pub(crate) fn resolve_provider_for_model(
     model: &str,
 ) -> Option<ProviderConfig> {
     let model = crate::engine::state::normalize_model_name(model);
+    if let Some(provider) = cfg.providers.iter().find(|p| p.id == "enterprise-cloud") {
+        return Some(provider.clone());
+    }
+
     let provider = if model.starts_with("claude") || model.starts_with("anthropic") {
         cfg.providers
             .iter()

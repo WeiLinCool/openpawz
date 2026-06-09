@@ -17,6 +17,7 @@ This file is the minimal entry point for agents working in this repository. Keep
 - Former `/start` content is now under `docs/start/`.
 - Former `/providers` content is now under `docs/providers/`.
 - Former `/guides` content is now under `docs/guides/`.
+- Former `/channels` content is now under `docs/guides/channels/`.
 - Former `/reference` content is now under `docs/reference/`.
 - Former root `.AGENT_EXECUTION_ROADMAP.md` content is now `docs/reference/agent-execution-roadmap-internal.md`.
 - The public execution architecture reference is `docs/reference/agent-execution-roadmap.mdx`.
@@ -29,6 +30,7 @@ This file is the minimal entry point for agents working in this repository. Keep
 
 - Product onboarding: `docs/start/` and `docs/start/zh/`.
 - Product and feature guides: `docs/guides/` and `docs/guides/zh/`.
+- Channel bridge guides: `docs/guides/channels/` and `docs/guides/channels/zh/`.
 - Provider setup guides: `docs/providers/`.
 - Architecture, quality, security, and protocols: `docs/reference/` and `docs/reference/zh/`.
 - Full architecture and security docs: `docs/reference/architecture-full.md`, `docs/reference/security-full.md`, and their `zh/` counterparts.

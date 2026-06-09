@@ -9,7 +9,6 @@ import { installErrorBoundary, setErrorHandler } from './error-boundary';
 import { appState, applyModelPricingOverrides } from './state/index';
 import {
   escHtml,
-  populateModelSelect,
   promptModal,
   icon,
   cleanupTransientModals,
@@ -72,6 +71,7 @@ import * as FoundryModule from './views/foundry';
 import * as NodesModule from './views/nodes';
 import * as ProjectsModule from './views/projects';
 import * as AgentsModule from './views/agents';
+import { refreshAvailableModels } from './views/agents/helpers';
 import * as TasksModule from './views/tasks';
 import * as OrchestratorModule from './views/orchestrator';
 import { initCommandPalette } from './components/command-palette';
@@ -226,17 +226,23 @@ async function refreshModelLabel() {
   const chatModelSelect = $('chat-model-select') as HTMLSelectElement | null;
   if (!chatModelSelect) return;
   try {
-    const cfg = await pawEngine.getConfig();
-    const defaultModel = cfg.default_model || '';
-    const providers = cfg.providers ?? [];
     const currentVal = chatModelSelect.value;
-    populateModelSelect(chatModelSelect, providers, {
-      defaultLabel: translateUiText('Default Model'),
-      currentValue: currentVal && currentVal !== 'default' ? currentVal : 'default',
-      showDefaultModel: defaultModel || undefined,
-      hideOllama: true,
-      hideProviderLabels: true,
-    });
+    const models = await refreshAvailableModels();
+    chatModelSelect.innerHTML = '';
+    for (const model of models) {
+      const opt = document.createElement('option');
+      opt.value = model.id;
+      opt.textContent = model.id === 'default' ? translateUiText(model.name) : model.name;
+      if ((currentVal || 'default') === model.id) opt.selected = true;
+      chatModelSelect.appendChild(opt);
+    }
+    if (currentVal && currentVal !== 'default' && !models.some((m) => m.id === currentVal)) {
+      const opt = document.createElement('option');
+      opt.value = currentVal;
+      opt.textContent = currentVal;
+      opt.selected = true;
+      chatModelSelect.appendChild(opt);
+    }
   } catch {
     /* leave as-is */
   }

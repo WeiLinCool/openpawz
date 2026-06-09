@@ -229,7 +229,14 @@ pub fn resolve_provider_for_model(
         return Some(p.clone());
     }
 
-    // 2. Match by model name prefix → well-known provider kind
+    // 2. Enterprise builds route model billing through the OAuth-backed gateway.
+    // Prefer that provider before prefix heuristics so explicit agent/chat/flow
+    // model overrides do not fall back to personal API-key providers.
+    if let Some(p) = providers.iter().find(|p| p.id == "enterprise-cloud") {
+        return Some(p.clone());
+    }
+
+    // 3. Match by model name prefix → well-known provider kind
     if model.starts_with("claude") || model.starts_with("anthropic") {
         providers
             .iter()

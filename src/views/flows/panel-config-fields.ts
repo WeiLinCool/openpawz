@@ -111,7 +111,8 @@ export function buildConfigFieldsHtml(node: FlowNode): string {
       </label>
       <label class="flow-panel-field">
         <span>${translateUiText('Model')}</span>
-        <input type="text" class="flow-panel-input" data-config="model" value="${modelVal}" placeholder="${translateUiText('inherit from agent')}" />
+        <input type="text" class="flow-panel-input" data-config="model" value="${modelVal}" placeholder="${translateUiText('inherit from agent')}" list="flow-panel-model-datalist" />
+        <datalist id="flow-panel-model-datalist"></datalist>
       </label>
     `;
   }
