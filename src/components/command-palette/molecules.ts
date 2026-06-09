@@ -124,9 +124,10 @@ export function openPalette(
   agents: AgentInfo[],
   onSelect: (item: PaletteItem) => void,
   skills?: SkillInfo[],
+  hiddenViews?: string[],
 ) {
   const { overlay, input } = ensureDOM();
-  _allItems = buildPaletteItems(agents, skills);
+  _allItems = buildPaletteItems(agents, skills, hiddenViews);
   _filteredItems = _allItems;
   _selectedIndex = 0;
   _onSelect = onSelect;

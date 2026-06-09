@@ -8,6 +8,7 @@ import {
 } from '../../engine';
 import { $, escHtml, confirmModal } from '../../components/helpers';
 import { showToast } from '../../components/toast';
+import { t } from '../../i18n';
 import {
   POPULAR_REPOS,
   POPULAR_TAGS,
@@ -41,27 +42,26 @@ export function renderCommunitySection(installed: CommunitySkill[]): string {
       `<button class="btn btn-ghost btn-sm community-quick-browse" data-source="${escHtml(r.source)}" style="border-radius:20px;padding:4px 14px;font-size:12px;border:1px solid var(--accent);color:var(--accent)">${escHtml(r.label)}</button>`,
   ).join('');
 
-  return `
+return `
   <div class="community-skills-hero" style="background:linear-gradient(135deg, var(--bg-surface) 0%, color-mix(in srgb, var(--accent) 10%, var(--bg-surface)) 100%);border:1px solid var(--border-subtle);border-radius:12px;padding:24px 28px;margin-bottom:24px">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
       <span style="font-size:28px">${msIcon('public', 'ms-lg')}</span>
-      <h2 style="margin:0;font-size:20px;font-weight:700;letter-spacing:-0.02em">Community Skills</h2>
+      <h2 style="margin:0;font-size:20px;font-weight:700;letter-spacing:-0.02em">${t('Community Skills')}</h2>
       <a href="https://skills.sh" target="_blank" style="font-size:11px;color:var(--accent);text-decoration:none;padding:2px 8px;border:1px solid var(--accent);border-radius:12px;margin-left:4px">skills.sh</a>
     </div>
     <p style="color:var(--text-muted);font-size:13px;margin:0 0 16px;max-width:600px">
-      Search and install open-source agent skills that teach your agents new capabilities.
-      Skills work across all channels — WhatsApp, Telegram, Discord, and more.
+      ${t('Search and install open-source agent skills that teach your agents new capabilities. Skills work across all channels — WhatsApp, Telegram, Discord, and more.')}
     </p>
 
     <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px">
       <div style="flex:1;position:relative">
         <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none">${msIcon('search')}</span>
         <input type="text" class="form-input" id="community-skill-search"
-          placeholder="Search skills — try marketing, trading, supabase..."
+          placeholder="${t('Search skills — try marketing, trading, supabase...')}"
           style="width:100%;font-size:14px;padding:10px 12px 10px 36px;border-radius:10px" />
       </div>
       <button class="btn btn-primary" id="community-skill-search-btn" style="padding:10px 20px;border-radius:10px;font-size:14px">
-        Search
+        ${t('Search')}
       </button>
     </div>
 
@@ -70,14 +70,14 @@ export function renderCommunitySection(installed: CommunitySkill[]): string {
     </div>
 
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;padding-top:8px;border-top:1px solid var(--border-subtle)">
-      <span style="font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:4px">${msIcon('folder')} Browse repo:</span>
+      <span style="font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:4px">${msIcon('folder')} ${t('Browse repo:')}</span>
       ${repoButtons}
-      <span style="font-size:11px;color:var(--text-muted);display:flex;align-items:center;margin-left:4px">or type</span>
+      <span style="font-size:11px;color:var(--text-muted);display:flex;align-items:center;margin-left:4px">${t('or type')}</span>
       <input type="text" class="form-input" id="community-skill-source"
-        placeholder="owner/repo"
+        placeholder="${t('owner/repo')}"
         style="font-size:12px;padding:4px 10px;border-radius:8px;width:160px" />
       <button class="btn btn-ghost btn-sm" id="community-skill-browse" style="border-radius:8px;font-size:12px">
-        ${msIcon('search')} Browse
+        ${msIcon('search')} ${t('Browse')}
       </button>
     </div>
 
@@ -90,7 +90,7 @@ export function renderCommunitySection(installed: CommunitySkill[]): string {
       ? `
   <div class="skill-category-group" style="margin-bottom:24px">
     <h3 class="skill-category-title" style="display:flex;align-items:center;gap:8px">
-      ${msIcon('download')} Installed Community Skills
+      ${msIcon('download')} ${t('Installed Community Skills')}
       <span style="font-size:12px;font-weight:400;color:var(--text-muted)">(${installed.length})</span>
     </h3>
     ${installedCards}
@@ -107,7 +107,7 @@ function renderCommunityCard(s: CommunitySkill): string {
 
   const agentLabel =
     !s.agent_ids || s.agent_ids.length === 0
-      ? `${msIcon('groups')} All Agents`
+      ? `${msIcon('groups')} ${t('All Agents')}`
       : `${msIcon('person')} ${s.agent_ids.join(', ')}`;
 
   return `
@@ -118,16 +118,16 @@ function renderCommunityCard(s: CommunitySkill): string {
         <div>
           <strong class="skill-card-name">${escHtml(s.name)}</strong>
           <span class="skill-status ${s.enabled ? 'status-ready' : 'status-off'}">
-            ${msIcon(s.enabled ? 'check_circle' : 'radio_button_unchecked')} ${s.enabled ? 'Enabled' : 'Disabled'}
+            ${msIcon(s.enabled ? 'check_circle' : 'radio_button_unchecked')} ${s.enabled ? t('Enabled') : t('Disabled')}
           </span>
         </div>
       </div>
       <div class="skill-card-actions">
         <label class="skill-toggle-label">
           <input type="checkbox" class="community-enabled-toggle" data-skill="${escHtml(s.id)}" ${s.enabled ? 'checked' : ''} />
-          Enable
+          ${t('Enable')}
         </label>
-        <button class="btn btn-ghost btn-sm community-remove-btn" data-skill="${escHtml(s.id)}" title="Remove">Remove</button>
+        <button class="btn btn-ghost btn-sm community-remove-btn" data-skill="${escHtml(s.id)}" title="${t('Remove')}">${t('Remove')}</button>
       </div>
     </div>
     <p class="skill-card-desc">${escHtml(s.description)}</p>
@@ -139,11 +139,11 @@ function renderCommunityCard(s: CommunitySkill): string {
       </span>
     </div>
     <div style="font-size:12px;color:var(--text-muted);margin-top:4px">
-      Source: <code style="font-size:11px">${escHtml(s.source)}</code>
+      ${t('Source')}: <code style="font-size:11px">${escHtml(s.source)}</code>
     </div>
     <details style="margin-top:8px">
       <summary style="cursor:pointer;font-size:12px;color:var(--text-muted)">
-        ${msIcon('visibility')} Preview instructions
+        ${msIcon('visibility')} ${t('Preview instructions')}
       </summary>
       <pre style="font-size:11px;background:var(--bg-surface);border-radius:6px;padding:8px;margin:6px 0 0;max-height:200px;overflow:auto;white-space:pre-wrap">${escHtml(preview)}</pre>
     </details>
@@ -164,7 +164,7 @@ function renderDiscoveredCard(skill: DiscoveredSkill): string {
         <div>
           <strong class="skill-card-name">${escHtml(skill.name)}</strong>
           <span class="skill-status ${skill.installed ? 'status-ready' : 'status-off'}">
-            ${skill.installed ? `${msIcon('check_circle')} Installed` : `${msIcon('cloud_download')} Available`}
+            ${skill.installed ? `${msIcon('check_circle')} ${t('Installed')}` : `${msIcon('cloud_download')} ${t('Available')}`}
           </span>
         </div>
       </div>
@@ -172,17 +172,17 @@ function renderDiscoveredCard(skill: DiscoveredSkill): string {
         ${installsBadge}
         ${
           skill.installed
-            ? `<span style="font-size:12px;color:var(--text-muted)">Already installed</span>`
+            ? `<span style="font-size:12px;color:var(--text-muted)">${t('Already installed')}</span>`
             : `<button class="btn btn-primary btn-sm community-install-btn" data-source="${escHtml(skill.source)}" data-path="${escHtml(skill.path)}" data-name="${escHtml(skill.name)}">
-              ${msIcon('download')} Install
+              ${msIcon('download')} ${t('Install')}
             </button>`
         }
       </div>
     </div>
-    <p class="skill-card-desc">${escHtml(skill.description || 'No description')}</p>
+    <p class="skill-card-desc">${escHtml(skill.description || t('No description'))}</p>
     <div style="font-size:11px;color:var(--text-muted);margin-top:2px">
       <a href="https://skills.sh/${escHtml(skill.id)}" target="_blank" style="color:var(--accent);text-decoration:none">
-        ${msIcon('open_in_new')} View on skills.sh
+        ${msIcon('open_in_new')} ${t('View on skills.sh')}
       </a>
       <span style="margin-left:8px">${escHtml(skill.source)}</span>
     </div>
@@ -194,30 +194,29 @@ function renderDiscoveredCard(skill: DiscoveredSkill): string {
 export function renderPawzHubSection(): string {
   const categoryButtons = PAWZHUB_CATEGORIES.map(
     (c) =>
-      `<button class="btn btn-ghost btn-sm pawzhub-category-btn${c === 'all' ? ' btn-primary' : ''}" data-category="${escHtml(c)}" style="border-radius:20px;padding:4px 14px;font-size:12px;border:1px solid var(--border-subtle);text-transform:capitalize">${escHtml(c === 'all' ? 'All' : c)}</button>`,
+      `<button class="btn btn-ghost btn-sm pawzhub-category-btn${c === 'all' ? ' btn-primary' : ''}" data-category="${escHtml(c)}" style="border-radius:20px;padding:4px 14px;font-size:12px;border:1px solid var(--border-subtle);text-transform:capitalize">${escHtml(c === 'all' ? t('All') : c)}</button>`,
   ).join('');
 
   return `
   <div class="pawzhub-hero" style="background:linear-gradient(135deg, var(--bg-surface) 0%, color-mix(in srgb, var(--accent) 8%, var(--bg-surface)) 50%, color-mix(in srgb, #a855f7 6%, var(--bg-surface)) 100%);border:1px solid var(--border-subtle);border-radius:12px;padding:24px 28px;margin-bottom:24px">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
       <span style="font-size:28px">${msIcon('storefront', 'ms-lg')}</span>
-      <h2 style="margin:0;font-size:20px;font-weight:700;letter-spacing:-0.02em">PawzHub</h2>
-      <span style="font-size:11px;color:var(--accent);padding:2px 8px;border:1px solid var(--accent);border-radius:12px">Registry</span>
+      <h2 style="margin:0;font-size:20px;font-weight:700;letter-spacing:-0.02em">${t('PawzHub')}</h2>
+      <span style="font-size:11px;color:var(--accent);padding:2px 8px;border:1px solid var(--accent);border-radius:12px">${t('Registry')}</span>
     </div>
     <p style="color:var(--text-muted);font-size:13px;margin:0 0 16px;max-width:600px">
-      Discover and install verified skills, integrations and MCP servers from the PawzHub registry.
-      One-click install with automatic MCP server wiring.
+      ${t('Discover and install verified skills, integrations and MCP servers from the PawzHub registry. One-click install with automatic MCP server wiring.')}
     </p>
 
     <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px">
       <div style="flex:1;position:relative">
         <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none">${msIcon('search')}</span>
         <input type="text" class="form-input" id="pawzhub-search-input"
-          placeholder="Search PawzHub — try github, notion, slack..."
+          placeholder="${t('Search PawzHub — try github, notion, slack...')}"
           style="width:100%;font-size:14px;padding:10px 12px 10px 36px;border-radius:10px" />
       </div>
       <button class="btn btn-primary" id="pawzhub-search-btn" style="padding:10px 20px;border-radius:10px;font-size:14px">
-        Search
+        ${t('Search')}
       </button>
     </div>
 
@@ -231,13 +230,13 @@ export function renderPawzHubSection(): string {
 
 function renderPawzHubCard(entry: PawzHubEntry): string {
   const verifiedBadge = entry.verified
-    ? `<span class="pawzhub-verified-badge">${msIcon('verified')} Verified</span>`
+    ? `<span class="pawzhub-verified-badge">${msIcon('verified')} ${t('Verified')}</span>`
     : '';
   const mcpBadge = entry.has_mcp
     ? `<span class="pawzhub-feature-badge">${msIcon('dns')} MCP</span>`
     : '';
   const widgetBadge = entry.has_widget
-    ? `<span class="pawzhub-feature-badge">${msIcon('dashboard')} Widget</span>`
+    ? `<span class="pawzhub-feature-badge">${msIcon('dashboard')} ${t('Widget')}</span>`
     : '';
 
   return `
@@ -257,9 +256,9 @@ function renderPawzHubCard(entry: PawzHubEntry): string {
       <div class="skill-card-actions" style="display:flex;align-items:center;gap:10px">
         ${
           entry.installed
-            ? `<span style="font-size:12px;color:var(--accent);display:flex;align-items:center;gap:4px">${msIcon('check_circle')} Installed</span>`
+            ? `<span style="font-size:12px;color:var(--accent);display:flex;align-items:center;gap:4px">${msIcon('check_circle')} ${t('Installed')}</span>`
             : `<button class="btn btn-primary btn-sm pawzhub-install-btn" data-skill-id="${escHtml(entry.id)}" data-source-repo="${escHtml(entry.source_repo)}" data-name="${escHtml(entry.name)}">
-              ${msIcon('download')} Install
+              ${msIcon('download')} ${t('Install')}
             </button>`
         }
       </div>
@@ -271,7 +270,7 @@ function renderPawzHubCard(entry: PawzHubEntry): string {
       ${mcpBadge}
       ${widgetBadge}
       <a href="https://github.com/${escHtml(entry.source_repo)}" target="_blank" style="color:var(--accent);text-decoration:none;font-size:11px">
-        ${msIcon('open_in_new')} Source
+        ${msIcon('open_in_new')} ${t('Source')}
       </a>
     </div>
   </div>`;
@@ -285,19 +284,19 @@ async function pawzhubSearch(query: string): Promise<void> {
 
   results.style.display = 'block';
   results.innerHTML = `<div style="display:flex;align-items:center;gap:8px;padding:12px;color:var(--text-muted)">
-    <span class="wa-spinner"></span> Searching PawzHub for "${escHtml(query)}"...
+    <span class="wa-spinner"></span> ${t('Searching PawzHub for')} "${escHtml(query)}"...
   </div>`;
 
   try {
     const entries = await pawEngine.pawzhubSearch(query);
     if (entries.length === 0) {
       results.innerHTML = `<div style="padding:16px;text-align:center">
-        <p style="color:var(--text-muted);margin:0 0 8px">${msIcon('search_off')} No results for "${escHtml(query)}"</p>
-        <p style="color:var(--text-muted);font-size:12px;margin:0">Try different keywords or browse by category.</p>
+        <p style="color:var(--text-muted);margin:0 0 8px">${msIcon('search_off')} ${t('No results for')} "${escHtml(query)}"</p>
+        <p style="color:var(--text-muted);font-size:12px;margin:0">${t('Try different keywords or browse by category.')}</p>
       </div>`;
       return;
     }
-    const header = `<div style="font-weight:600;font-size:13px;margin-bottom:8px">${entries.length} result${entries.length !== 1 ? 's' : ''} for "${escHtml(query)}"</div>`;
+    const header = `<div style="font-weight:600;font-size:13px;margin-bottom:8px">${entries.length} ${t('results for')} "${escHtml(query)}"</div>`;
     results.innerHTML = `${header}${entries.map((e) => renderPawzHubCard(e)).join('')}`;
     wirePawzHubInstallButtons(results);
   } catch (err) {
@@ -310,9 +309,9 @@ async function pawzhubBrowse(category: string): Promise<void> {
   if (!results) return;
 
   results.style.display = 'block';
-  const label = category === 'all' ? 'all categories' : category;
+  const label = category === 'all' ? t('All') : category;
   results.innerHTML = `<div style="display:flex;align-items:center;gap:8px;padding:12px;color:var(--text-muted)">
-    <span class="wa-spinner"></span> Browsing ${escHtml(label)}...
+    <span class="wa-spinner"></span> ${t('Browsing')} ${escHtml(label)}...
   </div>`;
 
   try {
@@ -323,11 +322,11 @@ async function pawzhubBrowse(category: string): Promise<void> {
 
     if (entries.length === 0) {
       results.innerHTML = `<div style="padding:16px;text-align:center">
-        <p style="color:var(--text-muted);margin:0">${msIcon('inventory_2')} No skills in "${escHtml(label)}" yet.</p>
+        <p style="color:var(--text-muted);margin:0">${msIcon('inventory_2')} ${t('No skills in')} "${escHtml(label)}" ${t('yet.')}</p>
       </div>`;
       return;
     }
-    const header = `<div style="font-weight:600;font-size:13px;margin-bottom:8px">${entries.length} skill${entries.length !== 1 ? 's' : ''} in ${escHtml(label)}</div>`;
+    const header = `<div style="font-weight:600;font-size:13px;margin-bottom:8px">${entries.length} ${t('skills in')} ${escHtml(label)}</div>`;
     results.innerHTML = `${header}${entries.map((e) => renderPawzHubCard(e)).join('')}`;
     wirePawzHubInstallButtons(results);
   } catch (err) {
@@ -348,16 +347,16 @@ function wirePawzHubInstallButtons(container: HTMLElement): void {
       const name = btn.dataset.name!;
 
       btn.disabled = true;
-      btn.innerHTML = `<span class="wa-spinner" style="width:12px;height:12px"></span> Installing...`;
+      btn.innerHTML = `<span class="wa-spinner" style="width:12px;height:12px"></span> ${t('Installing...')}`;
 
       try {
         await pawEngine.pawzhubInstall(skillId, sourceRepo);
-        showToast(`${name} installed from PawzHub!`, 'success');
+        showToast(`${name} ${t('installed and enabled!')}`, 'success');
         await reload();
       } catch (err) {
-        showToast(`Install failed: ${err}`, 'error');
+        showToast(`${t('Install failed')}: ${err}`, 'error');
         btn.disabled = false;
-        btn.innerHTML = `${msIcon('download')} Install`;
+        btn.innerHTML = `${msIcon('download')} ${t('Install')}`;
       }
     });
   });
@@ -403,24 +402,24 @@ async function browseRepo(source: string): Promise<void> {
 
   results.style.display = 'block';
   results.innerHTML = `<div style="display:flex;align-items:center;gap:8px;padding:12px;color:var(--text-muted)">
-    <span class="wa-spinner"></span> Browsing ${escHtml(source)}...
+    <span class="wa-spinner"></span> ${t('Browsing')} ${escHtml(source)}...
   </div>`;
 
   try {
     const skills = await pawEngine.communitySkillsBrowse(source);
 
     if (skills.length === 0) {
-      results.innerHTML = `<p style="color:var(--text-muted);padding:12px">No skills found in ${escHtml(source)}.</p>`;
+      results.innerHTML = `<p style="color:var(--text-muted);padding:12px">${t('No skills found in')} ${escHtml(source)}.</p>`;
       return;
     }
 
     const notInstalled = skills.filter((s) => !s.installed).length;
     const header = `<div style="display:flex;justify-content:space-between;align-items:center;padding:0 0 8px">
-      <span style="font-weight:600;font-size:13px">${skills.length} skills found in ${escHtml(source)}</span>
+      <span style="font-weight:600;font-size:13px">${t('skills found in')} ${escHtml(source)}</span>
       ${
         notInstalled > 0
           ? `<button class="btn btn-primary btn-sm" id="community-install-all" data-source="${escHtml(source)}">
-            ${msIcon('download')} Install All (${notInstalled})
+            ${msIcon('download')} ${t('Install')} ${t('All')} (${notInstalled})
           </button>`
           : ''
       }
@@ -441,7 +440,7 @@ async function searchSkills(query: string): Promise<void> {
 
   results.style.display = 'block';
   results.innerHTML = `<div style="display:flex;align-items:center;gap:8px;padding:12px;color:var(--text-muted)">
-    <span class="wa-spinner"></span> Searching for "${escHtml(query)}" skills...
+    <span class="wa-spinner"></span> ${t('Browsing')} "${escHtml(query)}" ${t('skills')}...
   </div>`;
 
   try {
@@ -449,8 +448,8 @@ async function searchSkills(query: string): Promise<void> {
 
     if (skills.length === 0) {
       results.innerHTML = `<div style="padding:16px;text-align:center">
-        <p style="color:var(--text-muted);margin:0 0 8px">${msIcon('search_off')} No skills found for "${escHtml(query)}"</p>
-        <p style="color:var(--text-muted);font-size:12px;margin:0">Try different keywords or browse a specific repo below.</p>
+        <p style="color:var(--text-muted);margin:0 0 8px">${msIcon('search_off')} ${t('No skills found for')} "${escHtml(query)}"</p>
+        <p style="color:var(--text-muted);font-size:12px;margin:0">${t('Try different keywords or browse a specific repo below.')}</p>
       </div>`;
       return;
     }
@@ -463,8 +462,8 @@ async function searchSkills(query: string): Promise<void> {
     }
 
     const header = `<div style="display:flex;justify-content:space-between;align-items:center;padding:0 0 8px">
-      <span style="font-weight:600;font-size:14px">${msIcon('check_circle')} ${skills.length} skills found for "${escHtml(query)}"</span>
-      <span style="font-size:12px;color:var(--text-muted)">from ${byRepo.size} ${byRepo.size === 1 ? 'repo' : 'repos'}</span>
+      <span style="font-weight:600;font-size:14px">${msIcon('check_circle')} ${t('skills found for')} "${escHtml(query)}"</span>
+      <span style="font-size:12px;color:var(--text-muted)">${t('from')} ${byRepo.size} ${byRepo.size === 1 ? t('repo') : t('repos')}</span>
     </div>`;
 
     results.innerHTML = header + skills.map((s) => renderDiscoveredCard(s)).join('');
@@ -472,7 +471,7 @@ async function searchSkills(query: string): Promise<void> {
   } catch (err) {
     results.innerHTML = `<div style="padding:16px">
       <p style="color:var(--accent-danger);margin:0 0 6px">${msIcon('error')} ${escHtml(String(err))}</p>
-      <p style="color:var(--text-muted);font-size:12px;margin:0">Try different keywords or browse a specific repo below.</p>
+      <p style="color:var(--text-muted);font-size:12px;margin:0">${t('Try different keywords or browse a specific repo below.')}</p>
     </div>`;
   }
 }
@@ -490,16 +489,16 @@ function wireInstallButtons(container: HTMLElement, skills: DiscoveredSkill[]): 
       const name = btn.dataset.name!;
 
       btn.disabled = true;
-      btn.innerHTML = `<span class="wa-spinner" style="width:12px;height:12px"></span> Installing...`;
+      btn.innerHTML = `<span class="wa-spinner" style="width:12px;height:12px"></span> ${t('Installing...')}`;
 
       try {
         await pawEngine.communitySkillInstall(src, path);
-        showToast(`${name} installed and enabled!`, 'success');
+        showToast(`${name} ${t('installed and enabled!')}`, 'success');
         await reload();
       } catch (err) {
-        showToast(`Install failed: ${err}`, 'error');
+        showToast(`${t('Install failed')}: ${err}`, 'error');
         btn.disabled = false;
-        btn.innerHTML = `${msIcon('download')} Install`;
+        btn.innerHTML = `${msIcon('download')} ${t('Install')}`;
       }
     });
   });
@@ -509,7 +508,7 @@ function wireInstallButtons(container: HTMLElement, skills: DiscoveredSkill[]): 
     const allBtn = $('community-install-all') as HTMLButtonElement;
     if (allBtn) {
       allBtn.disabled = true;
-      allBtn.textContent = 'Installing...';
+      allBtn.textContent = t('Installing...');
     }
 
     let installed = 0;
@@ -521,7 +520,7 @@ function wireInstallButtons(container: HTMLElement, skills: DiscoveredSkill[]): 
         console.warn(`Failed to install ${s.name}:`, err);
       }
     }
-    showToast(`${installed} skills installed!`, 'success');
+    showToast(`${installed} ${t('skills installed!')}`, 'success');
     await reload();
   });
 }
@@ -581,12 +580,12 @@ export function bindCommunityEvents(): void {
       try {
         await pawEngine.communitySkillSetEnabled(skillId, input.checked);
         showToast(
-          `${skillId.split('/').pop()} ${input.checked ? 'enabled' : 'disabled'}`,
+          `${skillId.split('/').pop()} ${input.checked ? t('enabled') : t('disabled')}`,
           'success',
         );
         if (_reloadFn) await _reloadFn();
       } catch (err) {
-        showToast(`Failed: ${err}`, 'error');
+        showToast(`${t('Failed')}: ${err}`, 'error');
         input.checked = !input.checked;
       }
     });
@@ -599,14 +598,14 @@ export function bindCommunityEvents(): void {
       const skillId = btn.dataset.skill!;
       const name = skillId.split('/').pop() || skillId;
 
-      if (!(await confirmModal(`Remove "${name}"? You can reinstall it later.`))) return;
+      if (!(await confirmModal(`${t('Remove')} "${name}"? ${t('You can reinstall it later.')}`))) return;
 
       try {
         await pawEngine.communitySkillRemove(skillId);
-        showToast(`${name} removed`, 'success');
+        showToast(`${name} ${t('removed')}`, 'success');
         if (_reloadFn) await _reloadFn();
       } catch (err) {
-        showToast(`Failed: ${err}`, 'error');
+        showToast(`${t('Failed')}: ${err}`, 'error');
       }
     });
   });

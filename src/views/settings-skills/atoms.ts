@@ -1,18 +1,20 @@
 // Settings Skills — Atoms (pure data, constants, helpers)
 // Zero DOM, zero IPC
 
+import { t } from '../../i18n';
+
 // ── Category metadata ──────────────────────────────────────────────────────
 
 export const CATEGORY_META: Record<string, { label: string; icon: string; order: number }> = {
-  Vault: { label: 'Vault (Credentials)', icon: 'enhanced_encryption', order: 0 },
-  Communication: { label: 'Communication', icon: 'forum', order: 1 },
-  Productivity: { label: 'Productivity', icon: 'task_alt', order: 2 },
-  Api: { label: 'API Integrations', icon: 'api', order: 3 },
-  Development: { label: 'Development', icon: 'code', order: 4 },
-  Media: { label: 'Media', icon: 'movie', order: 5 },
-  SmartHome: { label: 'Smart Home & IoT', icon: 'home', order: 6 },
-  Cli: { label: 'CLI Tools', icon: 'terminal', order: 7 },
-  System: { label: 'System', icon: 'settings', order: 8 },
+  Vault: { label: t('Vault (Credentials)'), icon: 'enhanced_encryption', order: 0 },
+  Communication: { label: t('Communication'), icon: 'forum', order: 1 },
+  Productivity: { label: t('Productivity'), icon: 'task_alt', order: 2 },
+  Api: { label: t('API Integrations'), icon: 'api', order: 3 },
+  Development: { label: t('Development'), icon: 'code', order: 4 },
+  Media: { label: t('Media'), icon: 'movie', order: 5 },
+  SmartHome: { label: t('Smart Home & IoT'), icon: 'home', order: 6 },
+  Cli: { label: t('CLI Tools'), icon: 'terminal', order: 7 },
+  System: { label: t('System'), icon: 'settings', order: 8 },
 };
 
 // ── Skill icon mapping ─────────────────────────────────────────────────────
@@ -84,10 +86,10 @@ export const POPULAR_TAGS = [
 // ── PawzHub tier metadata ──────────────────────────────────────────────────
 
 export const TIER_META: Record<string, { label: string; emoji: string; color: string }> = {
-  skill: { label: 'Skill', emoji: '🔵', color: '#3b82f6' },
-  integration: { label: 'Integration', emoji: '🟣', color: '#a855f7' },
-  extension: { label: 'Extension', emoji: '🟡', color: '#eab308' },
-  mcp: { label: 'MCP Server', emoji: '🔴', color: '#ef4444' },
+  skill: { label: t('Skill'), emoji: '🔵', color: '#3b82f6' },
+  integration: { label: t('Integration'), emoji: '🟣', color: '#a855f7' },
+  extension: { label: t('Extension'), emoji: '🟡', color: '#eab308' },
+  mcp: { label: t('MCP Server'), emoji: '🔴', color: '#ef4444' },
 };
 
 export const PAWZHUB_CATEGORIES = [

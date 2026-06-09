@@ -9,6 +9,7 @@ import {
 } from '../../engine';
 import { escHtml, confirmModal } from '../../components/helpers';
 import { showToast } from '../../components/toast';
+import { t } from '../../i18n';
 import { msIcon } from './atoms';
 import {
   renderSkillCard,
@@ -45,15 +46,15 @@ export function renderToolsTab(data: ToolsTabData): string {
   <div class="tools-section">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
       <h3 style="margin:0;font-size:15px;font-weight:600;display:flex;align-items:center;gap:6px">
-        ${msIcon('dns')} MCP Servers
+        ${msIcon('dns')} ${t('MCP Servers')}
         <span style="font-size:12px;font-weight:400;color:var(--text-muted)">(${data.mcpServers.length})</span>
       </h3>
       <div style="display:flex;gap:6px">
         <button class="btn btn-primary btn-sm" id="tools-mcp-connect-all">
-          ${msIcon('power')} Connect All
+          ${msIcon('power')} ${t('Connect All')}
         </button>
         <button class="btn btn-ghost btn-sm" id="tools-mcp-add">
-          ${msIcon('add')} Add Server
+          ${msIcon('add')} ${t('Add Server')}
         </button>
       </div>
     </div>`;
@@ -62,7 +63,7 @@ export function renderToolsTab(data: ToolsTabData): string {
     html += `
     <div style="text-align:center;padding:24px;border:1px dashed var(--border-subtle);border-radius:8px;margin-bottom:16px">
       <p style="color:var(--text-muted);font-size:13px;margin:0">
-        No MCP servers configured. Add one to connect external tool servers.
+        ${t('No MCP servers configured. Add one to connect external tool servers.')}
       </p>
     </div>`;
   } else {
@@ -72,9 +73,9 @@ export function renderToolsTab(data: ToolsTabData): string {
       // Override action with custom HTML for connect/disconnect + remove
       const connected = statusMap.get(server.id)?.connected ?? false;
       const primaryAction = connected
-        ? `<button class="btn btn-ghost btn-sm tools-mcp-disconnect" data-server-id="${escHtml(server.id)}">Disconnect</button>
-           <button class="btn btn-ghost btn-sm tools-mcp-refresh" data-server-id="${escHtml(server.id)}">Refresh</button>`
-        : `<button class="btn btn-primary btn-sm tools-mcp-connect" data-server-id="${escHtml(server.id)}">Connect</button>`;
+        ? `<button class="btn btn-ghost btn-sm tools-mcp-disconnect" data-server-id="${escHtml(server.id)}">${t('Disconnect')}</button>
+           <button class="btn btn-ghost btn-sm tools-mcp-refresh" data-server-id="${escHtml(server.id)}">${t('Refresh')}</button>`
+        : `<button class="btn btn-primary btn-sm tools-mcp-connect" data-server-id="${escHtml(server.id)}">${t('Connect')}</button>`;
       cardData.action = {
         type: 'custom',
         html: `${primaryAction}<button class="btn btn-ghost btn-sm tools-mcp-remove" data-server-id="${escHtml(server.id)}" data-server-name="${escHtml(server.name)}">${msIcon('delete')}</button>`,
@@ -93,7 +94,7 @@ export function renderToolsTab(data: ToolsTabData): string {
   html += `
   <div class="tools-section" style="margin-top:24px">
     <h3 style="margin:0 0 12px;font-size:15px;font-weight:600;display:flex;align-items:center;gap:6px">
-      ${msIcon('description')} Prompt Skills
+      ${msIcon('description')} ${t('Prompt Skills')}
       <span style="font-size:12px;font-weight:400;color:var(--text-muted)">(${promptSkills.length})</span>
     </h3>`;
 
@@ -101,7 +102,7 @@ export function renderToolsTab(data: ToolsTabData): string {
     html += `
     <div style="text-align:center;padding:24px;border:1px dashed var(--border-subtle);border-radius:8px">
       <p style="color:var(--text-muted);font-size:13px;margin:0">
-        No prompt-only skills installed.
+        ${t('No prompt-only skills installed.')}
       </p>
     </div>`;
   } else {
@@ -111,7 +112,7 @@ export function renderToolsTab(data: ToolsTabData): string {
       // Override action CSS class for tools-specific toggle binding
       cardData.action = {
         type: 'custom',
-        html: `<label class="skill-toggle-label"><input type="checkbox" class="tools-skill-toggle" data-skill="${escHtml(skill.id)}" ${skill.enabled ? 'checked' : ''} /> Enable</label>`,
+        html: `<label class="skill-toggle-label"><input type="checkbox" class="tools-skill-toggle" data-skill="${escHtml(skill.id)}" ${skill.enabled ? 'checked' : ''} /> ${t('Enable')}</label>`,
       };
       cardData.extraBadges = [`${msIcon('description')} Prompt`];
       html += renderSkillCard(cardData);
@@ -138,33 +139,33 @@ function showAddForm(): void {
   container.style.display = '';
   container.innerHTML = `
   <div style="border:1px solid var(--border-subtle);border-radius:8px;padding:16px;margin-bottom:16px;background:var(--bg-surface)">
-    <h4 style="margin:0 0 12px;font-size:14px;font-weight:600">Add MCP Server</h4>
+    <h4 style="margin:0 0 12px;font-size:14px;font-weight:600">${t('Add MCP Server')}</h4>
     <div style="display:flex;flex-direction:column;gap:10px;max-width:480px">
-      <label style="font-size:12px;font-weight:600">Name
+      <label style="font-size:12px;font-weight:600">${t('Name')}
         <input type="text" class="form-input" id="tools-mcp-name" placeholder="My MCP Server" style="width:100%;margin-top:4px" />
       </label>
-      <label style="font-size:12px;font-weight:600">Transport
+      <label style="font-size:12px;font-weight:600">${t('Transport')}
         <select class="form-input" id="tools-mcp-transport" style="width:100%;margin-top:4px">
-          <option value="stdio" selected>Stdio (local process)</option>
-          <option value="sse">SSE (HTTP endpoint)</option>
+          <option value="stdio" selected>${t('Stdio (local process)')}</option>
+          <option value="sse">${t('SSE (HTTP endpoint)')}</option>
         </select>
       </label>
       <div id="tools-mcp-stdio-fields">
-        <label style="font-size:12px;font-weight:600">Command
+        <label style="font-size:12px;font-weight:600">${t('Command')}
           <input type="text" class="form-input" id="tools-mcp-command" placeholder="npx -y @modelcontextprotocol/server-filesystem" style="width:100%;margin-top:4px" />
         </label>
-        <label style="font-size:12px;font-weight:600;margin-top:8px;display:block">Arguments (one per line)
+        <label style="font-size:12px;font-weight:600;margin-top:8px;display:block">${t('Arguments (one per line)')}
           <textarea class="form-input" id="tools-mcp-args" rows="2" placeholder="/home/user/documents" style="width:100%;margin-top:4px;resize:vertical;font-family:monospace"></textarea>
         </label>
       </div>
       <div id="tools-mcp-sse-fields" style="display:none">
-        <label style="font-size:12px;font-weight:600">URL
+        <label style="font-size:12px;font-weight:600">${t('URL')}
           <input type="url" class="form-input" id="tools-mcp-url" placeholder="http://localhost:8080/sse" style="width:100%;margin-top:4px" />
         </label>
       </div>
       <div style="display:flex;gap:8px;margin-top:8px">
-        <button class="btn btn-primary btn-sm" id="tools-mcp-save">Add Server</button>
-        <button class="btn btn-ghost btn-sm" id="tools-mcp-cancel">Cancel</button>
+        <button class="btn btn-primary btn-sm" id="tools-mcp-save">${t('Add Server')}</button>
+        <button class="btn btn-ghost btn-sm" id="tools-mcp-cancel">${t('Cancel')}</button>
       </div>
     </div>
   </div>`;
@@ -187,7 +188,7 @@ function showAddForm(): void {
   document.getElementById('tools-mcp-save')?.addEventListener('click', async () => {
     const name = (document.getElementById('tools-mcp-name') as HTMLInputElement)?.value?.trim();
     if (!name) {
-      showToast('Server name is required', 'error');
+      showToast(t('Server name is required'), 'error');
       return;
     }
 
@@ -200,11 +201,11 @@ function showAddForm(): void {
     const url = (document.getElementById('tools-mcp-url') as HTMLInputElement)?.value?.trim() ?? '';
 
     if (transport === 'stdio' && !command) {
-      showToast('Command is required for Stdio', 'error');
+      showToast(t('Command is required for Stdio'), 'error');
       return;
     }
     if (transport === 'sse' && !url) {
-      showToast('URL is required for SSE', 'error');
+      showToast(t('URL is required for SSE'), 'error');
       return;
     }
 
@@ -221,12 +222,12 @@ function showAddForm(): void {
 
     try {
       await pawEngine.mcpSaveServer(config);
-      showToast(`Added MCP server "${name}"`, 'success');
+      showToast(`${t('Added MCP server')} "${name}"`, 'success');
       container.style.display = 'none';
       container.innerHTML = '';
       if (_reloadFn) await _reloadFn();
     } catch (e) {
-      showToast(`Failed: ${e instanceof Error ? e.message : String(e)}`, 'error');
+      showToast(`${t('Failed')}: ${e instanceof Error ? e.message : String(e)}`, 'error');
     }
   });
 }
@@ -240,10 +241,10 @@ export function bindToolsTabEvents(): void {
   document.getElementById('tools-mcp-connect-all')?.addEventListener('click', async () => {
     try {
       await pawEngine.mcpConnectAll();
-      showToast('All MCP servers connected', 'success');
+      showToast(t('All MCP servers connected'), 'success');
       await reload();
     } catch (e) {
-      showToast(`Connect errors: ${e instanceof Error ? e.message : String(e)}`, 'warning');
+      showToast(`${t('Failed')}: ${e instanceof Error ? e.message : String(e)}`, 'warning');
       await reload();
     }
   });
@@ -257,10 +258,10 @@ export function bindToolsTabEvents(): void {
       const id = (el as HTMLElement).dataset.serverId!;
       try {
         await pawEngine.mcpConnect(id);
-        showToast('Connected', 'success');
+        showToast(t('Connected'), 'success');
         await reload();
       } catch (e) {
-        showToast(`Failed: ${e instanceof Error ? e.message : String(e)}`, 'error');
+        showToast(`${t('Failed')}: ${e instanceof Error ? e.message : String(e)}`, 'error');
       }
     });
   });
@@ -271,10 +272,10 @@ export function bindToolsTabEvents(): void {
       const id = (el as HTMLElement).dataset.serverId!;
       try {
         await pawEngine.mcpDisconnect(id);
-        showToast('Disconnected', 'success');
+        showToast(t('Disconnected'), 'success');
         await reload();
       } catch (e) {
-        showToast(`Failed: ${e instanceof Error ? e.message : String(e)}`, 'error');
+        showToast(`${t('Failed')}: ${e instanceof Error ? e.message : String(e)}`, 'error');
       }
     });
   });
@@ -285,10 +286,10 @@ export function bindToolsTabEvents(): void {
       const id = (el as HTMLElement).dataset.serverId!;
       try {
         await pawEngine.mcpRefreshTools(id);
-        showToast('Tools refreshed', 'success');
+        showToast(t('Tools refreshed'), 'success');
         await reload();
       } catch (e) {
-        showToast(`Failed: ${e instanceof Error ? e.message : String(e)}`, 'error');
+        showToast(`${t('Failed')}: ${e instanceof Error ? e.message : String(e)}`, 'error');
       }
     });
   });
@@ -298,13 +299,13 @@ export function bindToolsTabEvents(): void {
     el.addEventListener('click', async () => {
       const id = (el as HTMLElement).dataset.serverId!;
       const name = (el as HTMLElement).dataset.serverName ?? id;
-      if (!(await confirmModal(`Remove MCP server "${name}"? This cannot be undone.`))) return;
+      if (!(await confirmModal(`${t('Remove MCP server')} "${name}"? ${t('This cannot be undone.')}`))) return;
       try {
         await pawEngine.mcpRemoveServer(id);
-        showToast(`Removed ${name}`, 'success');
+        showToast(`${t('Removed')} ${name}`, 'success');
         await reload();
       } catch (e) {
-        showToast(`Failed: ${e instanceof Error ? e.message : String(e)}`, 'error');
+        showToast(`${t('Failed')}: ${e instanceof Error ? e.message : String(e)}`, 'error');
       }
     });
   });
@@ -316,10 +317,10 @@ export function bindToolsTabEvents(): void {
       const skillId = input.dataset.skill!;
       try {
         await pawEngine.skillSetEnabled(skillId, input.checked);
-        showToast(`${skillId} ${input.checked ? 'enabled' : 'disabled'}`, 'success');
+        showToast(`${skillId} ${input.checked ? t('enabled') : t('disabled')}`, 'success');
         await reload();
       } catch (err) {
-        showToast(`Failed: ${err}`, 'error');
+        showToast(`${t('Failed')}: ${err}`, 'error');
         input.checked = !input.checked;
       }
     });

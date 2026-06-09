@@ -14,15 +14,18 @@ type SwitchViewFn = (viewName: string) => void;
 type SwitchAgentFn = (agentId: string) => Promise<void>;
 type ActionFn = (action: string) => void;
 type GetSkillsFn = () => SkillInfo[];
+type GetHiddenViewsFn = () => string[];
 
 let _getAgents: GetAgentsFn = () => [];
 let _switchView: SwitchViewFn = () => {};
 let _switchAgent: SwitchAgentFn = async () => {};
 let _onAction: ActionFn = () => {};
 let _getSkills: GetSkillsFn = () => [];
+let _getHiddenViews: GetHiddenViewsFn = () => [];
 
 function handleSelect(item: PaletteItem) {
   if (item.kind === 'view') {
+    if (_getHiddenViews().includes(item.payload)) return;
     _switchView(item.payload);
   } else if (item.kind === 'agent') {
     _switchView('chat');
@@ -156,7 +159,7 @@ function onGlobalKeydown(e: KeyboardEvent) {
     } else {
       const agents = _getAgents();
       const skills = _getSkills();
-      openPalette(agents, handleSelect, skills);
+      openPalette(agents, handleSelect, skills, _getHiddenViews());
     }
     return;
   }
@@ -198,7 +201,8 @@ function onGlobalKeydown(e: KeyboardEvent) {
   // 1-9 → sidebar navigation (only when not in an input)
   if (NAV_KEYS[e.key] && !e.metaKey && !e.ctrlKey && !e.altKey) {
     e.preventDefault();
-    _switchView(NAV_KEYS[e.key]);
+    const view = NAV_KEYS[e.key];
+    if (!_getHiddenViews().includes(view)) _switchView(view);
     return;
   }
 }
@@ -210,11 +214,13 @@ export function initCommandPalette(deps: {
   switchAgent: SwitchAgentFn;
   onAction?: ActionFn;
   getSkills?: GetSkillsFn;
+  getHiddenViews?: GetHiddenViewsFn;
 }) {
   _getAgents = deps.getAgents;
   _switchView = deps.switchView;
   _switchAgent = deps.switchAgent;
   _onAction = deps.onAction ?? (() => {});
   _getSkills = deps.getSkills ?? (() => []);
+  _getHiddenViews = deps.getHiddenViews ?? (() => []);
   document.addEventListener('keydown', onGlobalKeydown);
 }

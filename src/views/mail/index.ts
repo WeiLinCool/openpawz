@@ -2,6 +2,7 @@
 
 import { $ } from '../../components/helpers';
 import { showToast } from '../../components/toast';
+import { t } from '../../i18n';
 import { isConnected } from '../../state/connection';
 import {
   configureMolecules,
@@ -108,7 +109,7 @@ export function initMailEvents(): void {
 
   // Compose new email
   $('mail-compose')?.addEventListener('click', () => {
-    showToast('Himalaya skill is required to send emails. Enable it in the Skills view.', 'error');
+    showToast(t('Himalaya skill is required to send emails. Enable it in the Skills view.'), 'error');
   });
 
   // Mail folder switching
@@ -121,17 +122,17 @@ export function initMailEvents(): void {
       const titleEl = $('mail-folder-title');
       if (titleEl) {
         const labels: Record<string, string> = {
-          inbox: 'Inbox',
-          drafts: 'Drafts',
-          sent: 'Sent',
-          agent: 'Agent Drafts',
+          inbox: t('Inbox'),
+          drafts: t('Drafts'),
+          sent: t('Sent'),
+          agent: t('Agent Drafts'),
         };
         titleEl.textContent = labels[folderName] ?? folderName;
       }
       renderMailList();
       const preview = $('mail-preview');
       if (preview)
-        preview.innerHTML = '<div class="mail-preview-empty">Select an email to read</div>';
+        preview.innerHTML = `<div class="mail-preview-empty">${t('Select an email to read')}</div>`;
       setMailSelectedId(null);
     });
   });

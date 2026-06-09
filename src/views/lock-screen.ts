@@ -8,7 +8,6 @@
 import { invoke } from '@tauri-apps/api/core';
 import { lockScreenUnlock, shakeElement } from '../components/animations';
 import { brand } from '../brand';
-import { pawEngine } from '../engine';
 
 const $ = (id: string) => document.getElementById(id);
 const LOCK_MODE_KEY = 'paw-lock-mode';

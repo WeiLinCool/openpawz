@@ -67,8 +67,13 @@ export interface SkillInfo {
 }
 
 /** Build the full list of palette items from agents + views + actions + skills. */
-export function buildPaletteItems(agents: AgentInfo[], skills?: SkillInfo[]): PaletteItem[] {
+export function buildPaletteItems(
+  agents: AgentInfo[],
+  skills?: SkillInfo[],
+  hiddenViews: string[] = [],
+): PaletteItem[] {
   const items: PaletteItem[] = [];
+  const hiddenViewSet = new Set(hiddenViews);
 
   // Action items (come first — they're quick commands)
   for (const a of ACTION_ENTRIES) {
@@ -97,6 +102,7 @@ export function buildPaletteItems(agents: AgentInfo[], skills?: SkillInfo[]): Pa
 
   // View items
   for (const v of VIEW_ENTRIES) {
+    if (hiddenViewSet.has(v.key)) continue;
     items.push({
       id: `view-${v.key}`,
       label: t(v.label),

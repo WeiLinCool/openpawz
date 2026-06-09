@@ -5,6 +5,7 @@
 import { pawEngine } from '../../engine';
 import { isEngineMode } from '../../engine-bridge';
 import { $, escHtml } from '../../components/helpers';
+import { t } from '../../i18n';
 import { renderCommunitySection, setCommunityReload, bindCommunityEvents } from './community';
 import { msIcon } from './atoms';
 import { brand } from '../../brand';
@@ -108,20 +109,20 @@ async function loadForgeStats(): Promise<void> {
       summary.failed;
 
     if (total === 0) {
-      container.innerHTML = `<p style="color:var(--text-muted);font-size:12px">No procedural memories yet. FORGE certification stats will appear here as agents learn skills.</p>`;
+      container.innerHTML = `<p style="color:var(--text-muted);font-size:12px">${t('No procedural memories yet. FORGE certification stats will appear here as agents learn skills.')}</p>`;
       return;
     }
 
     const statsHtml = `
       <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px">
         <span style="font-size:12px;display:flex;align-items:center;gap:3px">
-          ${msIcon('verified')} <strong>${summary.certified}</strong> certified
+          ${msIcon('verified')} <strong>${summary.certified}</strong> ${t('certified')}
         </span>
         <span style="font-size:12px;display:flex;align-items:center;gap:3px">
-          ${msIcon('model_training')} <strong>${summary.in_training}</strong> training
+          ${msIcon('model_training')} <strong>${summary.in_training}</strong> ${t('training')}
         </span>
         <span style="font-size:12px;display:flex;align-items:center;gap:3px;color:var(--text-muted)">
-          ${summary.uncertified} uncertified
+          ${summary.uncertified} ${t('uncertified')}
         </span>
       </div>`;
 
@@ -140,6 +141,6 @@ async function loadForgeStats(): Promise<void> {
 
     container.innerHTML = statsHtml + domainsHtml;
   } catch {
-    container.innerHTML = `<p style="color:var(--text-muted);font-size:12px">Could not load FORGE data.</p>`;
+    container.innerHTML = `<p style="color:var(--text-muted);font-size:12px">${t('Could not load FORGE data.')}</p>`;
   }
 }

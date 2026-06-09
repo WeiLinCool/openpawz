@@ -9,6 +9,7 @@
 // - Community skills (CommunitySkill / DiscoveredSkill)
 
 import { escHtml } from '../helpers';
+import { t } from '../../i18n';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -66,18 +67,18 @@ export type CardAction =
 // ── Constants ──────────────────────────────────────────────────────────────
 
 const STATUS_CONFIG: Record<CardStatus, { icon: string; cssClass: string; label: string }> = {
-  active: { icon: 'check_circle', cssClass: 'uc-status-active', label: 'Active' },
-  warning: { icon: 'warning', cssClass: 'uc-status-warning', label: 'Needs setup' },
-  disabled: { icon: 'radio_button_unchecked', cssClass: 'uc-status-disabled', label: 'Disabled' },
-  error: { icon: 'error', cssClass: 'uc-status-error', label: 'Error' },
-  available: { icon: 'cloud_download', cssClass: 'uc-status-available', label: 'Available' },
+  active: { icon: 'check_circle', cssClass: 'uc-status-active', label: t('Active') },
+  warning: { icon: 'warning', cssClass: 'uc-status-warning', label: t('Needs setup') },
+  disabled: { icon: 'radio_button_unchecked', cssClass: 'uc-status-disabled', label: t('Disabled') },
+  error: { icon: 'error', cssClass: 'uc-status-error', label: t('Error') },
+  available: { icon: 'cloud_download', cssClass: 'uc-status-available', label: t('Available') },
 };
 
 const TIER_CONFIG: Record<string, { label: string; cssClass: string }> = {
-  skill: { label: 'Skill', cssClass: 'uc-tier-skill' },
-  integration: { label: 'Integration', cssClass: 'uc-tier-integration' },
-  extension: { label: 'Extension', cssClass: 'uc-tier-extension' },
-  mcp: { label: 'MCP Server', cssClass: 'uc-tier-mcp' },
+  skill: { label: t('Skill'), cssClass: 'uc-tier-skill' },
+  integration: { label: t('Integration'), cssClass: 'uc-tier-integration' },
+  extension: { label: t('Extension'), cssClass: 'uc-tier-extension' },
+  mcp: { label: t('MCP Server'), cssClass: 'uc-tier-mcp' },
 };
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -118,17 +119,17 @@ export function renderSkillCard(data: SkillCardData): string {
   const capBadges: string[] = [];
   if (data.toolCount > 0) {
     capBadges.push(
-      `<span class="uc-cap-badge">${ms('build')} ${data.toolCount} tool${data.toolCount !== 1 ? 's' : ''}</span>`,
+      `<span class="uc-cap-badge">${ms('build')} ${t('tool')} ${data.toolCount}${data.toolCount !== 1 ? 's' : ''}</span>`,
     );
   }
   if (data.hasWidget) {
-    capBadges.push(`<span class="uc-cap-badge">${ms('dashboard')} Widget</span>`);
+    capBadges.push(`<span class="uc-cap-badge">${ms('dashboard')} ${t('Widget')}</span>`);
   }
   if (data.hasMcp) {
     capBadges.push(`<span class="uc-cap-badge">${ms('dns')} MCP</span>`);
   }
   if (data.verified) {
-    capBadges.push(`<span class="uc-cap-badge uc-cap-verified">${ms('verified')} Verified</span>`);
+    capBadges.push(`<span class="uc-cap-badge uc-cap-verified">${ms('verified')} ${t('Verified')}</span>`);
   }
   if (data.source === 'community' || data.source === 'toml') {
     capBadges.push(`<span class="uc-cap-badge uc-cap-community">${ms('public')} Community</span>`);
@@ -186,7 +187,7 @@ function renderAction(action: CardAction): string {
     case 'toggle':
       return `<label class="skill-toggle-label">
         <input type="checkbox" class="uc-toggle" data-skill="${escHtml(action.skillId)}" ${action.checked ? 'checked' : ''} />
-        Enable
+        ${t('Enable')}
       </label>`;
     case 'install':
       return `<button class="btn btn-primary btn-sm uc-install-btn"
@@ -195,21 +196,21 @@ function renderAction(action: CardAction): string {
         ${action.source ? `data-source="${escHtml(action.source)}"` : ''}
         ${action.path ? `data-path="${escHtml(action.path)}"` : ''}
         data-name="${escHtml(action.skillId)}">
-        ${ms('download')} Install
+        ${ms('download')} ${t('Install')}
       </button>`;
     case 'installed':
-      return `<span class="uc-installed-label">${ms('check_circle')} Active</span>`;
+      return `<span class="uc-installed-label">${ms('check_circle')} ${t('Active')}</span>`;
     case 'configure':
       return `<button class="btn btn-ghost btn-sm uc-configure-btn" data-skill="${escHtml(action.skillId)}">
-        ${ms('settings')} Configure
+        ${ms('settings')} ${t('Configure')}
       </button>`;
     case 'connect':
       return `<button class="btn btn-primary btn-sm uc-connect-btn" data-server-id="${escHtml(action.serverId)}">
-        ${ms('power')} Connect
+        ${ms('power')} ${t('Connect')}
       </button>`;
     case 'disconnect':
       return `<button class="btn btn-ghost btn-sm uc-disconnect-btn" data-server-id="${escHtml(action.serverId)}">
-        Disconnect
+        ${t('Disconnect')}
       </button>`;
     case 'custom':
       return action.html;
@@ -271,15 +272,15 @@ function resolveIcon(raw: string): string {
 
 /** Determine status for an EngineSkillStatus. */
 function engineSkillStatus(s: EngineSkillStatus): { status: CardStatus; label: string } {
-  if (s.is_ready) return { status: 'active', label: 'Ready' };
+  if (s.is_ready) return { status: 'active', label: t('Ready') };
   if (s.enabled && s.missing_binaries.length > 0)
-    return { status: 'error', label: 'Missing binaries' };
+    return { status: 'error', label: t('Missing binaries') };
   if (s.enabled && s.missing_credentials.length > 0)
-    return { status: 'warning', label: 'Missing credentials' };
+    return { status: 'warning', label: t('Missing credentials') };
   if (s.enabled && s.missing_env_vars.length > 0)
-    return { status: 'warning', label: 'Missing env vars' };
-  if (s.enabled) return { status: 'warning', label: 'Setup incomplete' };
-  return { status: 'disabled', label: 'Disabled' };
+    return { status: 'warning', label: t('Missing env vars') };
+  if (s.enabled) return { status: 'warning', label: t('Setup incomplete') };
+  return { status: 'disabled', label: t('Disabled') };
 }
 
 /** Adapt an EngineSkillStatus (built-in or TOML) to SkillCardData. */
@@ -323,7 +324,7 @@ export function fromPawzHubEntry(entry: PawzHubEntry): SkillCardData {
     version: entry.version,
     tier: (entry.tier as SkillCardData['tier']) || 'skill',
     status,
-    statusLabel: entry.installed ? 'Active' : 'Available',
+    statusLabel: entry.installed ? t('Active') : t('Available'),
     toolCount: 0,
     hasWidget: entry.has_widget,
     hasMcp: entry.has_mcp,
@@ -338,7 +339,7 @@ export function fromPawzHubEntry(entry: PawzHubEntry): SkillCardData {
 export function fromMcpServer(server: McpServerConfig, status?: McpServerStatus): SkillCardData {
   const connected = status?.connected ?? false;
   const toolCount = status?.tool_count ?? 0;
-  const transport = server.transport === 'stdio' ? 'Stdio' : 'SSE';
+  const transport = server.transport === 'stdio' ? t('Stdio') : t('SSE');
   const endpoint =
     server.transport === 'stdio' ? `${server.command} ${server.args.join(' ')}`.trim() : server.url;
 
@@ -348,15 +349,15 @@ export function fromMcpServer(server: McpServerConfig, status?: McpServerStatus)
 
   if (connected) {
     cardStatus = 'active';
-    statusLabel = `Connected (${toolCount} tools)`;
+    statusLabel = `${t('Connected')} (${toolCount} ${t('tools')})`;
     action = { type: 'disconnect', serverId: server.id };
   } else if (server.enabled) {
     cardStatus = 'error';
-    statusLabel = 'Disconnected';
+    statusLabel = t('Disconnected');
     action = { type: 'connect', serverId: server.id };
   } else {
     cardStatus = 'disabled';
-    statusLabel = 'Disabled';
+    statusLabel = t('Disabled');
     action = { type: 'connect', serverId: server.id };
   }
 
@@ -372,7 +373,7 @@ export function fromMcpServer(server: McpServerConfig, status?: McpServerStatus)
   return {
     id: server.id,
     name: server.name,
-    description: `${toolCount} tool${toolCount !== 1 ? 's' : ''} available`,
+    description: `${toolCount} ${t('tool')}${toolCount !== 1 ? 's' : ''} ${t('available')}`,
     icon: 'dns',
     tier: 'mcp',
     status: cardStatus,
@@ -393,11 +394,11 @@ export function fromDiscoveredSkill(skill: DiscoveredSkill): SkillCardData {
   return {
     id: skill.id,
     name: skill.name,
-    description: skill.description || 'No description',
+    description: skill.description || t('No description'),
     icon: 'extension',
     tier: 'skill',
     status: skill.installed ? 'active' : 'available',
-    statusLabel: skill.installed ? 'Installed' : 'Available',
+    statusLabel: skill.installed ? t('Installed') : t('Available'),
     toolCount: 0,
     hasWidget: false,
     hasMcp: false,
@@ -415,7 +416,7 @@ export function fromDiscoveredSkill(skill: DiscoveredSkill): SkillCardData {
 /** Adapt an installed community skill to SkillCardData. */
 export function fromCommunitySkill(skill: CommunitySkill): SkillCardData {
   const agentLabel =
-    !skill.agent_ids || skill.agent_ids.length === 0 ? 'All Agents' : skill.agent_ids.join(', ');
+    !skill.agent_ids || skill.agent_ids.length === 0 ? t('All Agents') : skill.agent_ids.join(', ');
 
   return {
     id: skill.id,
@@ -424,7 +425,7 @@ export function fromCommunitySkill(skill: CommunitySkill): SkillCardData {
     icon: 'extension',
     tier: 'skill',
     status: skill.enabled ? 'active' : 'disabled',
-    statusLabel: skill.enabled ? 'Enabled' : 'Disabled',
+    statusLabel: skill.enabled ? t('Enabled') : t('Disabled'),
     toolCount: 0,
     hasWidget: false,
     hasMcp: false,

@@ -20,6 +20,7 @@ import * as TodayModule from './today';
 import * as IntegrationsModule from './integrations';
 import * as FlowsModule from './flows';
 import * as CanvasModule from './canvas';
+import { isEnterpriseRestrictedView } from '../enterprise-ui';
 
 export const allViewIds = [
   'enterprise-login-view',
@@ -40,7 +41,6 @@ export const allViewIds = [
   'today-view',
   'trading-view',
   'squads-view',
-  // 'pawzhub-view', // removed — redirects to integrations
   'integrations-view',
   'flows-view',
   'canvas-view',
@@ -67,7 +67,6 @@ const viewMap: Record<string, string> = {
   orchestrator: 'tasks-view',
   trading: 'today-view',
   squads: 'tasks-view',
-  pawzhub: 'integrations-view', // PawzHub merged into Integrations
   integrations: 'integrations-view',
   flows: 'flows-view',
   canvas: 'canvas-view',
@@ -101,6 +100,12 @@ function _switchSettingsTab(tabName: string) {
 
 export function switchView(viewName: string) {
   if (!isConfigured() && viewName !== 'settings') return;
+  if (
+    document.body.classList.contains('enterprise-plugin-active') &&
+    isEnterpriseRestrictedView(viewName)
+  ) {
+    viewName = 'today';
+  }
 
   const highlightName = navHighlightMap[viewName] ?? viewName;
   document.querySelectorAll('.nav-item').forEach((item) => {

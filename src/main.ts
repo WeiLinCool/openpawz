@@ -84,6 +84,11 @@ import { initLockScreen } from './views/lock-screen';
 import { sidebarNavEntrance } from './components/animations';
 import { toggleInspector } from './views/inspector/index';
 import { startTelemetryListener } from './views/inspector/telemetry-bridge';
+import {
+  ENTERPRISE_RESTRICTED_VIEWS,
+  applyEnterpriseNavigationPolicy,
+  isEnterpriseMode,
+} from './enterprise-ui';
 
 // ── Tauri bridge ─────────────────────────────────────────────────────────
 interface TauriWindow {
@@ -117,6 +122,7 @@ setErrorHandler((report) => {
 
 // ── DOM convenience ────────────────────────────────────────────────────────────────
 const $ = (id: string) => document.getElementById(id);
+let _enterpriseMode = false;
 
 // ── Enterprise sign-in gate ────────────────────────────────────────────────
 function enterpriseIssuerFromStatus(status: EnterpriseStatus): string {
@@ -183,7 +189,9 @@ async function maybeShowEnterpriseLoginGate(): Promise<boolean> {
     return false;
   }
 
-  const enterpriseActive = status.enterprise_build_mode || status.enabled;
+  _enterpriseMode = isEnterpriseMode(status);
+  applyEnterpriseNavigationPolicy(status);
+  const enterpriseActive = _enterpriseMode;
   if (!enterpriseActive || status.authenticated) {
     document.body.classList.remove('enterprise-gated');
     return false;
@@ -207,7 +215,7 @@ async function maybeShowEnterpriseLoginGate(): Promise<boolean> {
 async function getEnterpriseModeState(): Promise<boolean> {
   try {
     const status = await pawEngine.enterpriseStatus();
-    return Boolean(status.enterprise_build_mode || status.enabled);
+    return isEnterpriseMode(status);
   } catch {
     return false;
   }
@@ -570,6 +578,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       switchView,
       switchAgent: switchToAgent,
       onAction: handlePaletteAction,
+      getHiddenViews: () => (_enterpriseMode ? [...ENTERPRISE_RESTRICTED_VIEWS] : []),
     });
     initNotifications();
     initWebhookLog();

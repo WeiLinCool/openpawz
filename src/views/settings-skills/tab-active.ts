@@ -4,6 +4,7 @@
 
 import type { EngineSkillStatus, McpServerStatus } from '../../engine';
 import { escHtml } from '../../components/helpers';
+import { t } from '../../i18n';
 import {
   renderSkillCard,
   fromEngineSkill,
@@ -44,10 +45,9 @@ export function renderActiveTab(data: ActiveTabData): string {
     return `
     <div style="text-align:center;padding:48px 24px">
       <span class="ms" style="font-size:48px;opacity:0.3;display:block;margin-bottom:12px">check_circle</span>
-      <h3 style="margin:0 0 8px;font-size:16px;font-weight:600;color:var(--text-primary)">No active skills</h3>
+      <h3 style="margin:0 0 8px;font-size:16px;font-weight:600;color:var(--text-primary)">${t('No active skills')}</h3>
       <p style="color:var(--text-muted);font-size:13px;margin:0 0 16px;max-width:400px;margin-inline:auto">
-        Enable prompt skills from the <strong>Prompts</strong> tab to give your agent new abilities.
-        For service integrations, visit the <strong>Integrations</strong> page.
+        ${t('Enable prompt skills from the Prompts tab to give your agent new abilities. For service integrations, visit the Integrations page.')}
       </p>
     </div>`;
   }
@@ -60,7 +60,7 @@ export function renderActiveTab(data: ActiveTabData): string {
     <div class="active-section">
       <div class="active-section-header">
         <span class="active-section-dot active-dot-ready"></span>
-        <span class="active-section-title">Ready &amp; Working</span>
+        <span class="active-section-title">${t('Ready & Working')}</span>
         <span class="active-section-count">${ready.length + connectedMcp.length}</span>
       </div>
       <div class="skills-card-grid">`;
@@ -75,11 +75,11 @@ export function renderActiveTab(data: ActiveTabData): string {
       const cardData: SkillCardData = {
         id: mcp.id,
         name: mcp.name ?? mcp.id,
-        description: `${mcp.tool_count ?? 0} tool${(mcp.tool_count ?? 0) !== 1 ? 's' : ''} available`,
+        description: `${mcp.tool_count ?? 0} ${t('tool')}${(mcp.tool_count ?? 0) !== 1 ? 's' : ''} ${t('available')}`,
         icon: 'dns',
         tier: 'mcp',
         status: 'active',
-        statusLabel: 'Connected',
+        statusLabel: t('Connected'),
         toolCount: mcp.tool_count ?? 0,
         hasWidget: false,
         hasMcp: true,
@@ -99,10 +99,10 @@ export function renderActiveTab(data: ActiveTabData): string {
     <div class="active-section">
       <div class="active-section-header">
         <span class="active-section-dot active-dot-setup"></span>
-        <span class="active-section-title">Needs Setup</span>
+        <span class="active-section-title">${t('Needs Setup')}</span>
         <span class="active-section-count">${needsSetup.length}</span>
       </div>
-      <p class="active-section-desc">These skills are enabled but need credentials or environment variables configured before they can work.</p>
+      <p class="active-section-desc">${t('These skills are enabled but need credentials or environment variables configured before they can work.')}</p>
       <div class="skills-card-grid">`;
 
     for (const skill of needsSetup) {
@@ -120,13 +120,12 @@ export function renderActiveTab(data: ActiveTabData): string {
     <div class="active-section active-section-collapsed">
       <div class="active-section-header active-section-toggle" id="active-unavailable-toggle">
         <span class="active-section-dot active-dot-unavail"></span>
-        <span class="active-section-title">Platform Unavailable</span>
+        <span class="active-section-title">${t('Platform Unavailable')}</span>
         <span class="active-section-count">${missingBinaries.length}</span>
         <span class="ms active-section-chevron ms-sm">expand_more</span>
       </div>
       <p class="active-section-desc">
-        These skills require binaries not found on this system (e.g. macOS-only apps, or tools not installed).
-        They're enabled but can't run here. You can disable them to clean up this list.
+        ${t('These skills require binaries not found on this system (e.g. macOS-only apps, or tools not installed). They\'re enabled but can\'t run here. You can disable them to clean up this list.')}
       </p>
       <div class="active-section-body" id="active-unavailable-body" style="display:none">
         <div class="active-unavail-grid">`;
@@ -137,11 +136,11 @@ export function renderActiveTab(data: ActiveTabData): string {
           <div class="active-unavail-row" data-skill-id="${escHtml(skill.id)}">
             <div class="active-unavail-info">
               <strong>${escHtml(skill.name)}</strong>
-              <span class="active-unavail-missing">${msIcon('error')} Missing: <code>${missing}</code></span>
+              <span class="active-unavail-missing">${msIcon('error')} ${t('Missing:')} <code>${missing}</code></span>
               ${skill.install_hint ? `<span class="active-unavail-hint">${msIcon('terminal')} ${escHtml(skill.install_hint)}</span>` : ''}
             </div>
-            <button class="btn btn-ghost btn-sm active-disable-btn" data-skill="${escHtml(skill.id)}" title="Disable this skill">
-              ${msIcon('visibility_off')} Disable
+            <button class="btn btn-ghost btn-sm active-disable-btn" data-skill="${escHtml(skill.id)}" title="${t('Disable this skill')}">
+              ${msIcon('visibility_off')} ${t('Disable')}
             </button>
           </div>`;
     }
