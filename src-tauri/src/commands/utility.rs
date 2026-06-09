@@ -15,7 +15,9 @@
 //   - Passphrase hash comparison uses `subtle::ConstantTimeEq` to resist
 //     timing side-channel attacks.
 
-use crate::commands::enterprise::{enterprise_session_expired, load_enterprise_config};
+use crate::commands::enterprise::{
+    enterprise_build_mode_enabled, enterprise_session_expired, load_enterprise_config,
+};
 use crate::commands::state::EngineState;
 use crate::engine::key_vault;
 use crate::brand;
@@ -170,6 +172,14 @@ pub fn keyring_delete_password(account_name: String, email: String) -> Result<bo
 /// process session.
 #[tauri::command]
 pub fn get_db_encryption_key(state: State<'_, EngineState>) -> Result<String, String> {
+    get_db_encryption_keys(state)?
+        .into_iter()
+        .next()
+        .ok_or_else(|| "No database encryption key available".to_string())
+}
+
+#[tauri::command]
+pub fn get_db_encryption_keys(state: State<'_, EngineState>) -> Result<Vec<String>, String> {
     let source = db_encryption_source(&state);
 
     // Fast path: return cached key (read lock — many readers allowed)
@@ -180,7 +190,7 @@ pub fn get_db_encryption_key(state: State<'_, EngineState>) -> Result<String, St
         let guard = DB_KEY_CACHE.read().unwrap_or_else(|e| e.into_inner());
         if source_guard.as_deref() == Some(source.as_str()) {
             if let Some(ref key) = *guard {
-                return Ok(key.to_string());
+                return Ok(cached_db_encryption_keys(&state, key.to_string()));
             }
         }
     }
@@ -192,12 +202,16 @@ pub fn get_db_encryption_key(state: State<'_, EngineState>) -> Result<String, St
     let mut guard = DB_KEY_CACHE.write().unwrap_or_else(|e| e.into_inner());
     if source_guard.as_deref() == Some(source.as_str()) {
         if let Some(ref key) = *guard {
-            return Ok(key.to_string());
+            return Ok(cached_db_encryption_keys(&state, key.to_string()));
         }
     }
 
     let key = if enterprise_db_encryption_ready(&state) {
         load_db_key_from_enterprise(&state)?
+    } else if enterprise_keychain_disabled(&state) {
+        return Err(
+            "Enterprise SSO is required before encrypted credential storage is available".into(),
+        );
     } else {
         load_db_key_from_keychain()?
     };
@@ -209,11 +223,37 @@ pub fn get_db_encryption_key(state: State<'_, EngineState>) -> Result<String, St
     *guard = Some(key);
     *source_guard = Some(source);
     info!("[keychain] DB encryption key loaded and cached");
-    Ok(result)
+    Ok(cached_db_encryption_keys(&state, result))
+}
+
+fn cached_db_encryption_keys(state: &EngineState, current: String) -> Vec<String> {
+    let config = load_enterprise_config(state);
+    if !enterprise_db_encryption_ready_config(&config) {
+        return vec![current];
+    }
+    let mut keys = vec![current];
+    for previous in &config.previous_data_tokens {
+        if previous.token.trim().is_empty() {
+            continue;
+        }
+        let material = enterprise_db_key_material_for_token(
+            &config,
+            &previous.token,
+            previous.version.as_deref(),
+        );
+        let key = digest_hex(&material);
+        if !keys.iter().any(|existing| existing == &key) {
+            keys.push(key);
+        }
+    }
+    keys
 }
 
 #[tauri::command]
-pub fn retry_keychain() -> KeychainHealth {
+pub fn retry_keychain(state: State<'_, EngineState>) -> KeychainHealth {
+    if enterprise_keychain_disabled(&state) {
+        return enterprise_crypto_health(&state);
+    }
     let loaded = key_vault::reload();
     keychain_health_from_state(loaded, true)
 }
@@ -249,13 +289,7 @@ fn load_db_key_from_enterprise(state: &EngineState) -> Result<Zeroizing<String>,
     }
 
     let material = enterprise_db_key_material(&config);
-    let digest = Sha256::digest(material.as_bytes());
-    let key = Zeroizing::new(
-        digest
-            .iter()
-            .map(|b| format!("{:02x}", b))
-            .collect::<String>(),
-    );
+    let key = Zeroizing::new(digest_hex(&material));
     Ok(key)
 }
 
@@ -263,32 +297,57 @@ fn enterprise_db_encryption_ready(state: &EngineState) -> bool {
     enterprise_db_encryption_ready_config(&load_enterprise_config(state))
 }
 
+fn enterprise_keychain_disabled(state: &EngineState) -> bool {
+    enterprise_build_mode_enabled() || load_enterprise_config(state).enabled
+}
+
 fn enterprise_db_encryption_ready_config(
     config: &crate::commands::enterprise::EnterpriseConfig,
 ) -> bool {
     config.enabled
         && !config.access_token.trim().is_empty()
+        && config
+            .data_token
+            .as_deref()
+            .map(|token| !token.trim().is_empty())
+            .unwrap_or(false)
         && !enterprise_session_expired(config)
 }
 
 fn enterprise_db_key_material(config: &crate::commands::enterprise::EnterpriseConfig) -> String {
+    enterprise_db_key_material_for_token(
+        config,
+        config.data_token.as_deref().unwrap_or(""),
+        config.data_token_version.as_deref(),
+    )
+}
+
+fn enterprise_db_key_material_for_token(
+    config: &crate::commands::enterprise::EnterpriseConfig,
+    data_token: &str,
+    data_token_version: Option<&str>,
+) -> String {
     format!(
-        "openpawz-enterprise-db-v1|issuer={}|gateway={}|org={}|user={}|token={}|refresh={}",
+        "openpawz-enterprise-db-v1|issuer={}|gateway={}|org={}|user={}|data_token_version={}|data_token={}",
         config.issuer_url,
         config.gateway_url,
         config.organization_id.as_deref().unwrap_or(""),
         config.user_email.as_deref().unwrap_or(""),
-        config.access_token,
-        config.refresh_token.as_deref().unwrap_or(""),
+        data_token_version.unwrap_or(""),
+        data_token,
     )
+}
+
+fn digest_hex(material: &str) -> String {
+    let digest = Sha256::digest(material.as_bytes());
+    digest.iter().map(|b| format!("{:02x}", b)).collect()
 }
 
 fn db_encryption_source(state: &State<'_, EngineState>) -> String {
     let config = load_enterprise_config(state);
     if enterprise_db_encryption_ready_config(&config) {
         let material = enterprise_db_key_material(&config);
-        let digest = Sha256::digest(material.as_bytes());
-        return digest.iter().map(|b| format!("{:02x}", b)).collect();
+        return digest_hex(&material);
     }
     "keychain".to_string()
 }
@@ -315,6 +374,8 @@ pub fn has_db_encryption_key(state: State<'_, EngineState>) -> bool {
     }
     if enterprise_db_encryption_ready(&state) {
         true
+    } else if enterprise_keychain_disabled(&state) {
+        false
     } else {
         key_vault::get(key_vault::PURPOSE_DB_ENCRYPTION).is_some()
     }
@@ -594,17 +655,30 @@ pub struct KeychainHealth {
 /// All encryption keys now live in a single OS keychain entry.
 #[tauri::command]
 pub fn check_keychain_health(state: State<'_, EngineState>) -> KeychainHealth {
-    let enterprise = load_enterprise_config(&state);
-    if enterprise_db_encryption_ready_config(&enterprise) {
-        return KeychainHealth {
-            status: "healthy".to_string(),
-            db_key_ok: true,
-            vault_key_ok: true,
-            message: "Enterprise session is active — database encryption uses enterprise credentials".to_string(),
-            error: None,
-        };
+    if enterprise_keychain_disabled(&state) {
+        return enterprise_crypto_health(&state);
     }
     keychain_health_from_state(key_vault::is_loaded(), false)
+}
+
+fn enterprise_crypto_health(state: &EngineState) -> KeychainHealth {
+    let ready = enterprise_db_encryption_ready(state);
+    KeychainHealth {
+        status: if ready { "healthy" } else { "unavailable" }.to_string(),
+        db_key_ok: ready,
+        vault_key_ok: false,
+        message: if ready {
+            "Enterprise SSO is active — encryption keys are derived from the SSO session token; OS keychain storage is disabled."
+        } else {
+            "Enterprise mode is active — OS keychain storage is disabled. Sign in with SSO before storing encrypted credentials."
+        }
+        .to_string(),
+        error: if ready {
+            None
+        } else {
+            Some("Enterprise SSO session is not authenticated or has expired".to_string())
+        },
+    }
 }
 
 fn keychain_health_from_state(loaded: bool, probed: bool) -> KeychainHealth {

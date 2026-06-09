@@ -453,8 +453,8 @@ function updateFlowList() {
 
   // Render tab switcher
   const tabHtml = `<div class="flow-sidebar-tabs">
-    <button class="flow-sidebar-tab${_sidebarTab === 'flows' ? ' active' : ''}" data-tab="flows">Flows</button>
-    <button class="flow-sidebar-tab${_sidebarTab === 'templates' ? ' active' : ''}" data-tab="templates">Templates</button>
+    <button class="flow-sidebar-tab${_sidebarTab === 'flows' ? ' active' : ''}" data-tab="flows">${t('Flows')}</button>
+    <button class="flow-sidebar-tab${_sidebarTab === 'templates' ? ' active' : ''}" data-tab="templates">${t('Templates')}</button>
   </div>`;
 
   container.innerHTML = `${tabHtml}<div class="flow-sidebar-content"></div>`;

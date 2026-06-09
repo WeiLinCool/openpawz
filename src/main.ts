@@ -193,7 +193,6 @@ async function maybeShowEnterpriseLoginGate(): Promise<boolean> {
 
   const btn = $('enterprise-login-btn') as HTMLButtonElement | null;
   const error = $('enterprise-login-error');
-  let autoStarted = false;
   btn?.addEventListener(
     'click',
     async () => {
@@ -201,13 +200,6 @@ async function maybeShowEnterpriseLoginGate(): Promise<boolean> {
     },
     { once: false },
   );
-
-  if (status.enterprise_build_mode && !status.authenticated && !autoStarted) {
-    autoStarted = true;
-    queueMicrotask(() => {
-      void startEnterpriseLogin(status, btn, error);
-    });
-  }
 
   return true;
 }
@@ -359,15 +351,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     initI18n();
     setEngineMode(true);
 
+    // ── Lock screen gate — must authenticate before anything else ──
+    await initLockScreen();
+    console.debug('[main] Lock screen passed');
+
     const enterpriseGateShown = await maybeShowEnterpriseLoginGate();
     if (enterpriseGateShown) {
       console.debug('[main] Enterprise sign-in required');
       return;
     }
-
-    // ── Lock screen gate — must authenticate before anything else ──
-    await initLockScreen();
-    console.debug('[main] Lock screen passed');
 
     // ── Sidebar entrance animation (anime.js) ───────────────────────────
     sidebarNavEntrance('.nav-item');

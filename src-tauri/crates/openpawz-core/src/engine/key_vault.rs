@@ -24,12 +24,15 @@
 //     should not permanently brick the vault for the rest of the app.
 
 use log::{debug, error, info, warn};
+use sha2::{Digest, Sha256};
 use std::collections::HashMap;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::RwLock;
 use zeroize::Zeroizing;
 
 const VAULT_SERVICE: &str = "openpawz";
 const VAULT_USER: &str = "key-vault";
+const ENTERPRISE_BUILD_EDITION: Option<&str> = option_env!("OPENPAWZ_BUILD_EDITION");
 
 /// Type alias: all in-memory key material is wrapped in `Zeroizing` so it
 /// is securely overwritten with zeroes when dropped or replaced.
@@ -40,6 +43,8 @@ type VaultMap = HashMap<String, Zeroizing<String>>;
 /// Values are `Zeroizing<String>` — zeroed on drop.
 static VAULT_CACHE: RwLock<Option<VaultMap>> = RwLock::new(None);
 static VAULT_LAST_ERROR: RwLock<Option<String>> = RwLock::new(None);
+static ENTERPRISE_SSO_MODE: AtomicBool = AtomicBool::new(false);
+static ENTERPRISE_SSO_MATERIAL: RwLock<Option<Zeroizing<String>>> = RwLock::new(None);
 
 // ── Lock helpers ───────────────────────────────────────────────────────────
 // Recover from a poisoned RwLock (another thread panicked while holding it)
@@ -80,6 +85,10 @@ pub const PURPOSE_SCC_SIGNING: &str = "scc-signing";
 /// subsequent `get()` calls are pure in-memory lookups.
 /// Call this early in app startup (before subsystems initialise).
 pub fn prefetch() {
+    if enterprise_keychain_disabled() {
+        info!("[key-vault] Enterprise mode active — OS keychain prefetch skipped");
+        return;
+    }
     let loaded = ensure_loaded();
     let guard = read_lock(&VAULT_CACHE);
     let count = guard.as_ref().map_or(0, |m| m.len());
@@ -90,10 +99,59 @@ pub fn prefetch() {
     }
 }
 
+/// Enable or disable enterprise SSO-only mode for the current process.
+/// When enabled, all OS keychain-backed vault reads and writes are refused.
+pub fn set_enterprise_sso_mode(enabled: bool) {
+    ENTERPRISE_SSO_MODE.store(enabled, Ordering::Relaxed);
+    if !enabled {
+        let mut material = ENTERPRISE_SSO_MATERIAL
+            .write()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        *material = None;
+    }
+    if enabled {
+        let mut guard = write_lock(&VAULT_CACHE);
+        *guard = None;
+        set_last_error(Some(
+            "OS keychain is disabled in enterprise SSO mode".to_string(),
+        ));
+    }
+}
+
+/// Set process-local enterprise SSO key material.
+/// The material is never persisted; subsystem keys are derived from it per purpose.
+pub fn set_enterprise_sso_material(material: Option<&str>) {
+    let mut guard = ENTERPRISE_SSO_MATERIAL
+        .write()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    *guard = material
+        .filter(|value| !value.trim().is_empty())
+        .map(|value| Zeroizing::new(value.to_string()));
+}
+
+/// Derive a deterministic 256-bit key for a subsystem from the active SSO session.
+pub fn enterprise_derived_key(purpose: &str) -> Option<Zeroizing<Vec<u8>>> {
+    if !enterprise_keychain_disabled() {
+        return None;
+    }
+    let guard = ENTERPRISE_SSO_MATERIAL
+        .read()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let material = guard.as_ref()?;
+    let mut hasher = Sha256::new();
+    hasher.update(b"openpawz-enterprise-sso-key-v1");
+    hasher.update(purpose.as_bytes());
+    hasher.update(material.as_bytes());
+    Some(Zeroizing::new(hasher.finalize().to_vec()))
+}
+
 /// Check whether the vault was successfully loaded.
 /// Returns `true` if `prefetch()` (or any `get()`/`set()`) has populated
 /// the in-memory cache — meaning the OS keychain was reachable.
 pub fn is_loaded() -> bool {
+    if enterprise_keychain_disabled() {
+        return false;
+    }
     read_lock(&VAULT_CACHE).is_some()
 }
 
@@ -110,6 +168,12 @@ pub fn last_error() -> Option<String> {
 /// Clear the cached vault state and force the next access to re-read the OS keychain.
 /// Used by UI retry flows after the user unlocks or repairs the system keychain.
 pub fn reload() -> bool {
+    if enterprise_keychain_disabled() {
+        set_last_error(Some(
+            "OS keychain is disabled in enterprise SSO mode".to_string(),
+        ));
+        return false;
+    }
     {
         let mut guard = write_lock(&VAULT_CACHE);
         *guard = None;
@@ -123,6 +187,13 @@ pub fn reload() -> bool {
 /// The returned `Zeroizing<String>` is securely zeroed when dropped,
 /// preventing key material from lingering in freed heap memory.
 pub fn get(purpose: &str) -> Option<Zeroizing<String>> {
+    if enterprise_keychain_disabled() {
+        debug!(
+            "[key-vault] Refusing to read '{}' because enterprise SSO mode disables OS keychain storage",
+            purpose
+        );
+        return None;
+    }
     if !ensure_loaded() {
         return None;
     }
@@ -146,6 +217,12 @@ pub fn set(purpose: &str, value: &str) -> bool {
 }
 
 pub fn try_set(purpose: &str, value: &str) -> Result<(), String> {
+    if enterprise_keychain_disabled() {
+        return Err(format!(
+            "OS keychain storage is disabled in enterprise SSO mode; refusing to store '{}'",
+            purpose
+        ));
+    }
     let mut guard = write_lock(&VAULT_CACHE);
     if guard.is_none() {
         match read_vault() {
@@ -177,6 +254,13 @@ pub fn try_set(purpose: &str, value: &str) -> Result<(), String> {
 /// Remove a value from the vault and persist.
 /// Used by lock_screen_remove_passphrase(), oauth revoke, etc.
 pub fn remove(purpose: &str) {
+    if enterprise_keychain_disabled() {
+        debug!(
+            "[key-vault] Refusing to remove '{}' because enterprise SSO mode disables OS keychain storage",
+            purpose
+        );
+        return;
+    }
     let mut guard = write_lock(&VAULT_CACHE);
     if guard.is_none() {
         match read_vault() {
@@ -209,6 +293,12 @@ pub fn remove(purpose: &str) {
 /// On first call, reads the unified keychain entry (1 OS prompt max).
 /// If no vault exists yet, creates an empty in-memory map (no prompt).
 fn ensure_loaded() -> bool {
+    if enterprise_keychain_disabled() {
+        set_last_error(Some(
+            "OS keychain is disabled in enterprise SSO mode".to_string(),
+        ));
+        return false;
+    }
     // Fast path: already cached
     {
         if read_lock(&VAULT_CACHE).is_some() {
@@ -231,6 +321,14 @@ fn ensure_loaded() -> bool {
             false
         }
     }
+}
+
+fn enterprise_keychain_disabled() -> bool {
+    ENTERPRISE_SSO_MODE.load(Ordering::Relaxed)
+        || ENTERPRISE_BUILD_EDITION == Some("enterprise")
+        || std::env::var("OPENPAWZ_BUILD_EDITION")
+            .map(|value| value == "enterprise")
+            .unwrap_or(false)
 }
 
 /// Read the unified vault JSON from the keychain.

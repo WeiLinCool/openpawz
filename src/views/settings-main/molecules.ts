@@ -381,8 +381,8 @@ export function updateEncryptionStatus() {
   const ready = isEncryptionReady();
   bar.className = `encryption-status-bar ${ready ? 'enc-active' : 'enc-inactive'}`;
   text.textContent = ready
-    ? '数据库加密已启用 - 敏感字段使用系统钥匙串密钥加密'
-    : '加密不可用 - 在钥匙串恢复前将阻止凭据存储';
+    ? '数据库加密已启用 - 敏感字段使用当前认证策略提供的密钥加密'
+    : '加密不可用 - 完成企业 SSO 登录或恢复本地加密后才能存储凭据';
 }
 
 interface KeychainHealth {

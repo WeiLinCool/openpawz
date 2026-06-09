@@ -9,6 +9,7 @@ import {
   TEMPLATE_CATEGORIES,
   filterTemplates,
 } from './atoms';
+import { translateUiText } from '../../i18n';
 import { escAttr } from './molecule-state';
 
 // ── Template Browser State ─────────────────────────────────────────────────
@@ -33,20 +34,20 @@ export function renderTemplateBrowser(
     <div class="flow-tpl-browser">
       <div class="flow-tpl-header">
         <span class="ms" style="font-size:18px;color:var(--kinetic-red)">dashboard_customize</span>
-        <span class="flow-tpl-title">Templates</span>
+        <span class="flow-tpl-title">${translateUiText('Templates')}</span>
         <span class="flow-tpl-count">${filtered.length}</span>
       </div>
       <div class="flow-tpl-search">
-        <input type="text" class="flow-tpl-search-input" placeholder="Search templates…" value="${escAttr(_templateQuery)}" />
+        <input type="text" class="flow-tpl-search-input" placeholder="${translateUiText('Search templates…')}" value="${escAttr(_templateQuery)}" />
       </div>
       <div class="flow-tpl-categories">
-        <button class="flow-tpl-cat-btn${_templateCategory === 'all' ? ' active' : ''}" data-cat="all">All</button>
+        <button class="flow-tpl-cat-btn${_templateCategory === 'all' ? ' active' : ''}" data-cat="all">${translateUiText('All')}</button>
         ${categories
           .map(
             ([key, meta]) => `
           <button class="flow-tpl-cat-btn${_templateCategory === key ? ' active' : ''}" data-cat="${key}" title="${meta.label}">
             <span class="ms" style="font-size:14px;color:${meta.color}">${meta.icon}</span>
-            ${meta.label}
+            ${translateUiText(meta.label)}
           </button>
         `,
           )
@@ -55,28 +56,28 @@ export function renderTemplateBrowser(
       <div class="flow-tpl-list">
         ${
           filtered.length === 0
-            ? '<div class="flow-tpl-empty">No templates match</div>'
+            ? `<div class="flow-tpl-empty">${translateUiText('No templates match')}</div>`
             : filtered
                 .map((tpl) => {
                   const catMeta = TEMPLATE_CATEGORIES[tpl.category];
                   return `
             <div class="flow-tpl-card" data-tpl-id="${tpl.id}">
-              <div class="flow-tpl-card-header">
+                <div class="flow-tpl-card-header">
                 <span class="ms flow-tpl-card-icon" style="color:${catMeta.color}">${tpl.icon}</span>
                 <div class="flow-tpl-card-meta">
-                  <span class="flow-tpl-card-name">${tpl.name}</span>
-                  <span class="flow-tpl-card-cat">${catMeta.label}</span>
+                  <span class="flow-tpl-card-name">${translateUiText(tpl.name)}</span>
+                  <span class="flow-tpl-card-cat">${translateUiText(catMeta.label)}</span>
                 </div>
               </div>
-              <p class="flow-tpl-card-desc">${tpl.description}</p>
+              <p class="flow-tpl-card-desc">${translateUiText(tpl.description)}</p>
               <div class="flow-tpl-card-tags">
                 ${tpl.tags
                   .slice(0, 3)
-                  .map((t) => `<span class="flow-tpl-tag">${t}</span>`)
+                  .map((t) => `<span class="flow-tpl-tag">${translateUiText(t)}</span>`)
                   .join('')}
-                <span class="flow-tpl-card-nodes">${tpl.nodes.length} integrations</span>
+                <span class="flow-tpl-card-nodes">${tpl.nodes.length} ${translateUiText('integrations')}</span>
               </div>
-              <button class="flow-tpl-use-btn" data-tpl-id="${tpl.id}">Use Template</button>
+              <button class="flow-tpl-use-btn" data-tpl-id="${tpl.id}">${translateUiText('Use Template')}</button>
             </div>
           `;
                 })

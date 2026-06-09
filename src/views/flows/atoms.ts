@@ -3,6 +3,8 @@
 // Pure data types, layout math, serialization. No DOM, no IPC.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { translateUiText } from '../../i18n';
+
 // ── Node Kinds ─────────────────────────────────────────────────────────────
 
 export type FlowNodeKind =
@@ -195,8 +197,8 @@ export const TEMPLATE_CATEGORIES: Record<
  */
 export function instantiateTemplate(template: FlowTemplate): FlowGraph {
   const nodes: FlowNode[] = template.nodes.map((spec, _i) =>
-    createNode(spec.kind, spec.label, 0, 0, {
-      description: spec.description,
+    createNode(spec.kind, translateUiText(spec.label), 0, 0, {
+      description: spec.description ? translateUiText(spec.description) : spec.description,
       config: spec.config ? { ...spec.config } : {},
     }),
   );
@@ -210,8 +212,8 @@ export function instantiateTemplate(template: FlowTemplate): FlowGraph {
       }),
     );
 
-  const graph = createGraph(template.name, nodes, edges);
-  graph.description = template.description;
+  const graph = createGraph(translateUiText(template.name), nodes, edges);
+  graph.description = translateUiText(template.description);
   applyLayout(graph);
   return graph;
 }

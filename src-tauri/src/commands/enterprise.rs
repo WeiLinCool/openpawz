@@ -38,6 +38,13 @@ const ENTERPRISE_BUILD_RESET_SESSION: Option<&str> =
     option_env!("OPENPAWZ_ENTERPRISE_RESET_SESSION");
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EnterpriseDataToken {
+    pub token: String,
+    #[serde(default)]
+    pub version: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EnterpriseConfig {
     #[serde(default)]
     pub enabled: bool,
@@ -61,6 +68,12 @@ pub struct EnterpriseConfig {
     pub access_token: String,
     #[serde(default)]
     pub refresh_token: Option<String>,
+    #[serde(default)]
+    pub data_token: Option<String>,
+    #[serde(default)]
+    pub data_token_version: Option<String>,
+    #[serde(default)]
+    pub previous_data_tokens: Vec<EnterpriseDataToken>,
     #[serde(default)]
     pub user_email: Option<String>,
     #[serde(default)]
@@ -107,6 +120,9 @@ impl Default for EnterpriseConfig {
             gateway_url: String::new(),
             access_token: String::new(),
             refresh_token: None,
+            data_token: None,
+            data_token_version: None,
+            previous_data_tokens: Vec::new(),
             user_email: None,
             organization_id: None,
             plan: None,
@@ -236,6 +252,10 @@ pub struct EnterpriseConfigureRequest {
     #[serde(default)]
     pub refresh_token: Option<String>,
     #[serde(default)]
+    pub data_token: Option<String>,
+    #[serde(default)]
+    pub data_token_version: Option<String>,
+    #[serde(default)]
     pub user_email: Option<String>,
     #[serde(default)]
     pub organization_id: Option<String>,
@@ -303,21 +323,76 @@ impl EntitlementProvider for EnterpriseEntitlements<'_> {
 }
 
 pub fn load_enterprise_config(state: &EngineState) -> EnterpriseConfig {
-    state
+    let config = state
         .store
         .get_config(ENTERPRISE_CONFIG_KEY)
         .ok()
         .flatten()
         .and_then(|json| serde_json::from_str::<EnterpriseConfig>(&json).ok())
-        .unwrap_or_default()
+        .unwrap_or_default();
+    sync_enterprise_sso_key_vault_mode(&config);
+    config
 }
 
 fn save_enterprise_config(state: &EngineState, config: &EnterpriseConfig) -> Result<(), String> {
+    sync_enterprise_sso_key_vault_mode(config);
     let json = serde_json::to_string(config).map_err(|e| format!("Serialize error: {e}"))?;
     state
         .store
         .set_config(ENTERPRISE_CONFIG_KEY, &json)
         .map_err(|e| e.to_string())
+}
+
+fn sync_enterprise_sso_key_vault_mode(config: &EnterpriseConfig) {
+    crate::engine::key_vault::set_enterprise_sso_mode(
+        enterprise_build_mode_enabled() || config.enabled,
+    );
+    let material = enterprise_sso_key_material(config);
+    crate::engine::key_vault::set_enterprise_sso_material(material.as_deref());
+}
+
+fn apply_data_token_rotation(previous: &EnterpriseConfig, next: &mut EnterpriseConfig) {
+    next.previous_data_tokens = previous.previous_data_tokens.clone();
+    let Some(old_token) = previous.data_token.as_ref().filter(|token| !token.trim().is_empty())
+    else {
+        return;
+    };
+    let Some(new_token) = next.data_token.as_ref().filter(|token| !token.trim().is_empty()) else {
+        return;
+    };
+    if old_token == new_token {
+        return;
+    }
+    if !next
+        .previous_data_tokens
+        .iter()
+        .any(|entry| entry.token == *old_token)
+    {
+        next.previous_data_tokens.push(EnterpriseDataToken {
+            token: old_token.clone(),
+            version: previous.data_token_version.clone(),
+        });
+    }
+}
+
+fn enterprise_sso_key_material(config: &EnterpriseConfig) -> Option<String> {
+    let data_token = config.data_token.as_deref()?.trim();
+    if !config.enabled
+        || data_token.is_empty()
+        || config.access_token.trim().is_empty()
+        || enterprise_session_expired(config)
+    {
+        return None;
+    }
+    Some(format!(
+        "issuer={}|gateway={}|org={}|user={}|data_token_version={}|data_token={}",
+        config.issuer_url,
+        config.gateway_url,
+        config.organization_id.as_deref().unwrap_or(""),
+        config.user_email.as_deref().unwrap_or(""),
+        config.data_token_version.as_deref().unwrap_or(""),
+        data_token,
+    ))
 }
 
 pub fn enterprise_configured_provider(config: &EnterpriseConfig) -> Option<ProviderConfig> {
@@ -500,6 +575,10 @@ struct OAuthTokenResponse {
     #[serde(default)]
     refresh_token: Option<String>,
     #[serde(default)]
+    data_token: Option<String>,
+    #[serde(default)]
+    data_token_version: Option<String>,
+    #[serde(default)]
     expires_in: Option<i64>,
     #[serde(default)]
     scope: Option<String>,
@@ -565,6 +644,52 @@ fn string_field(value: &Value, keys: &[&str]) -> Option<String> {
     keys.iter()
         .find_map(|key| value.get(*key).and_then(Value::as_str))
         .map(ToOwned::to_owned)
+}
+
+fn enterprise_data_token_from_payloads(
+    token: &OAuthTokenResponse,
+    userinfo: Option<&Value>,
+    entitlements: Option<&Value>,
+) -> (Option<String>, Option<String>) {
+    let token_value = token
+        .data_token
+        .clone()
+        .or_else(|| userinfo.and_then(enterprise_data_token_from_value))
+        .or_else(|| entitlements.and_then(enterprise_data_token_from_value));
+    let token_version = token
+        .data_token_version
+        .clone()
+        .or_else(|| userinfo.and_then(enterprise_data_token_version_from_value))
+        .or_else(|| entitlements.and_then(enterprise_data_token_version_from_value));
+    (token_value, token_version)
+}
+
+fn enterprise_data_token_from_value(value: &Value) -> Option<String> {
+    string_field(
+        value,
+        &[
+            "data_token",
+            "dataToken",
+            "encryption_token",
+            "encryptionToken",
+            "xtyx_token",
+            "xtyxToken",
+        ],
+    )
+}
+
+fn enterprise_data_token_version_from_value(value: &Value) -> Option<String> {
+    string_field(
+        value,
+        &[
+            "data_token_version",
+            "dataTokenVersion",
+            "encryption_token_version",
+            "encryptionTokenVersion",
+            "xtyx_token_version",
+            "xtyxTokenVersion",
+        ],
+    )
 }
 
 fn entitlements_from_value(value: &Value) -> Vec<String> {
@@ -653,7 +778,8 @@ pub fn engine_enterprise_configure(
     state: State<'_, EngineState>,
     request: EnterpriseConfigureRequest,
 ) -> Result<EnterpriseStatus, String> {
-    let config = EnterpriseConfig {
+    let previous = load_enterprise_config(&state);
+    let mut config = EnterpriseConfig {
         enabled: true,
         issuer_url: request.issuer_url.unwrap_or_default(),
         auth_url: request.auth_url.unwrap_or_default(),
@@ -672,6 +798,9 @@ pub fn engine_enterprise_configure(
         gateway_url: request.gateway_url.trim_end_matches('/').to_string(),
         access_token: request.access_token,
         refresh_token: request.refresh_token,
+        data_token: request.data_token,
+        data_token_version: request.data_token_version,
+        previous_data_tokens: Vec::new(),
         user_email: request.user_email,
         organization_id: request.organization_id,
         plan: request.plan,
@@ -682,6 +811,7 @@ pub fn engine_enterprise_configure(
             .filter(|m| !m.trim().is_empty())
             .or_else(|| Some("gpt-4o-mini".to_string())),
     };
+    apply_data_token_rotation(&previous, &mut config);
 
     enforce_enterprise_access(&config)?;
     save_enterprise_config(&state, &config)?;
@@ -783,8 +913,14 @@ pub async fn engine_enterprise_oauth_start(
     }
 
     let expires_at = expires_at_from_token(&token);
+    let (data_token, data_token_version) = enterprise_data_token_from_payloads(
+        &token,
+        userinfo.as_ref(),
+        entitlement_payload.as_ref(),
+    );
 
-    let config = EnterpriseConfig {
+    let previous = load_enterprise_config(&state);
+    let mut config = EnterpriseConfig {
         enabled: true,
         issuer_url: request.issuer_url.trim_end_matches('/').to_string(),
         auth_url,
@@ -796,6 +932,9 @@ pub async fn engine_enterprise_oauth_start(
         gateway_url: gateway_url.trim_end_matches('/').to_string(),
         access_token: token.access_token,
         refresh_token: token.refresh_token,
+        data_token,
+        data_token_version,
+        previous_data_tokens: Vec::new(),
         user_email: userinfo
             .as_ref()
             .and_then(|v| string_field(v, &["email", "preferred_username", "sub"])),
@@ -812,6 +951,7 @@ pub async fn engine_enterprise_oauth_start(
             .filter(|m| !m.trim().is_empty())
             .or_else(|| Some("gpt-4o-mini".to_string())),
     };
+    apply_data_token_rotation(&previous, &mut config);
 
     enforce_enterprise_access(&config)?;
     save_enterprise_config(&state, &config)?;

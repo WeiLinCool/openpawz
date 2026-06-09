@@ -4,6 +4,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type { FlowGraph } from './atoms';
+import { translateUiText } from '../../i18n';
 import { formatDate, escAttr } from './molecule-state';
 import { staggerIn } from '../../components/animations';
 import { promptModal } from '../../components/helpers';
@@ -19,7 +20,7 @@ function renderFlowItem(g: FlowGraph, activeId: string | null): string {
         <div class="flow-list-name">${g.name}</div>
         <div class="flow-list-date">${formatDate(g.updatedAt)}</div>
       </div>
-      <button class="flow-list-del" data-del-id="${g.id}" title="Delete"><span class="ms">close</span></button>
+      <button class="flow-list-del" data-del-id="${g.id}" title="${translateUiText('Delete')}"><span class="ms">close</span></button>
     </div>`;
 }
 
@@ -67,16 +68,16 @@ export function renderFlowList(
     rootFlows.length > 0
       ? rootFlows.map((g) => renderFlowItem(g, activeId)).join('')
       : sortedFolders.length === 0
-        ? '<div class="flow-list-empty">No flows yet.<br>Create one or use <code>/flow</code> in Chat.</div>'
+        ? `<div class="flow-list-empty">${translateUiText('No flows yet.')}<br>${translateUiText('Create one or use')} <code>/flow</code> ${translateUiText('in Chat.')}</div>`
         : '';
 
   container.innerHTML = `
     <div class="flow-list-header">
-      <h3>Flows</h3>
+      <h3>${translateUiText('Flows')}</h3>
       <div class="flow-list-actions">
-        <button class="flow-list-new-btn" data-action="new-folder" title="New Folder"><span class="ms">create_new_folder</span></button>
-        <button class="flow-list-new-btn" title="New Flow"><span class="ms">add</span></button>
-        <button class="flow-list-new-btn flow-sidebar-collapse-btn" data-action="collapse-sidebar" title="Hide sidebar (Ctrl+B)"><span class="ms">left_panel_close</span></button>
+        <button class="flow-list-new-btn" data-action="new-folder" title="${translateUiText('New Folder')}"><span class="ms">create_new_folder</span></button>
+        <button class="flow-list-new-btn" title="${translateUiText('New Flow')}"><span class="ms">add</span></button>
+        <button class="flow-list-new-btn flow-sidebar-collapse-btn" data-action="collapse-sidebar" title="${translateUiText('Hide sidebar (Ctrl+B)')}"><span class="ms">left_panel_close</span></button>
       </div>
     </div>
     <div class="flow-list-items">
@@ -100,7 +101,7 @@ export function renderFlowList(
 
   // Wire new folder button
   container.querySelector('[data-action="new-folder"]')?.addEventListener('click', async () => {
-    const name = await promptModal('Folder name:');
+    const name = await promptModal(translateUiText('Folder name:'));
     if (!name?.trim()) return;
     onNew();
   });

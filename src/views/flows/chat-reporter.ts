@@ -6,6 +6,7 @@
 
 import type { FlowExecEvent, FlowOutputEntry } from './executor-atoms';
 import { type FlowNodeKind, NODE_DEFAULTS } from './atoms';
+import { translateUiText } from '../../i18n';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -104,8 +105,8 @@ export function createFlowChatReporter(): FlowChatReporterController {
     header.innerHTML = `
       <div class="flow-report-title">
         <span class="ms" style="color:var(--accent)">account_tree</span>
-        <strong>Running Flow: ${escHtml(name)}</strong>
-        <span class="flow-report-step-count">${totalSteps} steps</span>
+        <strong>${translateUiText('Running Flow:')} ${escHtml(name)}</strong>
+        <span class="flow-report-step-count">${totalSteps} ${translateUiText('steps')}</span>
       </div>
       <div class="flow-report-progress">
         <div class="flow-report-progress-bar"></div>
@@ -133,7 +134,7 @@ export function createFlowChatReporter(): FlowChatReporterController {
         <span class="ms flow-report-step-status" style="color:${STATUS_COLORS.running}">${STATUS_ICONS.running}</span>
         <span class="ms flow-report-step-icon" style="color:${defaults.color}">${defaults.icon}</span>
         <span class="flow-report-step-label">${escHtml(label)}</span>
-        <span class="flow-report-step-kind">${kind}</span>
+        <span class="flow-report-step-kind">${translateUiText(kind)}</span>
         <span class="flow-report-step-duration"></span>
       </div>
       <div class="flow-report-step-output"></div>
@@ -227,12 +228,12 @@ export function createFlowChatReporter(): FlowChatReporterController {
     summary.innerHTML = `
       <div class="flow-report-summary-row">
         <span class="ms" style="color:${statusColor}">${statusIcon}</span>
-        <strong>${status === 'success' ? 'Flow completed' : 'Flow finished with errors'}</strong>
+        <strong>${status === 'success' ? translateUiText('Flow completed') : translateUiText('Flow finished with errors')}</strong>
         <span class="flow-report-summary-duration">${formatDuration(totalDurationMs)}</span>
       </div>
       <div class="flow-report-summary-stats">
-        ${successCount > 0 ? `<span class="flow-report-stat-ok">${successCount} passed</span>` : ''}
-        ${errorCount > 0 ? `<span class="flow-report-stat-err">${errorCount} failed</span>` : ''}
+        ${successCount > 0 ? `<span class="flow-report-stat-ok">${successCount} ${translateUiText('passed')}</span>` : ''}
+        ${errorCount > 0 ? `<span class="flow-report-stat-err">${errorCount} ${translateUiText('failed')}</span>` : ''}
       </div>
     `;
 
@@ -254,7 +255,7 @@ export function createFlowChatReporter(): FlowChatReporterController {
     summary.innerHTML = `
       <div class="flow-report-summary-row">
         <span class="ms" style="color:${STATUS_COLORS.error}">cancel</span>
-        <strong>Flow aborted</strong>
+        <strong>${translateUiText('Flow aborted')}</strong>
       </div>
     `;
   }

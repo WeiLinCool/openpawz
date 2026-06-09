@@ -52,13 +52,6 @@ export function initLockScreen(): Promise<void> {
     _lockScreen = lockScreen;
     _resolve = resolve;
 
-    const enterprise = await pawEngine.enterpriseStatus().catch(() => null);
-    if (enterprise?.enterprise_build_mode) {
-      hideLockScreen(lockScreen);
-      resolve();
-      return;
-    }
-
     wireListeners();
 
     const mode = getLockMode();

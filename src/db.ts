@@ -65,47 +65,68 @@ export function getLastDbError(): string | null {
 
 // ── Field-level encryption (C2) ────────────────────────────────────────────
 // Uses Web Crypto API with AES-GCM for encrypting sensitive fields before
-// storing in SQLite. The 256-bit key is derived from the OS keychain via
-// the Rust get_db_encryption_key command.
+// storing in SQLite. The 256-bit key is provided by the Rust
+// get_db_encryption_key command. Enterprise builds derive it from the active
+// SSO session; non-enterprise builds use the OS keychain.
 
 let _cryptoKey: CryptoKey | null = null;
+let _decryptKeys: CryptoKey[] = [];
 const ENC_PREFIX = 'enc:'; // marker prefix for encrypted values
 
 /**
- * Initialise the encryption key from the OS keychain (via Tauri invoke).
+ * Initialise the encryption key from the backend crypto policy.
  * Call once after Tauri is ready. No-op in browser mode.
  */
 export async function initDbEncryption(): Promise<boolean> {
   try {
-    const hexKey = await invoke<string>('get_db_encryption_key');
-    if (!hexKey || hexKey.length < 32) {
+    const hexKeys = await loadDbEncryptionKeyMaterial();
+    if (hexKeys.length === 0 || !hexKeys[0] || hexKeys[0].length < 32) {
       console.error(
-        '[db] OS keychain returned invalid encryption key — credential storage will be blocked',
+        '[db] Backend returned invalid encryption key — credential storage will be blocked',
       );
       return false;
     }
 
-    // Convert hex string to raw bytes
-    const hexPairs = hexKey.match(/.{1,2}/g);
-    if (!hexPairs) return false;
-    const keyBytes = new Uint8Array(hexPairs.map((b) => parseInt(b, 16)));
-    try {
-      _cryptoKey = await crypto.subtle.importKey('raw', keyBytes, { name: 'AES-GCM' }, false, [
-        'encrypt',
-        'decrypt',
-      ]);
-    } finally {
-      // Zero raw key material immediately after import
-      keyBytes.fill(0);
+    const keys: CryptoKey[] = [];
+    for (const hexKey of hexKeys) {
+      const imported = await importAesGcmKey(hexKey);
+      if (imported) keys.push(imported);
     }
-    console.debug('[db] Encryption key loaded from OS keychain');
+    if (keys.length === 0) return false;
+
+    _cryptoKey = keys[0];
+    _decryptKeys = keys;
+    console.debug('[db] Encryption key loaded from backend crypto policy');
     return true;
   } catch (e) {
     console.error(
-      '[db] OS keychain unavailable — encryption disabled, credential storage blocked:',
+      '[db] Encryption unavailable — credential storage blocked:',
       e,
     );
     return false;
+  }
+}
+
+async function loadDbEncryptionKeyMaterial(): Promise<string[]> {
+  try {
+    return await invoke<string[]>('get_db_encryption_keys');
+  } catch {
+    const key = await invoke<string>('get_db_encryption_key');
+    return key ? [key] : [];
+  }
+}
+
+async function importAesGcmKey(hexKey: string): Promise<CryptoKey | null> {
+  const hexPairs = hexKey.match(/.{1,2}/g);
+  if (!hexPairs) return null;
+  const keyBytes = new Uint8Array(hexPairs.map((b) => parseInt(b, 16)));
+  try {
+    return await crypto.subtle.importKey('raw', keyBytes, { name: 'AES-GCM' }, false, [
+      'encrypt',
+      'decrypt',
+    ]);
+  } finally {
+    keyBytes.fill(0);
   }
 }
 
@@ -117,10 +138,10 @@ export async function initDbEncryption(): Promise<boolean> {
 export async function encryptField(plaintext: string): Promise<string> {
   if (!_cryptoKey) {
     console.error(
-      '[db] encryptField blocked — OS keychain unavailable. Refusing to store plaintext.',
+      '[db] encryptField blocked — encryption key unavailable. Refusing to store plaintext.',
     );
     throw new Error(
-      'Encryption unavailable — OS keychain is not accessible. Cannot store sensitive data.',
+      'Encryption unavailable. Cannot store sensitive data.',
     );
   }
   try {
@@ -143,19 +164,23 @@ export async function encryptField(plaintext: string): Promise<string> {
  */
 export async function decryptField(stored: string): Promise<string> {
   if (!stored.startsWith(ENC_PREFIX) || !_cryptoKey) return stored;
-  try {
-    const b64 = stored.slice(ENC_PREFIX.length);
-    const combined = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
-    const iv = combined.slice(0, 12);
-    const ciphertext = combined.slice(12);
-    const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, _cryptoKey, ciphertext);
-    return new TextDecoder().decode(decrypted);
-  } catch (e) {
-    console.error('[db] Decryption failed — refusing to return ciphertext:', e);
-    throw new Error(
-      'Decryption failed — encrypted data cannot be read. The encryption key may have changed.',
-    );
+  const b64 = stored.slice(ENC_PREFIX.length);
+  const combined = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+  const iv = combined.slice(0, 12);
+  const ciphertext = combined.slice(12);
+  let lastError: unknown = null;
+  for (const key of _decryptKeys.length > 0 ? _decryptKeys : [_cryptoKey]) {
+    try {
+      const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ciphertext);
+      return new TextDecoder().decode(decrypted);
+    } catch (e) {
+      lastError = e;
+    }
   }
+  console.error('[db] Decryption failed — refusing to return ciphertext:', lastError);
+  throw new Error(
+    'Decryption failed — encrypted data cannot be read. The encryption key may have changed.',
+  );
 }
 
 /** Check if encryption is available (key loaded). */

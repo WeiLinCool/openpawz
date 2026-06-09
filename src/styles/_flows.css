@@ -459,8 +459,11 @@
 
 #flows-toolbar {
   grid-area: toolbar;
+  position: relative;
+  z-index: 500;
   border-bottom: 1px solid var(--border);
   background: var(--bg-secondary);
+  overflow: visible;
 }
 
 .flow-toolbar {
@@ -470,7 +473,7 @@
   padding: 6px 12px;
   flex-wrap: wrap;
   overflow-x: auto;
-  overflow-y: hidden;
+  overflow-y: visible;
   scrollbar-width: none; /* Firefox */
   min-height: 36px;
 }
@@ -491,6 +494,7 @@
 }
 
 .flow-tb-btn {
+  position: relative;
   background: none;
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
@@ -524,6 +528,32 @@
   font-size: 18px;
 }
 
+.flow-toolbar-floating-tooltip {
+  position: fixed;
+  left: 0;
+  top: 0;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(20, 24, 31, 0.94);
+  color: #fff;
+  font-size: 11px;
+  line-height: 1.2;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 10000;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+}
+
+.flow-toolbar-floating-tooltip::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-bottom-color: rgba(20, 24, 31, 0.94);
+}
+
 .flow-tb-btn-danger:hover {
   color: var(--error);
   box-shadow: 0 2px 8px rgba(255, 77, 77, 0.15);
@@ -537,6 +567,7 @@
   background: var(--bg-primary);
   cursor: grab;
   position: relative;
+  z-index: 1;
 }
 
 /* Grain texture overlay — Kinetic Intelligence */
@@ -734,6 +765,8 @@
 
 #flows-panel {
   grid-area: panel;
+  position: relative;
+  z-index: 1;
   border-left: 1px solid var(--border);
   overflow-y: auto;
   background: var(--bg-sidebar);

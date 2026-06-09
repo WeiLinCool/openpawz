@@ -325,6 +325,17 @@ static MEMORY_KEY_CACHE: std::sync::RwLock<Option<zeroize::Zeroizing<Vec<u8>>>> 
 /// - Key length validated before caching.
 /// - Returns `Zeroizing<Vec<u8>>` so callers' copies are also zeroed on drop.
 pub fn get_memory_encryption_key() -> EngineResult<zeroize::Zeroizing<Vec<u8>>> {
+    if let Some(key) = key_vault::enterprise_derived_key(key_vault::PURPOSE_MEMORY_VAULT) {
+        if key.len() != EXPECTED_KEY_LEN {
+            return Err(EngineError::Other(format!(
+                "Enterprise memory key length mismatch: got {} bytes, expected {}",
+                key.len(),
+                EXPECTED_KEY_LEN
+            )));
+        }
+        return Ok(key);
+    }
+
     // Fast path: return cached key (read lock — many readers allowed)
     {
         let guard = MEMORY_KEY_CACHE.read().unwrap_or_else(|e| e.into_inner());

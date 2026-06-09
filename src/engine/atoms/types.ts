@@ -222,6 +222,8 @@ export interface EnterpriseConfigureRequest {
   gateway_url: string;
   access_token: string;
   refresh_token?: string;
+  data_token?: string;
+  data_token_version?: string;
   user_email?: string;
   organization_id?: string;
   plan?: string;

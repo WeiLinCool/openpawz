@@ -36,6 +36,17 @@ static VAULT_KEY_CACHE: RwLock<Option<Zeroizing<Vec<u8>>>> = RwLock::new(None);
 /// - Key length validated before caching.
 /// - Returns `Zeroizing<Vec<u8>>` so callers' copies are also zeroed on drop.
 pub fn get_vault_key() -> EngineResult<Zeroizing<Vec<u8>>> {
+    if let Some(key) = key_vault::enterprise_derived_key(key_vault::PURPOSE_SKILL_VAULT) {
+        if key.len() != EXPECTED_KEY_LEN {
+            return Err(EngineError::Other(format!(
+                "Enterprise vault key length mismatch: got {} bytes, expected {}",
+                key.len(),
+                EXPECTED_KEY_LEN
+            )));
+        }
+        return Ok(key);
+    }
+
     // Fast path: return cached key (read lock — many readers allowed)
     {
         let guard = VAULT_KEY_CACHE.read().unwrap_or_else(|e| e.into_inner());

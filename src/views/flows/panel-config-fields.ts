@@ -4,6 +4,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type { FlowNode } from './atoms';
+import { translateUiText } from '../../i18n';
 import { getAvailableAgents, escAttr } from './molecule-state';
 import { CRON_PRESETS, validateCron, describeCron, nextCronFire } from './cron-atoms';
 
@@ -34,8 +35,8 @@ export function buildConfigFieldsHtml(node: FlowNode): string {
   ) {
     html += `
       <label class="flow-panel-field">
-        <span>Prompt</span>
-        <textarea class="flow-panel-textarea" data-config="prompt" rows="3" placeholder="Instructions for this step…">${promptVal}</textarea>
+        <span>${translateUiText('Prompt')}</span>
+        <textarea class="flow-panel-textarea" data-config="prompt" rows="3" placeholder="${translateUiText('Instructions for this step…')}">${promptVal}</textarea>
       </label>
     `;
   }
@@ -59,26 +60,26 @@ export function buildConfigFieldsHtml(node: FlowNode): string {
       <div class="flow-panel-schedule">
         <div class="flow-panel-schedule-header">
           <span class="ms" style="font-size:16px">schedule</span>
-          <span>Schedule</span>
+          <span>${translateUiText('Schedule')}</span>
           <label class="flow-panel-toggle">
             <input type="checkbox" data-config="scheduleEnabled" ${scheduleEnabled ? 'checked' : ''} />
-            <span>${scheduleEnabled ? 'On' : 'Off'}</span>
+            <span>${scheduleEnabled ? translateUiText('On') : translateUiText('Off')}</span>
           </label>
         </div>
         <label class="flow-panel-field">
-          <span>Preset</span>
+          <span>${translateUiText('Preset')}</span>
           <select class="flow-panel-select" data-schedule-preset>
-            <option value="">Custom…</option>
+            <option value="">${translateUiText('Custom…')}</option>
             ${presetOptionsHtml}
           </select>
         </label>
         <label class="flow-panel-field">
-          <span>Cron Expression</span>
+          <span>${translateUiText('Cron Expression')}</span>
           <input type="text" class="flow-panel-input flow-panel-cron-input" data-config="schedule" value="${escAttr(scheduleVal)}" placeholder="* * * * *" spellcheck="false" />
           ${cronError ? `<span class="flow-panel-cron-error">${cronError}</span>` : ''}
           ${cronDesc ? `<span class="flow-panel-cron-desc">${cronDesc}</span>` : ''}
         </label>
-        ${nextFireStr ? `<div class="flow-panel-cron-next"><span class="ms" style="font-size:14px">event_upcoming</span> Next: ${nextFireStr}</div>` : ''}
+        ${nextFireStr ? `<div class="flow-panel-cron-next"><span class="ms" style="font-size:14px">event_upcoming</span> ${translateUiText('Next:')} ${nextFireStr}</div>` : ''}
       </div>
     `;
   }
@@ -91,7 +92,7 @@ export function buildConfigFieldsHtml(node: FlowNode): string {
       _availableAgents.length > 0
         ? [
             { id: '', name: '— Select Agent —' },
-            { id: 'default', name: 'Default' },
+            { id: 'default', name: translateUiText('Default') },
             ..._availableAgents,
           ]
             .map(
@@ -103,14 +104,14 @@ export function buildConfigFieldsHtml(node: FlowNode): string {
 
     html += `
       <label class="flow-panel-field">
-        <span>Agent</span>
+        <span>${translateUiText('Agent')}</span>
         <select class="flow-panel-select" data-config="agentId">
           ${agentOptions}
         </select>
       </label>
       <label class="flow-panel-field">
-        <span>Model</span>
-        <input type="text" class="flow-panel-input" data-config="model" value="${modelVal}" placeholder="inherit from agent" />
+        <span>${translateUiText('Model')}</span>
+        <input type="text" class="flow-panel-input" data-config="model" value="${modelVal}" placeholder="${translateUiText('inherit from agent')}" />
       </label>
     `;
   }
@@ -120,8 +121,8 @@ export function buildConfigFieldsHtml(node: FlowNode): string {
   if (node.kind === 'condition') {
     html += `
       <label class="flow-panel-field">
-        <span>Condition</span>
-        <textarea class="flow-panel-textarea" data-config="conditionExpr" rows="2" placeholder="e.g. Does the input contain valid data?">${conditionVal}</textarea>
+        <span>${translateUiText('Condition')}</span>
+        <textarea class="flow-panel-textarea" data-config="conditionExpr" rows="2" placeholder="${translateUiText('e.g. Does the input contain valid data?')}">${conditionVal}</textarea>
       </label>
     `;
   }
@@ -131,8 +132,8 @@ export function buildConfigFieldsHtml(node: FlowNode): string {
   if (node.kind === 'data') {
     html += `
       <label class="flow-panel-field">
-        <span>Transform</span>
-        <textarea class="flow-panel-textarea" data-config="transform" rows="2" placeholder="e.g. Extract the top 3 results">${transformVal}</textarea>
+        <span>${translateUiText('Transform')}</span>
+        <textarea class="flow-panel-textarea" data-config="transform" rows="2" placeholder="${translateUiText('e.g. Extract the top 3 results')}">${transformVal}</textarea>
       </label>
     `;
   }
@@ -142,11 +143,11 @@ export function buildConfigFieldsHtml(node: FlowNode): string {
   if (node.kind === 'code') {
     html += `
       <label class="flow-panel-field">
-        <span>JavaScript Code</span>
+        <span>${translateUiText('JavaScript Code')}</span>
         <textarea class="flow-panel-textarea flow-panel-code" data-config="code" rows="8" placeholder="// Input available as: input (string), data (parsed JSON)
 // Return a value or use console.log()
 return input.toUpperCase();">${codeVal}</textarea>
-        <span class="flow-panel-hint">Sandboxed: no window, document, fetch, eval.<br>Receives <code>input</code> (string) and <code>data</code> (parsed JSON).</span>
+        <span class="flow-panel-hint">${translateUiText('Sandboxed: no window, document, fetch, eval.')}<br>${translateUiText('Receives')} <code>input</code> ${translateUiText('(string) and')} <code>data</code> ${translateUiText('(parsed JSON).')}</span>
       </label>
     `;
   }
@@ -156,9 +157,9 @@ return input.toUpperCase();">${codeVal}</textarea>
   if (node.kind === 'output') {
     html += `
       <label class="flow-panel-field">
-        <span>Output Target</span>
+        <span>${translateUiText('Output Target')}</span>
         <select class="flow-panel-select" data-config="outputTarget">
-          ${['chat', 'log', 'store'].map((t) => `<option value="${t}"${outputTarget === t ? ' selected' : ''}>${t}</option>`).join('')}
+          ${['chat', 'log', 'store'].map((t) => `<option value="${t}"${outputTarget === t ? ' selected' : ''}>${translateUiText(t)}</option>`).join('')}
         </select>
       </label>
     `;
@@ -173,24 +174,24 @@ return input.toUpperCase();">${codeVal}</textarea>
     const httpBody = escAttr((config.httpBody as string) ?? '');
     html += `
       <label class="flow-panel-field">
-        <span>Method</span>
+        <span>${translateUiText('Method')}</span>
         <select class="flow-panel-select" data-config="httpMethod">
           ${['GET', 'POST', 'PUT', 'PATCH', 'DELETE'].map((m) => `<option value="${m}"${httpMethod === m ? ' selected' : ''}>${m}</option>`).join('')}
         </select>
       </label>
       <label class="flow-panel-field">
-        <span>URL</span>
+        <span>${translateUiText('URL')}</span>
         <input type="text" class="flow-panel-input" data-config="httpUrl" value="${httpUrl}" placeholder="https://api.example.com/endpoint" />
       </label>
       <label class="flow-panel-field">
-        <span>Headers (JSON)</span>
+        <span>${translateUiText('Headers (JSON)')}</span>
         <textarea class="flow-panel-textarea" data-config="httpHeaders" rows="2" placeholder='{"Content-Type": "application/json"}'>${httpHeaders}</textarea>
       </label>
       <label class="flow-panel-field">
-        <span>Body</span>
-        <textarea class="flow-panel-textarea" data-config="httpBody" rows="3" placeholder="Request body — use {{input}} for upstream output">${httpBody}</textarea>
+        <span>${translateUiText('Body')}</span>
+        <textarea class="flow-panel-textarea" data-config="httpBody" rows="3" placeholder="${translateUiText('Request body — use {{input}} for upstream output')}">${httpBody}</textarea>
       </label>
-      <span class="flow-panel-hint">Use <code>{{input}}</code> in URL, headers, or body to inject upstream output.</span>
+      <span class="flow-panel-hint">${translateUiText('Use')} <code>{{input}}</code> ${translateUiText('in URL, headers, or body to inject upstream output.')}</span>
     `;
   }
 
@@ -203,22 +204,22 @@ return input.toUpperCase();">${codeVal}</textarea>
       <div class="flow-panel-retry-config" style="margin-top: 8px">
         <div class="flow-panel-retry-header">
           <span class="ms" style="font-size:14px;color:var(--kinetic-gold)">key</span>
-          <span>Credential</span>
+          <span>${translateUiText('Credential')}</span>
         </div>
         <label class="flow-panel-field">
-          <span>Credential Name</span>
-          <input type="text" class="flow-panel-input" data-config="credentialName" value="${credName}" placeholder="e.g. openai-key, github-token" />
+          <span>${translateUiText('Credential Name')}</span>
+          <input type="text" class="flow-panel-input" data-config="credentialName" value="${credName}" placeholder="${translateUiText('e.g. openai-key, github-token')}" />
         </label>
         <label class="flow-panel-field">
-          <span>Type</span>
+          <span>${translateUiText('Type')}</span>
           <select class="flow-panel-input" data-config="credentialType">
-            <option value="bearer"${credType === 'bearer' ? ' selected' : ''}>Bearer Token</option>
-            <option value="api-key"${credType === 'api-key' ? ' selected' : ''}>API Key (header)</option>
-            <option value="basic"${credType === 'basic' ? ' selected' : ''}>Basic Auth</option>
+            <option value="bearer"${credType === 'bearer' ? ' selected' : ''}>${translateUiText('Bearer Token')}</option>
+            <option value="api-key"${credType === 'api-key' ? ' selected' : ''}>${translateUiText('API Key (header)')}</option>
+            <option value="basic"${credType === 'basic' ? ' selected' : ''}>${translateUiText('Basic Auth')}</option>
             <option value="oauth2"${credType === 'oauth2' ? ' selected' : ''}>OAuth2</option>
           </select>
         </label>
-        <span class="flow-panel-hint">Or use <code>{{vault.name}}</code> directly in headers/args.</span>
+        <span class="flow-panel-hint">${translateUiText('Or use')} <code>{{vault.name}}</code> ${translateUiText('directly in headers/args.')}</span>
       </div>
     `;
   }
@@ -230,14 +231,14 @@ return input.toUpperCase();">${codeVal}</textarea>
     const mcpToolArgs = escAttr((config.mcpToolArgs as string) ?? '');
     html += `
       <label class="flow-panel-field">
-        <span>Tool Name</span>
-        <input type="text" class="flow-panel-input" data-config="mcpToolName" value="${mcpToolName}" placeholder="e.g. search_web, read_file" />
+        <span>${translateUiText('Tool Name')}</span>
+        <input type="text" class="flow-panel-input" data-config="mcpToolName" value="${mcpToolName}" placeholder="${translateUiText('e.g. search_web, read_file')}" />
       </label>
       <label class="flow-panel-field">
-        <span>Arguments (JSON)</span>
+        <span>${translateUiText('Arguments (JSON)')}</span>
         <textarea class="flow-panel-textarea" data-config="mcpToolArgs" rows="3" placeholder='{"query": "{{input}}"}'>${mcpToolArgs}</textarea>
       </label>
-      <span class="flow-panel-hint">Use <code>{{input}}</code> in arguments to inject upstream output.</span>
+      <span class="flow-panel-hint">${translateUiText('Use')} <code>{{input}}</code> ${translateUiText('in arguments to inject upstream output.')}</span>
     `;
   }
 
@@ -251,21 +252,21 @@ return input.toUpperCase();">${codeVal}</textarea>
       <div class="flow-panel-loop-config">
         <div class="flow-panel-retry-header">
           <span class="ms" style="font-size:14px;color:var(--kinetic-gold)">repeat</span>
-          <span>Loop / Iteration</span>
+          <span>${translateUiText('Loop / Iteration')}</span>
         </div>
         <label class="flow-panel-field">
-          <span>Loop Over</span>
-          <input type="text" class="flow-panel-input" data-config="loopOver" value="${loopOver}" placeholder="e.g. data.items, results" />
+          <span>${translateUiText('Loop Over')}</span>
+          <input type="text" class="flow-panel-input" data-config="loopOver" value="${loopOver}" placeholder="${translateUiText('e.g. data.items, results')}" />
         </label>
         <label class="flow-panel-field">
-          <span>Item Variable</span>
+          <span>${translateUiText('Item Variable')}</span>
           <input type="text" class="flow-panel-input" data-config="loopVar" value="${loopVar}" placeholder="item" />
         </label>
         <label class="flow-panel-field">
-          <span>Max Iterations</span>
+          <span>${translateUiText('Max Iterations')}</span>
           <input type="number" class="flow-panel-input" data-config="loopMaxIterations" value="${loopMaxIter}" min="1" max="1000" step="1" />
         </label>
-        <span class="flow-panel-hint">Use <code>{{loop.index}}</code> and <code>{{loop.item}}</code> in downstream prompts.</span>
+        <span class="flow-panel-hint">${translateUiText('Use')} <code>{{loop.index}}</code> ${translateUiText('and')} <code>{{loop.item}}</code> ${translateUiText('in downstream prompts.')}</span>
       </div>
     `;
   }
@@ -278,13 +279,13 @@ return input.toUpperCase();">${codeVal}</textarea>
       <div class="flow-panel-retry-config" style="margin-top: 8px">
         <div class="flow-panel-retry-header">
           <span class="ms" style="font-size:14px;color:var(--kinetic-purple, #A855F7)">account_tree</span>
-          <span>Sub-flow</span>
+          <span>${translateUiText('Sub-flow')}</span>
         </div>
         <label class="flow-panel-field">
-          <span>Sub-flow ID</span>
-          <input type="text" class="flow-panel-input" data-config="subFlowId" value="${subFlowId}" placeholder="Paste flow ID to execute" />
+          <span>${translateUiText('Sub-flow ID')}</span>
+          <input type="text" class="flow-panel-input" data-config="subFlowId" value="${subFlowId}" placeholder="${translateUiText('Paste flow ID to execute')}" />
         </label>
-        <span class="flow-panel-hint">The selected flow will be executed with upstream input. Max 5 levels of nesting.</span>
+        <span class="flow-panel-hint">${translateUiText('The selected flow will be executed with upstream input. Max 5 levels of nesting.')}</span>
       </div>
     `;
   }
@@ -300,25 +301,25 @@ return input.toUpperCase();">${codeVal}</textarea>
       <div class="flow-panel-retry-config" style="margin-top: 8px">
         <div class="flow-panel-retry-header">
           <span class="ms" style="font-size:14px;color:var(--kinetic-purple, #A855F7)">groups</span>
-          <span>Squad</span>
+          <span>${translateUiText('Squad')}</span>
         </div>
         <label class="flow-panel-field">
-          <span>Squad ID</span>
-          <input type="text" class="flow-panel-input" data-config="squadId" value="${squadId}" placeholder="Select or enter squad ID" />
+          <span>${translateUiText('Squad ID')}</span>
+          <input type="text" class="flow-panel-input" data-config="squadId" value="${squadId}" placeholder="${translateUiText('Select or enter squad ID')}" />
         </label>
         <label class="flow-panel-field">
-          <span>Objective</span>
-          <textarea class="flow-panel-textarea" data-config="squadObjective" rows="2" placeholder="Task or goal for the squad (uses upstream input if empty)">${squadObj}</textarea>
+          <span>${translateUiText('Objective')}</span>
+          <textarea class="flow-panel-textarea" data-config="squadObjective" rows="2" placeholder="${translateUiText('Task or goal for the squad (uses upstream input if empty)')}">${squadObj}</textarea>
         </label>
         <label class="flow-panel-field">
-          <span>Timeout (s)</span>
+          <span>${translateUiText('Timeout (s)')}</span>
           <input type="number" class="flow-panel-input" data-config="squadTimeoutMs" value="${squadTimeout}" min="10" max="600" step="10" />
         </label>
         <label class="flow-panel-field">
-          <span>Max Rounds</span>
+          <span>${translateUiText('Max Rounds')}</span>
           <input type="number" class="flow-panel-input" data-config="squadMaxRounds" value="${squadRounds}" min="1" max="20" step="1" />
         </label>
-        <span class="flow-panel-hint">The squad will discuss and converge on a result within the round limit.</span>
+        <span class="flow-panel-hint">${translateUiText('The squad will discuss and converge on a result within the round limit.')}</span>
       </div>
     `;
   }
@@ -345,34 +346,34 @@ return input.toUpperCase();">${codeVal}</textarea>
       <div class="flow-panel-retry-config" style="margin-top: 8px">
         <div class="flow-panel-retry-header">
           <span class="ms" style="font-size:14px;color:var(--kinetic-sage, #6B8E6B)">save</span>
-          <span>Memory Write</span>
+          <span>${translateUiText('Memory Write')}</span>
         </div>
         <label class="flow-panel-field">
-          <span>Content Source</span>
+          <span>${translateUiText('Content Source')}</span>
           <select class="flow-panel-select" data-config="memorySource">
-            <option value="output"${memSrc === 'output' ? ' selected' : ''}>Node Output</option>
-            <option value="custom"${memSrc === 'custom' ? ' selected' : ''}>Custom Text</option>
+            <option value="output"${memSrc === 'output' ? ' selected' : ''}>${translateUiText('Node Output')}</option>
+            <option value="custom"${memSrc === 'custom' ? ' selected' : ''}>${translateUiText('Custom Text')}</option>
           </select>
         </label>
         <label class="flow-panel-field">
-          <span>Custom Content</span>
-          <textarea class="flow-panel-textarea" data-config="memoryContent" rows="2" placeholder="Custom content to store (when source is Custom)">${memContent}</textarea>
+          <span>${translateUiText('Custom Content')}</span>
+          <textarea class="flow-panel-textarea" data-config="memoryContent" rows="2" placeholder="${translateUiText('Custom content to store (when source is Custom)')}">${memContent}</textarea>
         </label>
         <label class="flow-panel-field">
-          <span>Category</span>
+          <span>${translateUiText('Category')}</span>
           <select class="flow-panel-select" data-config="memoryCategory">
-            ${categories.map((c) => `<option value="${c}"${memCat === c ? ' selected' : ''}>${c.replace('_', ' ')}</option>`).join('')}
+            ${categories.map((c) => `<option value="${c}"${memCat === c ? ' selected' : ''}>${translateUiText(c.replace('_', ' '))}</option>`).join('')}
           </select>
         </label>
         <label class="flow-panel-field">
-          <span>Importance (0–1)</span>
+          <span>${translateUiText('Importance (0–1)')}</span>
           <input type="number" class="flow-panel-input" data-config="memoryImportance" value="${memImp}" min="0" max="1" step="0.1" />
         </label>
         <label class="flow-panel-field">
-          <span>Agent ID (scope)</span>
-          <input type="text" class="flow-panel-input" data-config="memoryAgentId" value="${memAgent}" placeholder="Optional — scopes memory to agent" />
+          <span>${translateUiText('Agent ID (scope)')}</span>
+          <input type="text" class="flow-panel-input" data-config="memoryAgentId" value="${memAgent}" placeholder="${translateUiText('Optional — scopes memory to agent')}" />
         </label>
-        <span class="flow-panel-hint">Stores information in long-term memory for future recall.</span>
+        <span class="flow-panel-hint">${translateUiText('Stores information in long-term memory for future recall.')}</span>
       </div>
     `;
   }
@@ -390,39 +391,39 @@ return input.toUpperCase();">${codeVal}</textarea>
       <div class="flow-panel-retry-config" style="margin-top: 8px">
         <div class="flow-panel-retry-header">
           <span class="ms" style="font-size:14px;color:var(--kinetic-gold, #DAA520)">manage_search</span>
-          <span>Memory Recall</span>
+          <span>${translateUiText('Memory Recall')}</span>
         </div>
         <label class="flow-panel-field">
-          <span>Query Source</span>
+          <span>${translateUiText('Query Source')}</span>
           <select class="flow-panel-select" data-config="memoryQuerySource">
-            <option value="input"${mqSrc === 'input' ? ' selected' : ''}>Upstream Input</option>
-            <option value="custom"${mqSrc === 'custom' ? ' selected' : ''}>Custom Query</option>
+            <option value="input"${mqSrc === 'input' ? ' selected' : ''}>${translateUiText('Upstream Input')}</option>
+            <option value="custom"${mqSrc === 'custom' ? ' selected' : ''}>${translateUiText('Custom Query')}</option>
           </select>
         </label>
         <label class="flow-panel-field">
-          <span>Custom Query</span>
-          <input type="text" class="flow-panel-input" data-config="memoryQuery" value="${mqQuery}" placeholder="Search query (when source is Custom)" />
+          <span>${translateUiText('Custom Query')}</span>
+          <input type="text" class="flow-panel-input" data-config="memoryQuery" value="${mqQuery}" placeholder="${translateUiText('Search query (when source is Custom)')}" />
         </label>
         <label class="flow-panel-field">
-          <span>Max Results</span>
+          <span>${translateUiText('Max Results')}</span>
           <input type="number" class="flow-panel-input" data-config="memoryLimit" value="${mqLimit}" min="1" max="50" step="1" />
         </label>
         <label class="flow-panel-field">
-          <span>Min Relevance (0–1)</span>
+          <span>${translateUiText('Min Relevance (0–1)')}</span>
           <input type="number" class="flow-panel-input" data-config="memoryThreshold" value="${mqThreshold}" min="0" max="1" step="0.05" />
         </label>
         <label class="flow-panel-field">
-          <span>Output Format</span>
+          <span>${translateUiText('Output Format')}</span>
           <select class="flow-panel-select" data-config="memoryOutputFormat">
-            <option value="text"${mqFormat === 'text' ? ' selected' : ''}>Text (numbered list)</option>
-            <option value="json"${mqFormat === 'json' ? ' selected' : ''}>JSON (array)</option>
+            <option value="text"${mqFormat === 'text' ? ' selected' : ''}>${translateUiText('Text (numbered list)')}</option>
+            <option value="json"${mqFormat === 'json' ? ' selected' : ''}>${translateUiText('JSON (array)')}</option>
           </select>
         </label>
         <label class="flow-panel-field">
-          <span>Agent ID (scope)</span>
-          <input type="text" class="flow-panel-input" data-config="memoryAgentId" value="${mqAgent}" placeholder="Optional — scopes search to agent" />
+          <span>${translateUiText('Agent ID (scope)')}</span>
+          <input type="text" class="flow-panel-input" data-config="memoryAgentId" value="${mqAgent}" placeholder="${translateUiText('Optional — scopes search to agent')}" />
         </label>
-        <span class="flow-panel-hint">Searches long-term memory and provides results to downstream nodes.</span>
+        <span class="flow-panel-hint">${translateUiText('Searches long-term memory and provides results to downstream nodes.')}</span>
       </div>
     `;
   }
@@ -436,17 +437,17 @@ return input.toUpperCase();">${codeVal}</textarea>
       <div class="flow-panel-retry-config" style="margin-top: 8px">
         <div class="flow-panel-retry-header">
           <span class="ms" style="font-size:14px">data_object</span>
-          <span>Set Variable</span>
+          <span>${translateUiText('Set Variable')}</span>
         </div>
         <label class="flow-panel-field">
-          <span>Variable Name</span>
-          <input type="text" class="flow-panel-input" data-config="setVariableKey" value="${setVarKey}" placeholder="e.g. summary, lastResult" />
+          <span>${translateUiText('Variable Name')}</span>
+          <input type="text" class="flow-panel-input" data-config="setVariableKey" value="${setVarKey}" placeholder="${translateUiText('e.g. summary, lastResult')}" />
         </label>
         <label class="flow-panel-field">
-          <span>Value Expression</span>
-          <input type="text" class="flow-panel-input" data-config="setVariable" value="${setVarVal}" placeholder="Leave empty to use node output" />
+          <span>${translateUiText('Value Expression')}</span>
+          <input type="text" class="flow-panel-input" data-config="setVariable" value="${setVarVal}" placeholder="${translateUiText('Leave empty to use node output')}" />
         </label>
-        <span class="flow-panel-hint">Access via <code>{{flow.name}}</code> in downstream prompts.</span>
+        <span class="flow-panel-hint">${translateUiText('Access via')} <code>{{flow.name}}</code> ${translateUiText('in downstream prompts.')}</span>
       </div>
     `;
   }
@@ -459,17 +460,17 @@ return input.toUpperCase();">${codeVal}</textarea>
       <div class="flow-panel-error-config">
         <div class="flow-panel-error-header">
           <span class="ms" style="font-size:16px;color:var(--kinetic-red)">error</span>
-          <span>Error Handler</span>
+          <span>${translateUiText('Error Handler')}</span>
         </div>
         <label class="flow-panel-field">
-          <span>Notify via</span>
+          <span>${translateUiText('Notify via')}</span>
           <div class="flow-panel-error-targets">
             ${['log', 'toast', 'chat']
               .map(
                 (t) => `
               <label class="flow-panel-error-target">
                 <input type="checkbox" data-error-target="${t}" ${errorTargets.includes(t) ? 'checked' : ''} />
-                <span>${t === 'log' ? 'Console Log' : t === 'toast' ? 'Toast Alert' : 'Chat Message'}</span>
+                <span>${t === 'log' ? translateUiText('Console Log') : t === 'toast' ? translateUiText('Toast Alert') : translateUiText('Chat Message')}</span>
               </label>
             `,
               )
@@ -477,8 +478,8 @@ return input.toUpperCase();">${codeVal}</textarea>
           </div>
         </label>
         <label class="flow-panel-field">
-          <span>Custom Message</span>
-          <textarea class="flow-panel-textarea" data-config="prompt" rows="2" placeholder="Optional error message template…">${promptVal}</textarea>
+          <span>${translateUiText('Custom Message')}</span>
+          <textarea class="flow-panel-textarea" data-config="prompt" rows="2" placeholder="${translateUiText('Optional error message template…')}">${promptVal}</textarea>
         </label>
       </div>
     `;
@@ -507,18 +508,18 @@ return input.toUpperCase();">${codeVal}</textarea>
       <div class="flow-panel-retry-config">
         <div class="flow-panel-retry-header">
           <span class="ms" style="font-size:14px">replay</span>
-          <span>Retry on Error</span>
+          <span>${translateUiText('Retry on Error')}</span>
         </div>
         <label class="flow-panel-field">
-          <span>Max Retries</span>
+          <span>${translateUiText('Max Retries')}</span>
           <input type="number" class="flow-panel-input" data-config="maxRetries" value="${maxRetries}" min="0" max="10" step="1" />
         </label>
         <label class="flow-panel-field">
-          <span>Delay (ms)</span>
+          <span>${translateUiText('Delay (ms)')}</span>
           <input type="number" class="flow-panel-input" data-config="retryDelayMs" value="${retryDelay}" min="100" max="60000" step="100" />
         </label>
         <label class="flow-panel-field">
-          <span>Backoff ×</span>
+          <span>${translateUiText('Backoff ×')}</span>
           <input type="number" class="flow-panel-input" data-config="retryBackoff" value="${retryBackoff}" min="1" max="10" step="0.5" />
         </label>
       </div>
@@ -544,7 +545,7 @@ return input.toUpperCase();">${codeVal}</textarea>
   ) {
     html += `
       <label class="flow-panel-field">
-        <span>Timeout (s)</span>
+        <span>${translateUiText('Timeout (s)')}</span>
         <input type="number" class="flow-panel-input" data-config="timeoutMs" value="${timeoutVal / 1000}" min="5" max="600" step="5" />
       </label>
     `;

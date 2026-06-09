@@ -18,6 +18,55 @@ import {
 
 // ── Toolbar Rendering ──────────────────────────────────────────────────────
 
+let toolbarTooltipEl: HTMLDivElement | null = null;
+
+function ensureToolbarTooltip() {
+  if (toolbarTooltipEl?.isConnected) return toolbarTooltipEl;
+  toolbarTooltipEl = document.createElement('div');
+  toolbarTooltipEl.className = 'flow-toolbar-floating-tooltip';
+  toolbarTooltipEl.setAttribute('role', 'tooltip');
+  toolbarTooltipEl.hidden = true;
+  document.body.appendChild(toolbarTooltipEl);
+  return toolbarTooltipEl;
+}
+
+function hideToolbarTooltip() {
+  if (!toolbarTooltipEl) return;
+  toolbarTooltipEl.hidden = true;
+}
+
+function showToolbarTooltip(button: HTMLElement, label: string) {
+  const tooltip = ensureToolbarTooltip();
+  tooltip.textContent = label;
+  tooltip.hidden = false;
+
+  const rect = button.getBoundingClientRect();
+  const gap = 10;
+  const maxWidth = tooltip.offsetWidth;
+  const left = Math.min(
+    Math.max(rect.left + rect.width / 2 - maxWidth / 2, 8),
+    window.innerWidth - maxWidth - 8,
+  );
+  const top = rect.bottom + gap;
+
+  tooltip.style.left = `${left}px`;
+  tooltip.style.top = `${top}px`;
+}
+
+function renderToolbarButton(
+  icon: string,
+  label: string,
+  dataAction: string,
+  extraClass = '',
+) {
+  const className = ['flow-tb-btn', extraClass].filter(Boolean).join(' ');
+  return `
+    <button class="${className}" data-action="${dataAction}" title="${label}" aria-label="${label}">
+      <span class="ms">${icon}</span>
+    </button>
+  `;
+}
+
 export function renderToolbar(
   container: HTMLElement,
   runState?: { isRunning: boolean; isPaused: boolean; isDebug?: boolean },
@@ -29,139 +78,103 @@ export function renderToolbar(
   container.innerHTML = `
     <div class="flow-toolbar">
       <div class="flow-toolbar-group flow-toolbar-exec">
-        <button class="flow-tb-btn flow-tb-btn-run${isRunning ? ' active' : ''}" data-action="run-flow" title="${isRunning ? t('flow.toolbar.running') : t('flow.toolbar.run')}">
-          <span class="ms">${isRunning ? 'hourglass_top' : 'play_arrow'}</span>
-        </button>
-        <button class="flow-tb-btn flow-tb-btn-debug${isDebug ? ' active' : ''}" data-action="debug-flow" title="${isDebug ? t('flow.toolbar.debugging') : t('flow.toolbar.debug')}">
-          <span class="ms">bug_report</span>
-        </button>
+        ${renderToolbarButton(
+          isRunning ? 'hourglass_top' : 'play_arrow',
+          isRunning ? t('flow.toolbar.running') : t('flow.toolbar.run'),
+          'run-flow',
+          `flow-tb-btn-run${isRunning ? ' active' : ''}`,
+        )}
+        ${renderToolbarButton(
+          'bug_report',
+          isDebug ? t('flow.toolbar.debugging') : t('flow.toolbar.debug'),
+          'debug-flow',
+          `flow-tb-btn-debug${isDebug ? ' active' : ''}`,
+        )}
         ${
           isDebug
-            ? `
-          <button class="flow-tb-btn flow-tb-btn-step" data-action="step-next" title="${t('flow.toolbar.stepNext')}">
-            <span class="ms">skip_next</span>
-          </button>
-        `
+            ? renderToolbarButton('skip_next', t('flow.toolbar.stepNext'), 'step-next', 'flow-tb-btn-step')
             : ''
         }
         ${
           isRunning || isDebug
             ? `
-          <button class="flow-tb-btn${isPaused ? ' active' : ''}" data-action="pause-flow" title="${isPaused ? t('flow.toolbar.resume') : t('flow.toolbar.pause')}">
-            <span class="ms">${isPaused ? 'play_arrow' : 'pause'}</span>
-          </button>
-          <button class="flow-tb-btn flow-tb-btn-danger" data-action="stop-flow" title="${t('flow.toolbar.stop')}">
-            <span class="ms">stop</span>
-          </button>
+          ${renderToolbarButton(
+            isPaused ? 'play_arrow' : 'pause',
+            isPaused ? t('flow.toolbar.resume') : t('flow.toolbar.pause'),
+            'pause-flow',
+            isPaused ? 'active' : '',
+          )}
+          ${renderToolbarButton('stop', t('flow.toolbar.stop'), 'stop-flow', 'flow-tb-btn-danger')}
         `
             : ''
         }
       </div>
       <div class="flow-toolbar-divider"></div>
       <div class="flow-toolbar-group">
-        <button class="flow-tb-btn" data-action="add-trigger" title="${t('flow.toolbar.addTrigger')}">
-          <span class="ms">${NODE_DEFAULTS.trigger.icon}</span>
-        </button>
-        <button class="flow-tb-btn" data-action="add-agent" title="${t('flow.toolbar.addAgent')}">
-          <span class="ms">${NODE_DEFAULTS.agent.icon}</span>
-        </button>
-        <button class="flow-tb-btn" data-action="add-tool" title="${t('flow.toolbar.addTool')}">
-          <span class="ms">${NODE_DEFAULTS.tool.icon}</span>
-        </button>
-        <button class="flow-tb-btn" data-action="add-condition" title="${t('flow.toolbar.addCondition')}">
-          <span class="ms">${NODE_DEFAULTS.condition.icon}</span>
-        </button>
-        <button class="flow-tb-btn" data-action="add-data" title="${t('flow.toolbar.addData')}">
-          <span class="ms">${NODE_DEFAULTS.data.icon}</span>
-        </button>
-        <button class="flow-tb-btn" data-action="add-code" title="${t('flow.toolbar.addCode')}">
-          <span class="ms">${NODE_DEFAULTS.code.icon}</span>
-        </button>
-        <button class="flow-tb-btn" data-action="add-error" title="${t('flow.toolbar.addErrorHandler')}">
-          <span class="ms">${NODE_DEFAULTS.error.icon}</span>
-        </button>
-        <button class="flow-tb-btn" data-action="add-output" title="${t('flow.toolbar.addOutput')}">
-          <span class="ms">${NODE_DEFAULTS.output.icon}</span>
-        </button>
-        <button class="flow-tb-btn" data-action="add-http" title="${t('flow.toolbar.addHttpRequest')}">
-          <span class="ms">${NODE_DEFAULTS.http.icon}</span>
-        </button>
-        <button class="flow-tb-btn" data-action="add-mcp-tool" title="${t('flow.toolbar.addMcpTool')}">
-          <span class="ms">${NODE_DEFAULTS['mcp-tool'].icon}</span>
-        </button>
-        <button class="flow-tb-btn" data-action="add-loop" title="${t('flow.toolbar.addLoop')}">
-          <span class="ms">${NODE_DEFAULTS.loop.icon}</span>
-        </button>
-        <button class="flow-tb-btn" data-action="add-event-horizon" title="${t('flow.toolbar.addEventHorizon')}">
-          <span class="ms">${NODE_DEFAULTS['event-horizon'].icon}</span>
-        </button>
+        ${renderToolbarButton(NODE_DEFAULTS.trigger.icon, t('flow.toolbar.addTrigger'), 'add-trigger')}
+        ${renderToolbarButton(NODE_DEFAULTS.agent.icon, t('flow.toolbar.addAgent'), 'add-agent')}
+        ${renderToolbarButton(NODE_DEFAULTS.tool.icon, t('flow.toolbar.addTool'), 'add-tool')}
+        ${renderToolbarButton(NODE_DEFAULTS.condition.icon, t('flow.toolbar.addCondition'), 'add-condition')}
+        ${renderToolbarButton(NODE_DEFAULTS.data.icon, t('flow.toolbar.addData'), 'add-data')}
+        ${renderToolbarButton(NODE_DEFAULTS.code.icon, t('flow.toolbar.addCode'), 'add-code')}
+        ${renderToolbarButton(NODE_DEFAULTS.error.icon, t('flow.toolbar.addErrorHandler'), 'add-error')}
+        ${renderToolbarButton(NODE_DEFAULTS.output.icon, t('flow.toolbar.addOutput'), 'add-output')}
+        ${renderToolbarButton(NODE_DEFAULTS.http.icon, t('flow.toolbar.addHttpRequest'), 'add-http')}
+        ${renderToolbarButton(NODE_DEFAULTS['mcp-tool'].icon, t('flow.toolbar.addMcpTool'), 'add-mcp-tool')}
+        ${renderToolbarButton(NODE_DEFAULTS.loop.icon, t('flow.toolbar.addLoop'), 'add-loop')}
+        ${renderToolbarButton(
+          NODE_DEFAULTS['event-horizon'].icon,
+          t('flow.toolbar.addEventHorizon'),
+          'add-event-horizon',
+        )}
       </div>
       <div class="flow-toolbar-divider"></div>
       <div class="flow-toolbar-group">
-        <button class="flow-tb-btn" data-action="auto-layout" title="${t('flow.toolbar.autoLayout')}">
-          <span class="ms">auto_fix_high</span>
-        </button>
-        <button class="flow-tb-btn" data-action="fit-view" title="${t('flow.toolbar.fitView')}">
-          <span class="ms">fit_screen</span>
-        </button>
-        <button class="flow-tb-btn" data-action="zoom-in" title="${t('flow.toolbar.zoomIn')}">
-          <span class="ms">zoom_in</span>
-        </button>
-        <button class="flow-tb-btn" data-action="zoom-out" title="${t('flow.toolbar.zoomOut')}">
-          <span class="ms">zoom_out</span>
-        </button>
+        ${renderToolbarButton('auto_fix_high', t('flow.toolbar.autoLayout'), 'auto-layout')}
+        ${renderToolbarButton('fit_screen', t('flow.toolbar.fitView'), 'fit-view')}
+        ${renderToolbarButton('zoom_in', t('flow.toolbar.zoomIn'), 'zoom-in')}
+        ${renderToolbarButton('zoom_out', t('flow.toolbar.zoomOut'), 'zoom-out')}
       </div>
       <div class="flow-toolbar-divider"></div>
       <div class="flow-toolbar-group">
-        <button class="flow-tb-btn" data-action="undo" title="${t('flow.toolbar.undo')}">
-          <span class="ms">undo</span>
-        </button>
-        <button class="flow-tb-btn" data-action="redo" title="${t('flow.toolbar.redo')}">
-          <span class="ms">redo</span>
-        </button>
+        ${renderToolbarButton('undo', t('flow.toolbar.undo'), 'undo')}
+        ${renderToolbarButton('redo', t('flow.toolbar.redo'), 'redo')}
       </div>
       <div class="flow-toolbar-divider"></div>
       <div class="flow-toolbar-group">
-        <button class="flow-tb-btn" data-action="export-flow" title="${t('flow.toolbar.export')}">
-          <span class="ms">download</span>
-        </button>
-        <button class="flow-tb-btn" data-action="import-flow" title="${t('flow.toolbar.import')}">
-          <span class="ms">upload</span>
-        </button>
+        ${renderToolbarButton('download', t('flow.toolbar.export'), 'export-flow')}
+        ${renderToolbarButton('upload', t('flow.toolbar.import'), 'import-flow')}
       </div>
       <div class="flow-toolbar-divider"></div>
       <div class="flow-toolbar-group">
-        <button class="flow-tb-btn flow-tb-btn-danger" data-action="delete-selected" title="${t('flow.toolbar.deleteSelected')}">
-          <span class="ms">delete</span>
-        </button>
+        ${renderToolbarButton('delete', t('flow.toolbar.deleteSelected'), 'delete-selected', 'flow-tb-btn-danger')}
       </div>
       <div class="flow-toolbar-divider"></div>
       <div class="flow-toolbar-group flow-toolbar-view">
-        <button class="flow-tb-btn" data-action="toggle-list" title="${t('flow.toolbar.toggleList')}">
-          <span class="ms">left_panel_close</span>
-        </button>
-        <button class="flow-tb-btn" data-action="toggle-minimap" title="${t('flow.toolbar.toggleMinimap')}">
-          <span class="ms">map</span>
-        </button>
-        <button class="flow-tb-btn" data-action="toggle-data-labels" title="${t('flow.toolbar.toggleDataLabels')}">
-          <span class="ms">label</span>
-        </button>
-        <button class="flow-tb-btn" data-action="show-shortcuts" title="${t('flow.toolbar.showShortcuts')}">
-          <span class="ms">keyboard</span>
-        </button>
-        <button class="flow-tb-btn" data-action="toggle-agent" title="${t('flow.toolbar.flowArchitectAgent')}">
-          <span class="ms">smart_toy</span>
-        </button>
-        <button class="flow-tb-btn" data-action="toggle-panel" title="${t('flow.toolbar.togglePropertiesPanel')}">
-          <span class="ms">right_panel_close</span>
-        </button>
+        ${renderToolbarButton('left_panel_close', t('flow.toolbar.toggleList'), 'toggle-list')}
+        ${renderToolbarButton('map', t('flow.toolbar.toggleMinimap'), 'toggle-minimap')}
+        ${renderToolbarButton('label', t('flow.toolbar.toggleDataLabels'), 'toggle-data-labels')}
+        ${renderToolbarButton('keyboard', t('flow.toolbar.showShortcuts'), 'show-shortcuts')}
+        ${renderToolbarButton('smart_toy', t('flow.toolbar.flowArchitectAgent'), 'toggle-agent')}
+        ${renderToolbarButton('right_panel_close', t('flow.toolbar.togglePropertiesPanel'), 'toggle-panel')}
       </div>
     </div>
   `;
 
   container.querySelectorAll('[data-action]').forEach((btn) => {
+    const element = btn as HTMLElement;
+    const label = element.getAttribute('aria-label') || element.getAttribute('title') || '';
+
+    if (label) {
+      element.addEventListener('mouseenter', () => showToolbarTooltip(element, label));
+      element.addEventListener('mouseleave', hideToolbarTooltip);
+      element.addEventListener('focus', () => showToolbarTooltip(element, label));
+      element.addEventListener('blur', hideToolbarTooltip);
+    }
+
     btn.addEventListener('click', () => {
-      const action = (btn as HTMLElement).dataset.action!;
+      hideToolbarTooltip();
+      const action = element.dataset.action!;
       handleToolbarAction(action);
     });
   });

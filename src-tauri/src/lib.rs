@@ -289,6 +289,7 @@ pub fn run() {
             commands::utility::ensure_frontend_db_dir,
             commands::utility::ensure_frontend_db_path,
             commands::utility::get_db_encryption_key,
+            commands::utility::get_db_encryption_keys,
             commands::utility::has_db_encryption_key,
             commands::utility::retry_keychain,
             commands::utility::check_keychain_health,

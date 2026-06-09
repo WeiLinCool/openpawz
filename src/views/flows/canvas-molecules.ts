@@ -13,6 +13,7 @@ import {
   detectMeshGroups,
   detectTesseract,
 } from './atoms';
+import { translateUiText } from '../../i18n';
 import { getMoleculesState } from './molecule-state';
 import { cs, svgEl, applyTransform } from './canvas-state';
 import { renderNode, renderPorts, renderEdge } from './canvas-render';
@@ -291,7 +292,7 @@ export function renderGraph() {
     label.setAttribute('class', 'flow-mesh-group-label');
     label.setAttribute('x', String(minX - pad + 8));
     label.setAttribute('y', String(minY - pad - 2));
-    label.textContent = 'Convergent Mesh';
+    label.textContent = translateUiText('Convergent Mesh');
     cs.edgesGroup.appendChild(label);
   }
 

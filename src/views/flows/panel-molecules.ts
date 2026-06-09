@@ -5,6 +5,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { type FlowGraph, type FlowNode, NODE_DEFAULTS } from './atoms';
+import { translateUiText } from '../../i18n';
 import {
   getMoleculesState,
   getSelectedEdgeIdLocal,
@@ -37,36 +38,36 @@ export function renderNodePanel(
       container.innerHTML = `
         <div class="flow-panel">
           <div class="flow-panel-header">
-            <span class="ms" style="color: var(--kinetic-red, #FF4D4D)">account_tree</span>
-            <div>
-              <div class="flow-panel-kind">FLOW PROPERTIES</div>
-            </div>
+              <span class="ms" style="color: var(--kinetic-red, #FF4D4D)">account_tree</span>
+              <div>
+              <div class="flow-panel-kind">${translateUiText('FLOW PROPERTIES')}</div>
+              </div>
           </div>
           <label class="flow-panel-field">
-            <span>Name</span>
+            <span>${translateUiText('Name')}</span>
             <input type="text" class="flow-panel-input" data-flow-field="name" value="${escAttr(activeGraph.name)}" />
           </label>
           <label class="flow-panel-field">
-            <span>Description</span>
-            <textarea class="flow-panel-textarea" data-flow-field="description" rows="2" placeholder="Describe this flow…">${descVal}</textarea>
+            <span>${translateUiText('Description')}</span>
+            <textarea class="flow-panel-textarea" data-flow-field="description" rows="2" placeholder="${translateUiText('Describe this flow…')}">${descVal}</textarea>
           </label>
           <label class="flow-panel-field">
-            <span>Folder</span>
-            <input type="text" class="flow-panel-input" data-flow-field="folder" value="${folderVal}" placeholder="(root)" />
+            <span>${translateUiText('Folder')}</span>
+            <input type="text" class="flow-panel-input" data-flow-field="folder" value="${folderVal}" placeholder="${translateUiText('(root)')}" />
           </label>
           <div class="flow-panel-section">
-            <div class="flow-panel-section-label">Stats</div>
+            <div class="flow-panel-section-label">${translateUiText('Stats')}</div>
             <div class="flow-panel-pos">
-              <span>${activeGraph.nodes.length} integrations</span>
-              <span>${activeGraph.edges.length} edges</span>
+              <span>${activeGraph.nodes.length} ${translateUiText('integrations')}</span>
+              <span>${activeGraph.edges.length} ${translateUiText('edges')}</span>
             </div>
           </div>
           <div class="flow-panel-section">
             <div class="flow-panel-pos">
-              <span>Created: ${formatDate(activeGraph.createdAt)}</span>
+              <span>${translateUiText('Created:')} ${formatDate(activeGraph.createdAt)}</span>
             </div>
             <div class="flow-panel-pos" style="margin-top: 2px">
-              <span>Updated: ${formatDate(activeGraph.updatedAt)}</span>
+              <span>${translateUiText('Updated:')} ${formatDate(activeGraph.updatedAt)}</span>
             </div>
           </div>
         </div>
@@ -94,30 +95,30 @@ export function renderNodePanel(
             <div class="flow-panel-header">
               <span class="ms" style="color: var(--accent)">arrow_forward</span>
               <div>
-                <div class="flow-panel-kind">EDGE</div>
+                <div class="flow-panel-kind">${translateUiText('EDGE')}</div>
                 <div class="flow-panel-label">${escAttr(fromNode?.label ?? edge.from)} → ${escAttr(toNode?.label ?? edge.to)}</div>
               </div>
             </div>
             <label class="flow-panel-field">
-              <span>Kind</span>
+              <span>${translateUiText('Kind')}</span>
               <select class="flow-panel-input" data-edge-field="kind">
-                <option value="forward"${edge.kind === 'forward' ? ' selected' : ''}>Forward</option>
-                <option value="reverse"${edge.kind === 'reverse' ? ' selected' : ''}>Reverse</option>
-                <option value="bidirectional"${edge.kind === 'bidirectional' ? ' selected' : ''}>Bidirectional</option>
-                <option value="error"${edge.kind === 'error' ? ' selected' : ''}>Error</option>
+                <option value="forward"${edge.kind === 'forward' ? ' selected' : ''}>${translateUiText('Forward')}</option>
+                <option value="reverse"${edge.kind === 'reverse' ? ' selected' : ''}>${translateUiText('Reverse')}</option>
+                <option value="bidirectional"${edge.kind === 'bidirectional' ? ' selected' : ''}>${translateUiText('Bidirectional')}</option>
+                <option value="error"${edge.kind === 'error' ? ' selected' : ''}>${translateUiText('Error')}</option>
               </select>
             </label>
             <label class="flow-panel-field">
-              <span>Label</span>
-              <input type="text" class="flow-panel-input" data-edge-field="label" value="${edgeLabel}" placeholder="Optional label…" />
+              <span>${translateUiText('Label')}</span>
+              <input type="text" class="flow-panel-input" data-edge-field="label" value="${edgeLabel}" placeholder="${translateUiText('Optional label…')}" />
             </label>
             <label class="flow-panel-field">
-              <span>Condition</span>
-              <input type="text" class="flow-panel-input" data-edge-field="conditionExpr" value="${escAttr(((edge as unknown as Record<string, unknown>).conditionExpr as string) ?? '')}" placeholder="Expression for conditional routing" />
+              <span>${translateUiText('Condition')}</span>
+              <input type="text" class="flow-panel-input" data-edge-field="conditionExpr" value="${escAttr(((edge as unknown as Record<string, unknown>).conditionExpr as string) ?? '')}" placeholder="${translateUiText('Expression for conditional routing')}" />
             </label>
             <div class="flow-panel-section" style="margin-top: 12px">
               <button class="flow-btn flow-btn-danger" data-edge-action="delete" style="width:100%">
-                <span class="ms" style="font-size:14px">delete</span> Delete Edge
+                <span class="ms" style="font-size:14px">delete</span> ${translateUiText('Delete Edge')}
               </button>
             </div>
           </div>
@@ -149,7 +150,7 @@ export function renderNodePanel(
     }
 
     container.innerHTML =
-      '<div class="flow-panel-empty"><span class="ms">touch_app</span><p>Select a node or edge to edit</p></div>';
+      `<div class="flow-panel-empty"><span class="ms">touch_app</span><p>${translateUiText('Select a node or edge to edit')}</p></div>`;
     return;
   }
 
@@ -162,7 +163,7 @@ export function renderNodePanel(
     ? `
     <div class="flow-panel-divider"></div>
     <div class="flow-panel-section">
-      <span class="flow-panel-section-label">Debug Inspector</span>
+      <span class="flow-panel-section-label">${translateUiText('Debug Inspector')}</span>
       <div class="flow-panel-debug-status">
         <span class="flow-debug-badge flow-debug-badge-${debugState.status}">${debugState.status.toUpperCase()}</span>
       </div>
@@ -170,7 +171,7 @@ export function renderNodePanel(
         debugState.input
           ? `
         <div class="flow-panel-debug-block">
-          <span class="flow-panel-debug-label">Input</span>
+          <span class="flow-panel-debug-label">${translateUiText('Input')}</span>
           <pre class="flow-panel-debug-pre">${escAttr(debugState.input)}</pre>
         </div>
       `
@@ -180,7 +181,7 @@ export function renderNodePanel(
         debugState.output
           ? `
         <div class="flow-panel-debug-block">
-          <span class="flow-panel-debug-label">Output</span>
+          <span class="flow-panel-debug-label">${translateUiText('Output')}</span>
           <pre class="flow-panel-debug-pre">${escAttr(debugState.output)}</pre>
         </div>
       `
@@ -197,19 +198,19 @@ export function renderNodePanel(
         <span class="flow-panel-kind">${node.kind.toUpperCase()}</span>
       </div>
       <label class="flow-panel-field">
-        <span>Label</span>
+        <span>${translateUiText('Label')}</span>
         <input type="text" class="flow-panel-input" data-field="label" value="${escAttr(node.label)}" />
       </label>
       <label class="flow-panel-field">
-        <span>Description</span>
+        <span>${translateUiText('Description')}</span>
         <input type="text" class="flow-panel-input" data-field="description" value="${escAttr(node.description ?? '')}" />
       </label>
-      ${configFieldsHtml ? `<div class="flow-panel-divider"></div><div class="flow-panel-section"><span class="flow-panel-section-label">Execution Config</span></div>${configFieldsHtml}` : ''}
+      ${configFieldsHtml ? `<div class="flow-panel-divider"></div><div class="flow-panel-section"><span class="flow-panel-section-label">${translateUiText('Execution Config')}</span></div>${configFieldsHtml}` : ''}
       <div class="flow-panel-divider"></div>
       <div class="flow-panel-section">
-        <span class="flow-panel-section-label">Info</span>
+        <span class="flow-panel-section-label">${translateUiText('Info')}</span>
         <div class="flow-panel-pos">
-          <span>Status: <strong>${node.status}</strong></span>
+          <span>${translateUiText('Status:')} <strong>${translateUiText(node.status)}</strong></span>
           <span>x: ${node.x}  y: ${node.y}</span>
           <span>${node.width}×${node.height}</span>
         </div>
