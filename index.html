@@ -2016,33 +2016,33 @@
               <div class="mail-panes">
                 <!-- Folder sidebar -->
                 <div class="mail-sidebar">
-                  <div class="mail-folders">
-                    <div class="mail-folder active" data-folder="inbox">
-                      <span class="ms ms-sm">inbox</span>
-                      <span>Inbox</span>
-                      <span class="mail-count" id="mail-inbox-count">0</span>
-                    </div>
-                    <div class="mail-folder" data-folder="drafts">
-                      <span class="ms ms-sm">description</span>
-                      <span>Drafts</span>
-                    </div>
+<div class="mail-folders">
+                     <div class="mail-folder active" data-folder="inbox">
+                       <span class="ms ms-sm">inbox</span>
+                       <span>收件箱</span>
+                       <span class="mail-count" id="mail-inbox-count">0</span>
+                     </div>
+                     <div class="mail-folder" data-folder="drafts">
+                       <span class="ms ms-sm">description</span>
+                       <span>草稿箱</span>
+                     </div>
                     <div class="mail-folder" data-folder="sent">
-                      <span class="ms ms-sm">send</span>
-                      <span>Sent</span>
-                    </div>
-                    <div class="mail-folder" data-folder="agent">
-                      <span class="ms ms-sm">layers</span>
-                      <span>Agent Drafts</span>
-                      <span class="mail-count mail-count-accent" id="mail-agent-count">0</span>
-                    </div>
+<span class="ms ms-sm">send</span>
+                       <span>已发送</span>
+                     </div>
+                     <div class="mail-folder" data-folder="agent">
+                       <span class="ms ms-sm">layers</span>
+                       <span>智能体草稿</span>
+                       <span class="mail-count mail-count-accent" id="mail-agent-count">0</span>
+                     </div>
                   </div>
                   <div class="mail-accounts-section">
                     <div class="mail-accounts-header">
                       <span class="ms ms-sm">lock</span>
-                      Credential Vault
+                      凭据库
                     </div>
                     <div id="mail-accounts-list">
-                      <div class="mail-no-accounts">No accounts connected</div>
+                      <div class="mail-no-accounts">暂无已连接的账户</div>
                     </div>
                     <button
                       class="btn btn-ghost btn-sm"
@@ -2050,7 +2050,7 @@
                       style="width: 100%; margin-top: 8px"
                     >
                       <span class="ms ms-sm">add</span>
-                      Add Account
+                      添加账户
                     </button>
                   </div>
                   <!-- Mail scheduled tasks -->
@@ -2059,45 +2059,45 @@
                     id="mail-cron-widget"
                     style="display: none"
                   >
-                    <div class="space-cron-header">
-                      <span class="ms ms-sm">bolt</span>
-                      <span>Digests</span>
-                      <span class="space-cron-count" id="mail-cron-count">0</span>
-                    </div>
+<div class="space-cron-header">
+                       <span class="ms ms-sm">bolt</span>
+                       <span>摘要</span>
+                       <span class="space-cron-count" id="mail-cron-count">0</span>
+                     </div>
                     <div class="space-cron-items" id="mail-cron-items"></div>
                   </div>
                 </div>
 
                 <!-- Message list -->
                 <div class="mail-list" id="mail-message-list">
-                  <div class="mail-list-header">
-                    <span class="mail-list-title" id="mail-folder-title">Inbox</span>
-                    <button class="btn btn-ghost btn-sm" id="mail-refresh">
-                      <span class="ms ms-sm">sync</span>
-                    </button>
-                  </div>
+<div class="mail-list-header">
+                     <span class="mail-list-title" id="mail-folder-title">收件箱</span>
+                     <button class="btn btn-ghost btn-sm" id="mail-refresh">
+                       <span class="ms ms-sm">sync</span>
+                     </button>
+                   </div>
                   <div class="mail-items" id="mail-items"></div>
                   <div class="empty-state" id="mail-empty">
                     <div class="empty-icon">
                       <span class="ms" style="font-size: 48px">mail</span>
                     </div>
-                    <div class="empty-title">Connect your email</div>
+                    <div class="empty-title">连接你的邮箱</div>
                     <div class="empty-subtitle">
-                      Add an IMAP/SMTP account to read, draft, and send emails with AI assistance
+                      添加 IMAP/SMTP 账户，使用 AI 辅助阅读、撰写和发送邮件
                     </div>
                     <button
                       class="btn btn-primary"
                       id="mail-setup-account"
                       style="margin-top: 16px"
                     >
-                      Add Email Account
+                      添加邮箱账户
                     </button>
                   </div>
                 </div>
 
                 <!-- Preview panel -->
                 <div class="mail-preview" id="mail-preview">
-                  <div class="mail-preview-empty">Select an email to read</div>
+                  <div class="mail-preview-empty">选择一封邮件阅读</div>
                 </div>
               </div>
             </div>
@@ -2108,16 +2108,15 @@
               <div class="mail-panel-card k-row k-spring k-materialise">
                 <div class="skills-panel-card-header">
                   <span class="ms skills-panel-card-icon">info</span>
-                  <span class="skills-panel-card-title">AI-Powered Mail</span>
+                  <span class="skills-panel-card-title">AI 驱动的邮件</span>
                 </div>
                 <div class="skills-panel-card-body">
                   <p>
-                    Connect your email accounts and let your agent read, draft, and manage messages.
-                    Agents can summarise threads, draft replies, and flag important items.
+                    连接你的邮箱账户，让智能体读取、撰写和管理消息。智能体可以总结邮件线程、起草回复并标记重要项目。
                   </p>
                   <p>
-                    Supports <strong>Google OAuth</strong>, <strong>IMAP/SMTP</strong>, and
-                    <strong>Himalaya CLI</strong> backends.
+                    支持 <strong>Google OAuth</strong>、<strong>IMAP/SMTP</strong> 和
+                    <strong>Himalaya CLI</strong> 后端。
                   </p>
                 </div>
               </div>
@@ -2126,21 +2125,19 @@
               <div class="mail-panel-card k-row k-spring k-materialise">
                 <div class="skills-panel-card-header">
                   <span class="ms skills-panel-card-icon">shield</span>
-                  <span class="skills-panel-card-title">Credential Vault</span>
+                  <span class="skills-panel-card-title">凭据库</span>
                 </div>
                 <div class="skills-panel-card-body">
                   <ul class="skills-explainer-list">
                     <li>
-                      <span class="ms">lock</span> Credentials stored locally in encrypted vault
+                      <span class="ms">lock</span> 凭据本地存储于加密库
                     </li>
                     <li>
-                      <span class="ms">verified_user</span> Per-account permission controls (read,
-                      send, delete)
+                      <span class="ms">verified_user</span> 每个账户单独权限控制（读取、发送、删除）
                     </li>
-                    <li><span class="ms">history</span> Full audit log of credential access</li>
+                    <li><span class="ms">history</span> 凭据访问的完整审计日志</li>
                     <li>
-                      <span class="ms">gpp_maybe</span> Agent needs explicit permission before
-                      sending
+                      <span class="ms">gpp_maybe</span> 智能体发送前需要明确授权
                     </li>
                   </ul>
                 </div>
@@ -2150,14 +2147,13 @@
               <div class="mail-panel-card k-row k-spring k-materialise">
                 <div class="skills-panel-card-header">
                   <span class="ms skills-panel-card-icon">smart_toy</span>
-                  <span class="skills-panel-card-title">Agent Drafts</span>
+                  <span class="skills-panel-card-title">智能体草稿</span>
                 </div>
                 <div class="skills-panel-card-body">
                   <p>
-                    When your agent writes an email, it goes to <strong>Agent Drafts</strong> first.
-                    Review, edit, and approve before anything gets sent.
+                    当智能体撰写邮件时，会先进入<strong>智能体草稿箱</strong>。审核、编辑并批准后才会发送。
                   </p>
-                  <p>Use digests to schedule automated email summaries.</p>
+                  <p>使用摘要功能安排自动化邮件摘要。</p>
                 </div>
               </div>
 
@@ -2165,14 +2161,14 @@
               <div class="mail-panel-card k-row k-spring k-materialise">
                 <div class="skills-panel-card-header">
                   <span class="ms skills-panel-card-icon">rocket_launch</span>
-                  <span class="skills-panel-card-title">Quick Actions</span>
+                  <span class="skills-panel-card-title">快捷操作</span>
                 </div>
                 <div class="skills-quick-actions">
                   <button class="skills-quick-btn" id="mail-qa-add-account">
-                    <span class="ms">add</span> Add Account
+                    <span class="ms">add</span> 添加账户
                   </button>
                   <button class="skills-quick-btn" id="mail-qa-refresh">
-                    <span class="ms">sync</span> Refresh Inbox
+                    <span class="ms">sync</span> 刷新收件箱
                   </button>
                 </div>
               </div>

@@ -195,6 +195,21 @@ const EN_TO_ZH: Record<string, string> = {
   'Himalaya skill installation coming soon, please install via CLI manually for now': 'Himalaya 技能安装即将支持，目前请先通过 CLI 手动安装',
   'No connected accounts': '暂无已连接的账号',
   'No unread emails': '没有未读邮件',
+  'Credentials stored locally in encrypted vault': '凭据本地存储于加密库',
+  'Per-account permission controls (read, send, delete)': '每个账户单独权限控制（读取、发送、删除）',
+  'Full audit log of credential access': '凭据访问的完整审计日志',
+  'Agent needs explicit permission before sending': '智能体发送前需要明确授权',
+  'When your agent writes an email, it goes to Agent Drafts first.': '当智能体撰写邮件时，会先进入智能体草稿箱。',
+  'Review, edit, and approve before anything gets sent.': '审核、编辑并批准后才会发送。',
+  'Use digests to schedule automated email summaries.': '使用摘要功能安排自动化邮件摘要。',
+  'Add Account': '添加账户',
+  'Refresh Inbox': '刷新收件箱',
+  'Connect your email': '连接你的邮箱',
+  'Add an IMAP/SMTP account to read, draft, and send emails with AI assistance': '添加 IMAP/SMTP 账户，使用 AI 辅助阅读、撰写和发送邮件',
+  'AI-Powered Mail': 'AI 驱动的邮件',
+  'Connect your email accounts and let your agent read, draft, and manage messages.': '连接你的邮箱账户，让智能体读取、撰写和管理消息。',
+  'Agents can summarise threads, draft replies, and flag important items.': '智能体可以总结邮件线程、起草回复并标记重要项目。',
+  'Credential Vault': '凭据库',
   // ── Skill Cards ─────────────────────────────────────────────────────────────
   'tools available': '个工具可用',
   'All Agents': '所有智能体',
@@ -1069,6 +1084,18 @@ const EN_TO_ZH: Record<string, string> = {
   'Providers & Models': '供应商与模型',
   'Add AI providers, manage API keys, and configure model routing':
     '添加 AI 供应商、管理 API Key，并配置模型路由',
+  'Enterprise Model Access': '企业模型访问',
+  'View organization-managed credits, gateway, and available models':
+    '查看组织管理的积分、网关和可用模型',
+  'Enterprise Account': '企业账户',
+  'Your organization manages model access through the enterprise gateway.':
+    '你的组织通过企业网关统一管理模型访问。',
+  Account: '账户',
+  Plan: '套餐',
+  Credits: '积分',
+  'Available Models': '可用模型',
+  'These models are provided by your organization through the enterprise gateway.':
+    '这些模型由你的组织通过企业网关提供。',
   'Configured Providers': '已配置供应商',
   'All your AI providers. Agents can use any of these — add as many as you need.':
     '所有 AI 供应商都在这里。智能体可以使用其中任意一个，你可以按需添加多个。',

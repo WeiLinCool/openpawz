@@ -5,8 +5,8 @@
 // - Use an OpenAI-compatible Custom provider pointed at the enterprise gateway.
 // - Gate enterprise-cloud chat requests in Rust, not in the frontend.
 
-use crate::commands::state::EngineState;
 use crate::brand;
+use crate::commands::state::EngineState;
 use crate::engine::oauth::parse_urlencoded_query;
 use crate::engine::platform::{require_feature, EntitlementProvider, FEATURE_MODELS_PROXY};
 use crate::engine::types::{EngineConfig, ProviderConfig, ProviderKind};
@@ -81,6 +81,8 @@ pub struct EnterpriseConfig {
     #[serde(default)]
     pub plan: Option<String>,
     #[serde(default)]
+    pub user_points: Option<f64>,
+    #[serde(default)]
     pub entitlements: Vec<String>,
     #[serde(default)]
     pub expires_at: Option<String>,
@@ -126,6 +128,7 @@ impl Default for EnterpriseConfig {
             user_email: None,
             organization_id: None,
             plan: None,
+            user_points: None,
             entitlements: Vec::new(),
             expires_at: None,
             default_model: Some("gpt-4o-mini".to_string()),
@@ -226,6 +229,7 @@ pub struct EnterpriseStatus {
     pub user_email: Option<String>,
     pub organization_id: Option<String>,
     pub plan: Option<String>,
+    pub user_points: Option<f64>,
     pub entitlements: Vec<String>,
     pub expires_at: Option<String>,
     pub default_model: Option<String>,
@@ -261,6 +265,8 @@ pub struct EnterpriseConfigureRequest {
     pub organization_id: Option<String>,
     #[serde(default)]
     pub plan: Option<String>,
+    #[serde(default)]
+    pub user_points: Option<f64>,
     #[serde(default)]
     pub entitlements: Vec<String>,
     #[serde(default)]
@@ -353,11 +359,18 @@ fn sync_enterprise_sso_key_vault_mode(config: &EnterpriseConfig) {
 
 fn apply_data_token_rotation(previous: &EnterpriseConfig, next: &mut EnterpriseConfig) {
     next.previous_data_tokens = previous.previous_data_tokens.clone();
-    let Some(old_token) = previous.data_token.as_ref().filter(|token| !token.trim().is_empty())
+    let Some(old_token) = previous
+        .data_token
+        .as_ref()
+        .filter(|token| !token.trim().is_empty())
     else {
         return;
     };
-    let Some(new_token) = next.data_token.as_ref().filter(|token| !token.trim().is_empty()) else {
+    let Some(new_token) = next
+        .data_token
+        .as_ref()
+        .filter(|token| !token.trim().is_empty())
+    else {
         return;
     };
     if old_token == new_token {
@@ -646,6 +659,17 @@ fn string_field(value: &Value, keys: &[&str]) -> Option<String> {
         .map(ToOwned::to_owned)
 }
 
+fn number_field(value: &Value, keys: &[&str]) -> Option<f64> {
+    keys.iter().find_map(|key| {
+        value.get(*key).and_then(Value::as_f64).or_else(|| {
+            value
+                .get(*key)
+                .and_then(Value::as_str)
+                .and_then(|s| s.trim().replace(',', "").parse::<f64>().ok())
+        })
+    })
+}
+
 fn enterprise_data_token_from_payloads(
     token: &OAuthTokenResponse,
     userinfo: Option<&Value>,
@@ -742,10 +766,45 @@ fn status_from_config(config: EnterpriseConfig) -> EnterpriseStatus {
         user_email: config.user_email,
         organization_id: config.organization_id,
         plan: config.plan,
+        user_points: config.user_points,
         entitlements: config.entitlements,
         expires_at: config.expires_at,
         default_model: config.default_model,
     }
+}
+
+async fn refresh_enterprise_userinfo(
+    state: &EngineState,
+    mut config: EnterpriseConfig,
+) -> EnterpriseConfig {
+    if !config.enabled
+        || config.access_token.trim().is_empty()
+        || enterprise_session_expired(&config)
+    {
+        return config;
+    }
+
+    let Some(userinfo_url) = config
+        .userinfo_url
+        .clone()
+        .filter(|url| !url.trim().is_empty())
+    else {
+        return config;
+    };
+
+    let Ok(userinfo) = fetch_json_bearer(&userinfo_url, &config.access_token).await else {
+        return config;
+    };
+
+    config.user_email =
+        string_field(&userinfo, &["email", "preferred_username", "sub"]).or(config.user_email);
+    config.organization_id = string_field(&userinfo, &["organization_id", "org_id", "tenant_id"])
+        .or(config.organization_id);
+    config.user_points =
+        number_field(&userinfo, &["points", "credits", "balance"]).or(config.user_points);
+
+    let _ = save_enterprise_config(state, &config);
+    config
 }
 
 fn upsert_enterprise_provider(config: &mut EngineConfig, provider: ProviderConfig) {
@@ -769,8 +828,11 @@ fn persist_engine_config(state: &EngineState, config: &EngineConfig) -> Result<(
 }
 
 #[tauri::command]
-pub fn engine_enterprise_status(state: State<'_, EngineState>) -> Result<EnterpriseStatus, String> {
-    Ok(status_from_config(load_enterprise_config(&state)))
+pub async fn engine_enterprise_status(
+    state: State<'_, EngineState>,
+) -> Result<EnterpriseStatus, String> {
+    let config = refresh_enterprise_userinfo(&state, load_enterprise_config(&state)).await;
+    Ok(status_from_config(config))
 }
 
 #[tauri::command]
@@ -804,6 +866,7 @@ pub fn engine_enterprise_configure(
         user_email: request.user_email,
         organization_id: request.organization_id,
         plan: request.plan,
+        user_points: request.user_points,
         entitlements: request.entitlements,
         expires_at: request.expires_at,
         default_model: request
@@ -944,6 +1007,9 @@ pub async fn engine_enterprise_oauth_start(
         plan: entitlement_payload
             .as_ref()
             .and_then(|v| string_field(v, &["plan", "tier"])),
+        user_points: userinfo
+            .as_ref()
+            .and_then(|v| number_field(v, &["points", "credits", "balance"])),
         entitlements,
         expires_at,
         default_model: request

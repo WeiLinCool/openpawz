@@ -199,6 +199,7 @@ export interface EnterpriseStatus {
   user_email?: string;
   organization_id?: string;
   plan?: string;
+  user_points?: number;
   entitlements: string[];
   expires_at?: string;
   default_model?: string;
@@ -227,6 +228,7 @@ export interface EnterpriseConfigureRequest {
   user_email?: string;
   organization_id?: string;
   plan?: string;
+  user_points?: number;
   entitlements?: string[];
   expires_at?: string;
   default_model?: string;

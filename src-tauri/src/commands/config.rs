@@ -1,7 +1,9 @@
 // commands/config.rs — Thin wrappers for engine config, sandbox, and auto-setup.
 
+use crate::commands::enterprise::{
+    enterprise_session_expired, load_enterprise_config, ENTERPRISE_PROVIDER_ID,
+};
 use crate::commands::state::EngineState;
-use crate::commands::enterprise::{enterprise_session_expired, load_enterprise_config};
 use crate::engine::types::*;
 use log::info;
 use std::sync::atomic::Ordering;
@@ -73,19 +75,17 @@ pub fn engine_set_config(
     config: EngineConfig,
 ) -> Result<(), String> {
     let enterprise_cfg = load_enterprise_config(&state);
-    let enterprise_locked =
-        enterprise_cfg.enabled && !enterprise_session_expired(&enterprise_cfg);
+    let enterprise_locked = enterprise_cfg.enabled && !enterprise_session_expired(&enterprise_cfg);
     if enterprise_locked {
         let current_cfg = state.config.lock();
-        let current_ids: std::collections::HashSet<&str> =
-            current_cfg.providers.iter().map(|p| p.id.as_str()).collect();
-        let new_ids: Vec<&str> = config.providers.iter().map(|p| p.id.as_str()).collect();
-        if new_ids
-            .iter()
-            .any(|id| !current_ids.contains(id) && *id != crate::commands::enterprise::ENTERPRISE_PROVIDER_ID)
-        {
+        let current_providers = serde_json::to_value(&current_cfg.providers)
+            .map_err(|e| format!("Serialize error: {}", e))?;
+        let requested_providers = serde_json::to_value(&config.providers)
+            .map_err(|e| format!("Serialize error: {}", e))?;
+        if requested_providers != current_providers {
             return Err(
-                "This enterprise workspace does not allow adding new model providers.".into(),
+                "This enterprise workspace manages model providers through the enterprise gateway."
+                    .into(),
             );
         }
     }
@@ -114,17 +114,13 @@ pub fn engine_upsert_provider(
     provider: ProviderConfig,
 ) -> Result<(), String> {
     let enterprise_cfg = load_enterprise_config(&state);
-    let enterprise_locked =
-        enterprise_cfg.enabled && !enterprise_session_expired(&enterprise_cfg);
+    let enterprise_locked = enterprise_cfg.enabled && !enterprise_session_expired(&enterprise_cfg);
 
     if enterprise_locked {
-        let cfg = state.config.lock();
-        let exists = cfg.providers.iter().any(|p| p.id == provider.id);
-        if !exists && provider.id != crate::commands::enterprise::ENTERPRISE_PROVIDER_ID {
-            return Err(
-                "This enterprise workspace does not allow adding new model providers.".into(),
-            );
-        }
+        return Err(
+            "This enterprise workspace manages model providers through the enterprise gateway."
+                .into(),
+        );
     }
 
     let mut cfg = state.config.lock();
@@ -159,6 +155,14 @@ pub fn engine_remove_provider(
     state: State<'_, EngineState>,
     provider_id: String,
 ) -> Result<(), String> {
+    let enterprise_cfg = load_enterprise_config(&state);
+    if enterprise_cfg.enabled && !enterprise_session_expired(&enterprise_cfg) {
+        return Err(
+            "This enterprise workspace manages model providers through the enterprise gateway."
+                .into(),
+        );
+    }
+
     let mut cfg = state.config.lock();
 
     cfg.providers.retain(|p| p.id != provider_id);
@@ -193,6 +197,20 @@ pub async fn engine_list_provider_models(
             .ok_or_else(|| format!("Provider '{}' not found", provider_id))?
     };
 
+    if provider_config.id == ENTERPRISE_PROVIDER_ID {
+        let enterprise_config = load_enterprise_config(&state);
+        if enterprise_config.enabled
+            && !enterprise_config.access_token.trim().is_empty()
+            && !enterprise_session_expired(&enterprise_config)
+        {
+            return list_enterprise_gateway_models(
+                &enterprise_config.gateway_url,
+                &enterprise_config.access_token,
+            )
+            .await;
+        }
+    }
+
     let provider = crate::engine::providers::AnyProvider::from_config(&provider_config);
     let models = provider
         .list_models()
@@ -208,6 +226,64 @@ pub async fn engine_list_provider_models(
                 "context_window": m.context_window,
                 "max_output": m.max_output,
             })
+        })
+        .collect())
+}
+
+async fn list_enterprise_gateway_models(
+    gateway_url: &str,
+    access_token: &str,
+) -> Result<Vec<serde_json::Value>, String> {
+    let base = gateway_url.trim_end_matches('/');
+    if base.is_empty() {
+        return Err("Enterprise gateway URL is not configured.".into());
+    }
+
+    let url = format!("{}/models", base);
+    let response = reqwest::Client::new()
+        .get(&url)
+        .bearer_auth(access_token)
+        .header("Accept", "application/json")
+        .send()
+        .await
+        .map_err(|e| format!("Failed to list enterprise models: {}", e))?;
+
+    if !response.status().is_success() {
+        let status = response.status();
+        let body = response.text().await.unwrap_or_default();
+        return Err(format!(
+            "Failed to list enterprise models (HTTP {}): {}",
+            status, body
+        ));
+    }
+
+    let body = response
+        .json::<serde_json::Value>()
+        .await
+        .map_err(|e| format!("Failed to parse enterprise model list: {}", e))?;
+
+    let items = body
+        .get("data")
+        .and_then(serde_json::Value::as_array)
+        .ok_or_else(|| "Enterprise model list did not contain a data array.".to_string())?;
+
+    Ok(items
+        .iter()
+        .filter_map(|item| {
+            let id = item.get("id").and_then(serde_json::Value::as_str)?;
+            if id.trim().is_empty() {
+                return None;
+            }
+            Some(serde_json::json!({
+                "raw_id": id,
+                "display_name": item
+                    .get("name")
+                    .and_then(serde_json::Value::as_str)
+                    .or_else(|| item.get("display_name").and_then(serde_json::Value::as_str))
+                    .unwrap_or(id),
+                "context_window": item.get("context_window").and_then(serde_json::Value::as_u64),
+                "max_output": item.get("max_output").and_then(serde_json::Value::as_u64),
+            }))
         })
         .collect())
 }

@@ -1,24 +1,24 @@
-# Project Engram — 记忆架构白皮书
+# Project Engram — Memory Architecture Whitepaper
 
-*一种生物启发的持久化AI代理记忆系统。*
+*A biologically-inspired memory system for persistent AI agents.*
 
-**版本:** 1.0
-**状态:** 已在 OpenPawz 中实现
-**许可证:** MIT
-
----
-
-## 摘要
-
-Project Engram 是一种面向桌面AI代理的三层记忆架构。它取代了扁平的键值对记忆存储，采用一种仿照人类记忆运作方式的生物启发系统：输入信息流经感官缓冲区，在工作记忆中进行优先级排序，并整合到长期存储中，伴随自动聚类、矛盾检测和强度衰减。结果是代理能够跨会话记忆上下文，从模式中学习，并优雅地遗忘。
-
-本文档描述了在 OpenPawz（一个 Tauri v2 桌面AI平台）中实现的架构。该系统实现了三层记忆体系、持久化图结构、基于倒数排名融合的混合搜索、后台巩固、字段级加密，以及贯穿聊天、任务、编排和多通道桥接的完整生命周期集成。
-
-所有代码均以 MIT 许可证开源。
+**Version:** 1.0
+**Status:** Implemented in OpenPawz
+**License:** MIT
 
 ---
 
-## 目录
+## Abstract
+
+Project Engram is a three-tier memory architecture for desktop AI agents. It replaces flat key-value memory stores with a biologically-inspired system modeled on how human memory works: incoming information flows through a sensory buffer, gets prioritized in working memory, and consolidates into long-term storage with automatic clustering, contradiction detection, and strength decay. The result is agents that remember context across sessions, learn from patterns, and forget gracefully.
+
+This document describes the architecture as implemented in OpenPawz — a Tauri v2 desktop AI platform. The system implements three memory tiers, a persistent graph, hybrid search with reciprocal rank fusion, background consolidation, field-level encryption, and full lifecycle integration across chat, tasks, orchestration, and multi-channel bridges.
+
+All code is open source under the MIT License.
+
+---
+
+## Table of Contents
 
 1. [Motivation](#motivation)
 2. [Design Principles](#design-principles)
@@ -50,90 +50,90 @@ Project Engram 是一种面向桌面AI代理的三层记忆架构。它取代了
 
 ---
 
-## 动机
+## Motivation
 
-大多数AI记忆实现将记忆视为一个检索问题——存储数据块，搜索数据块，注入数据块。这是一个扁平模型，忽略了记忆在生物系统中的实际运作方式。其实践后果已得到充分记录：
+Most AI memory implementations treat memory as a retrieval problem — store blobs, search blobs, inject blobs. This is a flat model that ignores how memory actually works in biological systems. The practical consequences are well-documented:
 
-- **无优先级排序。** 所有记忆平等竞争上下文窗口空间，无论相关性或重要性如何。
-- **无衰减机制。** 过期信息无限期持久化。一条被纠正的事实及其过期的前身都会出现在上下文中。
-- **无结构。** 情景记忆（发生了什么）、语义知识（什么是真的）和程序记忆（如何做事情）存储在一个未区分的列表中。
-- **无安全性。** 敏感信息以明文存储。无PII检测，无加密，无访问控制。
-- **无预算意识。** 记忆被注入而不考虑模型的上下文窗口，导致截断或上下文溢出。
-Engram通过模仿生物记忆系统的结构来解决每一个问题。
-- **无演进能力。** 记忆是一次写入、多次读取——无巩固，无矛盾解决，无通过重复加强。存储线性增长，而质量随时间退化。
-- **无门控机制。** 每个查询触发完整的记忆搜索，即使问题纯粹是计算性或已在对话中回答。这浪费延迟并用无关材料污染上下文。
+- **No prioritization.** All memories compete equally for context window space, regardless of relevance or importance.
+- **No decay.** Outdated information persists indefinitely. A corrected fact and its outdated predecessor both appear in context.
+- **No structure.** Episodic memories (what happened), semantic knowledge (what is true), and procedural memory (how to do things) are stored in one undifferentiated list.
+- **No security.** Sensitive information stored in plaintext. No PII detection, no encryption, no access control.
+- **No budget awareness.** Memories are injected without regard to the model's context window, leading to truncation or context overflow.
+Engram addresses each of these by modeling agent memory after the structure of biological memory systems.
+- **No evolution.** Memories are write-once, read-many — no consolidation, no contradiction resolution, no strengthening through repetition. The store grows linearly while quality degrades over time.
+- **No gating.** Every query triggers a full memory search, even when the question is purely computational or already answered in the conversation. This wastes latency and pollutes the context with irrelevant material.
 
-人类记忆不是数据库。它是一个具有多个存储层的活动图，在不同时间尺度上运行，自动巩固加强重要记忆并消融噪声，情景回放重建上下文，基于模式的压缩从实例抽象模式，重要性权重调制存储强度，以及干扰驱动的遗忘防止检索污染。
+Human memory is not a database. It is a living graph with multiple storage tiers operating on different timescales, automatic consolidation that strengthens important memories and dissolves noise, episodic replay that reconstructs context, schema-based compression that abstracts patterns from instances, importance weighting that modulates storage strength, and interference-based forgetting that prevents retrieval pollution.
 
-Engram实现了所有六个属性。
-
----
-
-## 设计原则
-
-七项原则指导Engram中的每一个架构决策：
-
-1. **预算优先，始终如此。** 每个操作都是令牌预算感知的。ContextBuilder永远不会溢出模型的上下文窗口。记忆基于 $\text{相关性} \times \text{重要性}$ 竞争包含资格，而非插入顺序。更多上下文并不总是更好——PAPerBench证明注意力稀释会降低个性化和隐私保护，随着上下文增长。注入次数按模型上限设定，基于经验稀释曲线。
-
-2. **遗忘是特性，不是缺陷。** 基于艾宾浩斯遗忘曲线的优雅衰减是必需的——扩展为双层FadeMem启发架构，区分长期和短期保留。没有有度量的遗忘，记忆存储无界限增长，检索精度退化，过期信息污染上下文。每个遗忘周期都被度量：链完整度百分比和NDCG差值在垃圾回收前后计算。如果质量退化，周期通过事务性保存点回滚。FadeMem研究展示45%存储减少，同时*改善*多跳检索质量。
-
-3. **先门控再搜索。** 不是每个查询都需要记忆。检索门控分类意图并决定是否检索。Self-RAG和CRAG研究证明门控检索配合后检索纠正优于总是检索管道。Engram消除约40%的不必要搜索，减少简单查询的延迟，并防止弱结果污染上下文。
-
-4. **本地优先，始终离线。** 所有存储是本地。所有搜索是本地（BM25全文+可选向量语义搜索）。无云依赖，无遥测，无外部向量存储。系统优雅降级——无嵌入模型时，搜索回退到仅BM25，无关键字准确性损失。
-
-5. **默认安全。** PII自动检测并在触及磁盘前加密。数据库本身支持全盘加密。反取证措施防止通过文件大小变化的侧信道泄漏。GDPR合规内置。
-
-6. **观测一切。** 每个搜索返回质量度量（NDCG、延迟、结果计数）。每个巩固周期有可度量结果。无度量，优化是猜测。DeepResearch Bench II的9,430标准评估方法论指导我们的质量框架设计。
-
-7. **技能复合。** 代理不只是记住事实——它们记住*如何做事情*。程序记忆通过成功/失败反馈、组合和Reflexion风格的从错误学习而演进。一个每次交互都改进的技能库创造指数回报：更少步骤，更高成功率，更低令牌成本。
+Engram implements all six properties.
 
 ---
 
-## 架构概述
+## Design Principles
+
+Seven principles guide every architectural decision in Engram:
+
+1. **Budget-first, always.** Every operation is token-budget-aware. The ContextBuilder never overflows a model's context window. Memories compete for inclusion based on $\text{relevance} \times \text{importance}$, not insertion order. More context is not always better — PAPerBench proves that attention dilution degrades both personalization and privacy protection as context grows. Injection counts are capped per model based on empirical dilution curves.
+
+2. **Forgetting is a feature, not a bug.** Graceful decay rooted in the Ebbinghaus forgetting curve is essential — extended with a dual-layer FadeMem-inspired architecture that differentiates long-term and short-term retention. Without measured forgetting, the memory store grows unbounded, retrieval precision degrades, and stale information pollutes context. Every forgetting cycle is measured: chain integrity percentage and NDCG delta are computed before and after garbage collection. If quality degrades, the cycle rolls back via transactional savepoint. FadeMem research demonstrates 45% storage reduction while *improving* multi-hop retrieval quality.
+
+3. **Gate before you search.** Not every query needs memory. A retrieval gate classifies intent and decides whether to retrieve at all. Self-RAG and CRAG research prove that gated retrieval with post-retrieval correction outperforms always-retrieve pipelines. Engram eliminates ~40% of unnecessary searches, reduces latency on trivial queries, and prevents context pollution from weak results.
+
+4. **Local-first, always offline.** All storage is local. All search is local (BM25 full-text + optional vector semantic search). No cloud dependency, no telemetry, no external vector stores. The system degrades gracefully — without an embedding model, search falls back to BM25-only with no loss in keyword accuracy.
+
+5. **Security by default.** PII is detected automatically and encrypted before it touches disk. The database itself supports full-disk encryption. Anti-forensic measures prevent side-channel leakage through file size changes. GDPR compliance is built in.
+
+6. **Observe everything.** Every search returns quality metrics (NDCG, latency, result count). Every consolidation cycle has measurable outcomes. Without measurement, optimization is guesswork. DeepResearch Bench II's 9,430-rubric evaluation methodology informs our quality harness design.
+
+7. **Skills compound.** Agents don't just remember facts — they remember *how to do things*. Procedural memory evolves through success/failure feedback, composition, and Reflexion-style learning from mistakes. A skill library that improves with every interaction creates exponential returns: fewer steps, higher success rates, lower token costs.
+
+---
+
+## Architecture Overview
 
 ```mermaid
 flowchart TD
-    A["用户消息"] --> SB["感官缓冲区\n(Tier 0 — FIFO环形缓存)"]
-    SB --> WM["工作记忆\n(Tier 1 — 优先级驱逐注意力缓存)"]
+    A["User Message"] --> SB["Sensory Buffer\n(Tier 0 — FIFO ring cache)"]
+    SB --> WM["Working Memory\n(Tier 1 — priority-evicted attention cache)"]
 
-    WM --> CTX["ContextBuilder\n(预算感知提示组装)"]
-    CTX --> E["代理响应"]
+    WM --> CTX["ContextBuilder\n(budget-aware prompt assembly)"]
+    CTX --> E["Agent Response"]
 
-    E --> CAP["后捕获\n(自动提取事实、偏好、结果)"]
-    CAP --> ENC["加密层\n(PII检测 → AES-256-GCM)"]
-    ENC --> BR["Engram桥接\n(去重 → 嵌入 → 存储)"]
-    BR --> DB[("长期记忆\n(Tier 2)")]
+    E --> CAP["Post-Capture\n(auto-extract facts, preferences, outcomes)"]
+    CAP --> ENC["Encryption Layer\n(PII detect → AES-256-GCM)"]
+    ENC --> BR["Engram Bridge\n(dedup → embed → store)"]
+    BR --> DB[("Long-Term Memory\n(Tier 2)")]
 
-    subgraph LTM["长期记忆图"]
+    subgraph LTM["Long-Term Memory Graph"]
         direction LR
-        G["情景存储\n(发生了什么)"]
-        H["知识存储\n(什么是真的)"]
-        I["程序存储\n(如何做事情)"]
-        SK["技能库\n(可组合程序)"]
+        G["Episodic Store\n(what happened)"]
+        H["Knowledge Store\n(what is true)"]
+        I["Procedural Store\n(how to do things)"]
+        SK["Skill Library\n(composable procedures)"]
     end
 
     DB --- LTM
-    LTM --- J["图边(8种类型)\n扩散激活"]
-    LTM --- COMM["社区检测\n(Louvain → 层级摘要)"]
+    LTM --- J["Graph Edges (8 types)\nSpreading Activation"]
+    LTM --- COMM["Community Detection\n(Louvain → hierarchical summaries)"]
 
-    WM --> RG["检索门控\n(跳过 / 检索 / 深度 / 拒绝 / 推迟)"]
-    RG --> HS["混合搜索\n(BM25 + 向量 + 图 + GraphRAG)"]
-    HS --> RR["重排序\n(RRF / MMR / RRF+MMR)"]
-    RR --> QG["质量门控\nCRAG 3层: 正确 / 模糊 / 错误"]
+    WM --> RG["Retrieval Gate\n(Skip / Retrieve / Deep / Refuse / Defer)"]
+    RG --> HS["Hybrid Search\n(BM25 + Vector + Graph + GraphRAG)"]
+    HS --> RR["Reranking\n(RRF / MMR / RRF+MMR)"]
+    RR --> QG["Quality Gate\nCRAG 3-tier: Correct / Ambiguous / Incorrect"]
     QG --> WM
 
     DB --> HS
     COMM --> HS
 
-    subgraph Background["后台进程"]
+    subgraph Background["Background Processes"]
         direction TB
-        K["巩固引擎\n(每5分钟)"]
-        K1["模式聚类"]
-        K2["矛盾检测"]
-        K3["艾宾浩斯FadeMem双层衰减\n(LML β=0.8 / SML β=1.2)"]
-        K4["垃圾回收\n(带保存点回滚)"]
-        FUS["记忆融合\n(cosine ≥ 0.75 → 合并 → 墓碑)"]
-        DR["梦境回放\n(空闲时间重嵌入 + 发现连接)"]
+        K["Consolidation Engine\n(every 5 min)"]
+        K1["Pattern clustering"]
+        K2["Contradiction detection"]
+        K3["Ebbinghaus FadeMem dual-layer decay\n(LML β=0.8 / SML β=1.2)"]
+        K4["Garbage collection\n(with savepoint rollback)"]
+        FUS["Memory Fusion\n(cosine ≥ 0.75 → merge → tombstone)"]
+        DR["Dream Replay\n(idle-time re-embed + discover connections)"]
     end
 
     DB <--> K
@@ -145,328 +145,328 @@ flowchart TD
     FUS --> DB
     DR --> DB
 
-    subgraph Cognition["认知模块"]
+    subgraph Cognition["Cognitive Modules"]
         direction LR
-        EM["情绪记忆\n(情感评分)"]
-        MC["元认知\n(置信度图)"]
-        IC["意图分类器\n(6意图路由)"]
-        ET["实体跟踪器\n(规范解析)"]
+        EM["Emotional Memory\n(affective scoring)"]
+        MC["Meta-Cognition\n(confidence maps)"]
+        IC["Intent Classifier\n(6-intent routing)"]
+        ET["Entity Tracker\n(canonical resolution)"]
     end
 
     HS --> Cognition
     Cognition --> RR
 
-    MB["记忆总线\n(多代理同步)"] <--> DB
+    MB["Memory Bus\n(multi-agent sync)"] <--> DB
 
-    subgraph Loop["智能循环"]
+    subgraph Loop["Intelligence Loop"]
         direction LR
-        L1["门控"] --> L2["检索"]
-        L2 --> L3["上限"]
-        L3 --> L4["技能"]
-        L4 --> L5["评估"]
-        L5 --> L6["遗忘"]
+        L1["Gate"] --> L2["Retrieve"]
+        L2 --> L3["Cap"]
+        L3 --> L4["Skill"]
+        L4 --> L5["Evaluate"]
+        L5 --> L6["Forget"]
         L6 --> L1
     end
 ```
 
-系统作为23个Rust模块在 `src-tauri/src/engine/engram/` 下实现：
+The system is implemented as 23 Rust modules under `src-tauri/src/engine/engram/`:
 
-| 模块 | 用途 |
+| Module | Purpose |
 |--------|---------|
-| `sensory_buffer.rs` | 当前轮次输入数据的环形缓冲区 |
-| `working_memory.rs` | 带令牌预算的优先级驱逐槽 |
-| `graph.rs` | 记忆图操作（存储、搜索、边、激活） |
-| `store.rs` / `schema.rs` | 存储模式、迁移、CRUD操作 |
-| `consolidation.rs` | 后台模式检测、聚类、矛盾解决 |
-| `retrieval.rs` | 带质量度量的检索皮层 |
-| `retrieval_quality.rs` | NDCG评分和相关性警告 |
-| `hybrid_search.rs` | 查询分类（事实vs概念） |
-| `context_builder.rs` | 令牌预算感知的提示组装 |
-| `tokenizer.rs` | 模型特定令牌计数，UTF-8安全截断 |
-| `model_caps.rs` | 每模型能力注册表（上下文窗口、特性） |
-| `reranking.rs` | RRF、MMR和组合重排序策略 |
-| `metadata_inference.rs` | 从内容自动提取技术栈、URL、文件路径 |
-| `encryption.rs` | PII检测、AES-256-GCM字段加密、GDPR清除 |
-| `bridge.rs` | 连接工具/命令到图的公共API |
-| `emotional_memory.rs` | 情感评分管道（效价、唤醒、主导） |
-| `meta_cognition.rs` | 每域知识置信度的自我评估 |
-| `temporal_index.rs` | 时间轴检索，范围查询和邻近评分 |
-| `intent_classifier.rs` | 动态信号权重的6意图查询分类器 |
-| `entity_tracker.rs` | 规范名称解析和实体生命周期跟踪 |
-| `abstraction.rs` | 层级语义压缩树 |
-| `memory_bus.rs` | 带冲突解决的多代理记忆同步协议 |
-| `dream_replay.rs` | 空闲时间海马启发回放和重嵌入 |
+| `sensory_buffer.rs` | Ring buffer for current-turn incoming data |
+| `working_memory.rs` | Priority-evicted slots with token budget |
+| `graph.rs` | Memory graph operations (store, search, edges, activation) |
+| `store.rs` / `schema.rs` | Storage schema, migrations, CRUD operations |
+| `consolidation.rs` | Background pattern detection, clustering, contradiction resolution |
+| `retrieval.rs` | Retrieval cortex with quality metrics |
+| `retrieval_quality.rs` | NDCG scoring and relevance warnings |
+| `hybrid_search.rs` | Query classification (factual vs. conceptual) |
+| `context_builder.rs` | Token-budget-aware prompt assembly |
+| `tokenizer.rs` | Model-specific token counting with UTF-8 safe truncation |
+| `model_caps.rs` | Per-model capability registry (context windows, features) |
+| `reranking.rs` | RRF, MMR, and combined reranking strategies |
+| `metadata_inference.rs` | Auto-extract tech stack, URLs, file paths from content |
+| `encryption.rs` | PII detection, AES-256-GCM field encryption, GDPR purge |
+| `bridge.rs` | Public API connecting tools/commands to the graph |
+| `emotional_memory.rs` | Affective scoring pipeline (valence, arousal, dominance) |
+| `meta_cognition.rs` | Self-assessment of knowledge confidence per domain |
+| `temporal_index.rs` | Time-axis retrieval with range queries and proximity scoring |
+| `intent_classifier.rs` | 6-intent query classifier for dynamic signal weighting |
+| `entity_tracker.rs` | Canonical name resolution and entity lifecycle tracking |
+| `abstraction.rs` | Hierarchical semantic compression tree |
+| `memory_bus.rs` | Multi-agent memory sync protocol with conflict resolution |
+| `dream_replay.rs` | Idle-time hippocampal-inspired replay and re-embedding |
 
 ---
 
-## 三层记忆体系
+## The Three Memory Tiers
 
 ```mermaid
 flowchart TB
-    subgraph T0["Tier 0 — 感官缓冲区"]
+    subgraph T0["Tier 0 — Sensory Buffer"]
         direction LR
-        SB["FIFO环形缓存\n最多20项\n单轮次生命周期"]
+        SB["FIFO Ring Cache\n20 items max\nSingle turn lifetime"]
     end
 
-    subgraph T1["Tier 1 — 工作记忆"]
+    subgraph T1["Tier 1 — Working Memory"]
         direction LR
-        WM["优先级驱逐槽\n4,096令牌预算\n主动注意力"]
+        WM["Priority-Evicted Slots\n4,096 token budget\nActive attention"]
     end
 
-    subgraph T2["Tier 2 — 长期记忆图"]
+    subgraph T2["Tier 2 — Long-Term Memory Graph"]
         direction LR
-        EP["情景\n(发生了什么)"]
-        KN["知识\n(什么是真的)"]
-        PR["程序\n(如何做事情)"]
+        EP["Episodic\n(what happened)"]
+        KN["Knowledge\n(what is true)"]
+        PR["Procedural\n(how to do things)"]
     end
 
-    T0 -- "注意性\n提升" --> T1
-    T1 -- "巩固" --> T2
-    T2 -- "搜索时\n召回" --> T1
+    T0 -- "attentional\npromotion" --> T1
+    T1 -- "consolidation" --> T2
+    T2 -- "recall on\nsearch" --> T1
 ```
 
-### Tier 1: 感官缓冲区
+### Tier 1: Sensory Buffer
 
-一个固定容量的环形缓冲区（`VecDeque`），在单个代理轮次中累积原始输入：用户消息、工具结果、召回的记忆和系统上下文。
+A fixed-capacity ring buffer (`VecDeque`) that accumulates raw input during a single agent turn: user messages, tool results, recalled memories, and system context.
 
-**属性:**
-- 容量: 可配置（默认20项）
-- 生命周期: 单轮次——由ContextBuilder清空并丢弃
-- 预算感知: `drain_within_budget(token_limit)` 返回适合令牌预算的项目
+**Properties:**
+- Capacity: configurable (default 20 items)
+- Lifetime: single turn — drained by the ContextBuilder and discarded
+- Budget-aware: `drain_within_budget(token_limit)` returns items that fit within a token budget
 
-**目的:** 防止在复杂轮次中多次工具调用时的信息丢失。ContextBuilder从感官缓冲区读取以构建最终提示。
+**Purpose:** Prevents information loss during complex turns with many tool calls. The ContextBuilder reads from the sensory buffer to build the final prompt.
 
-### Tier 2: 工作记忆
+### Tier 2: Working Memory
 
-一个优先级排序的记忆槽数组，带硬性令牌预算。代表代理的"当前意识"——它正在积极思考的内容。
+A priority-sorted array of memory slots with a hard token budget. Represents the agent's "current awareness" — what it's actively thinking about.
 
-**属性:**
-- 容量: 可配置令牌预算（默认4,096令牌）
-- 驱逐: 超出预算时驱逐最低优先级槽
-- 来源: 召回的长期记忆、感官缓冲区溢出、工具结果、用户提及
-- 持久化: 代理切换时保存快照到持久存储，代理恢复时还原
+**Properties:**
+- Capacity: configurable token budget (default 4,096 tokens)
+- Eviction: lowest-priority slot evicted when budget exceeded
+- Sources: recalled long-term memories, sensory buffer overflow, tool results, user mentions
+- Persistence: snapshots saved to the persistent store on agent switch, restored when agent resumes
 
-**槽结构:**
+**Slot structure:**
 ```
 WorkingMemorySlot {
-    memory_id: String,      // 链接到长期记忆(如果召回)
+    memory_id: String,      // links to long-term memory (if recalled)
     content: String,
     source: Recalled | SensoryBuffer | ToolResult | Restored,
-    priority: f32,          // 决定驱逐顺序
-    token_cost: usize,      // 预计算的令牌计数
+    priority: f32,          // determines eviction order
+    token_cost: usize,      // pre-computed token count
     inserted_at: DateTime,
 }
 ```
 
-**优先级计算:** 召回的记忆使用其检索评分。感官缓冲区项目使用近因评分。工具结果使用可配置优先级（默认0.7）。用户提及获得高优先级（0.9）。
+**Priority calculation:** Recalled memories use their retrieval score. Sensory buffer items use recency score. Tool results use a configurable priority (default 0.7). User mentions get high priority (0.9).
 
-### Tier 3: 长期记忆图
+### Tier 3: Long-Term Memory Graph
 
-三个持久存储——情景、知识和程序——通过类型化图边连接。
+Three persistent stores — episodic, knowledge, and procedural — connected by typed graph edges.
 
-#### 情景存储
-*发生了什么*——具体事件、对话、任务结果、会话摘要。
+#### Episodic Store
+*What happened* — concrete events, conversations, task results, session summaries.
 
-每个情景记忆具有:
-- 分层内容（全文、摘要、关键事实、标签——当前仅全文填充）
-- 类别（18变体枚举）
-- 重要性评分（0.0–1.0）
-- 强度（创建时1.0，随时间通过艾宾浩斯曲线衰减）
-- 范围（全局 / 代理 / 频道 / 频道用户）
-- 可选向量嵌入用于语义搜索
-- 访问跟踪（计数 + 最后访问时间戳）
-- 巩固状态（新鲜 → 已巩固 → 已归档）
+Each episodic memory has:
+- Tiered content (full text, summary, key facts, tags — currently only full text populated)
+- Category (18-variant enum)
+- Importance score (0.0–1.0)
+- Strength (1.0 on creation, decays over time via Ebbinghaus curve)
+- Scope (global / agent / channel / channel_user)
+- Optional vector embedding for semantic search
+- Access tracking (count + last accessed timestamp)
+- Consolidation state (fresh → consolidated → archived)
 
-#### 知识存储
-*什么是真的*——结构化知识作为主体-谓语-客体三元组。
+#### Knowledge Store
+*What is true* — structured knowledge as subject-predicate-object triples.
 
-示例:
-- ("用户", "偏好", "深色模式")
-- ("Project Alpha", "使用", "Rust + TypeScript")
-- ("API速率限制", "是", "100请求/分钟")
+Examples:
+- ("User", "prefers", "dark mode")
+- ("Project Alpha", "uses", "Rust + TypeScript")
+- ("API rate limit", "is", "100 requests/minute")
 
-匹配主体+谓语的三元组自动重巩固：新值替换旧值，置信度评分转移。
+Triples with matching subject + predicate are automatically reconsolidated: the newer value replaces the older one, with confidence scores transferred.
 
-#### 程序存储
-*如何做事情*——带成功/失败跟踪的逐步程序。
+#### Procedural Store
+*How to do things* — step-by-step procedures with success/failure tracking.
 
-每个程序具有:
-- 内容（步骤）
-- 触发条件（何时应用）
-- 成功和失败计数器
-- 从执行历史派生的成功率
+Each procedure has:
+- Content (the steps)
+- Trigger condition (when to apply)
+- Success and failure counters
+- Success rate derived from execution history
 
 ---
 
-## 长期记忆图
+## Long-Term Memory Graph
 
-记忆不是孤立行——它们形成通过类型化边连接的图：
+Memories are not isolated rows — they form a graph connected by typed edges:
 
-| 边类型 | 含义 |
+| Edge Type | Meaning |
 |-----------|---------|
-| `RelatedTo` | 一般关联 |
-| `CausedBy` | 因果关系 |
-| `Supports` | 支持主张的证据 |
-| `Contradicts` | 冲突信息 |
-| `PartOf` | 组成关系 |
-| `FollowedBy` | 时间序列 |
-| `DerivedFrom` | 源推导 |
-| `SimilarTo` | 语义相似 |
+| `RelatedTo` | General association |
+| `CausedBy` | Causal relationship |
+| `Supports` | Evidence supporting a claim |
+| `Contradicts` | Conflicting information |
+| `PartOf` | Component relationship |
+| `FollowedBy` | Temporal sequence |
+| `DerivedFrom` | Source derivation |
+| `SimilarTo` | Semantic similarity |
 
-### 扩散激活
+### Spreading Activation
 
-当记忆通过搜索检索时，图被遍历以查找相关记忆。相邻节点接收与边权重成比例的激活提升，按边类型偏置。这实现了认知科学中扩散激活的简化版本。
+When memories are retrieved by search, the graph is traversed to find associated memories. Adjacent nodes receive an activation boost proportional to their edge weight, biased by edge type. This implements a simplified version of spreading activation from cognitive science.
 
 ```mermaid
 graph LR
-    Q["搜索查询"] --> M1["记忆A\n(直接命中)"]
+    Q["Search Query"] --> M1["Memory A\n(direct hit)"]
 
-    M1 -- "RelatedTo\n权重: 0.8" --> M2["记忆B\n(1跳提升)"]
-    M1 -- "CausedBy\n权重: 0.9" --> M3["记忆C\n(1跳提升)"]
-    M1 -- "Supports\n权重: 0.7" --> M4["记忆D\n(1跳提升)"]
-    M2 -- "SimilarTo\n权重: 0.6" --> M5["记忆E\n(2跳 — 未来)"]
+    M1 -- "RelatedTo\nweight: 0.8" --> M2["Memory B\n(1-hop boost)"]
+    M1 -- "CausedBy\nweight: 0.9" --> M3["Memory C\n(1-hop boost)"]
+    M1 -- "Supports\nweight: 0.7" --> M4["Memory D\n(1-hop boost)"]
+    M2 -- "SimilarTo\nweight: 0.6" --> M5["Memory E\n(2-hop — future)"]
 
 ```
 
-当前为1跳遍历：检索记忆的直接邻居被提升。激活评分与原始检索评分混合以产生最终排名。
+Currently 1-hop traversal: direct neighbors of retrieved memories are boosted. The activation score is blended with the original retrieval score to produce the final ranking.
 
 ---
 
-## 混合搜索 — BM25 + 向量融合
+## Hybrid Search
 
-Engram使用三种搜索信号，通过倒数排名融合(RRF)融合：
+Engram uses three search signals, fused with reciprocal rank fusion (RRF):
 
 ```mermaid
 flowchart LR
-    Q["搜索查询"] --> RG["检索门控\n(跳过 / 检索 / 深度)"]
-    RG -- 跳过 --> SKIP["返回空\n(无需搜索)"]
-    RG -- 检索 / 深度 --> CL["查询分类器\n(事实 vs 概念)"]
-    CL --> BM["BM25\n(全文索引)"]
-    CL --> VS["向量相似性\n(Ollama嵌入)"]
-    BM --> RRF["倒数排名融合\nRRF_score = Σ 1/(k + rank)"]
+    Q["Search Query"] --> RG["Retrieval Gate\n(Skip / Retrieve / Deep)"]
+    RG -- Skip --> SKIP["Return empty\n(no search needed)"]
+    RG -- Retrieve / Deep --> CL["Query Classifier\n(factual vs conceptual)"]
+    CL --> BM["BM25\n(Full-Text Index)"]
+    CL --> VS["Vector Similarity\n(Ollama embeddings)"]
+    BM --> RRF["Reciprocal Rank Fusion\nRRF_score = Σ 1/(k + rank)"]
     VS --> RRF
-    RRF --> SA["图扩散\n激活(1跳 → 2跳)"]
-    SA --> RR["重排序\n(RRF / MMR / RRF+MMR)"]
-    RR --> QG["质量门控\n(相关性 ≥ 0.3?)"]
-    QG -- 通过 --> R["排名结果"]
-    QG -- 失败 --> RF["重格式化 / 扩展 / 拒绝"]
+    RRF --> SA["Graph Spreading\nActivation (1-hop → 2-hop)"]
+    SA --> RR["Reranking\n(RRF / MMR / RRF+MMR)"]
+    RR --> QG["Quality Gate\n(relevance ≥ 0.3?)"]
+    QG -- Pass --> R["Ranked Results"]
+    QG -- Fail --> RF["Reformulate / Expand / Refuse"]
     RF --> CL
 ```
 
-### 1. BM25全文搜索
+### 1. BM25 Full-Text Search
 
-带 `porter unicode61` 分词器的全文索引。处理精确关键字匹配、词干提取和短语查询。所有全文查询操作符在执行前清理以防注入。
+Full-text index with `porter unicode61` tokenizer. Handles exact keyword matches, stemming, and phrase queries. All full-text query operators are sanitized before execution to prevent injection.
 
-### 2. 向量相似性搜索
+### 2. Vector Similarity Search
 
-当Ollama可用且配置嵌入模型（如 `nomic-embed-text`）时，记忆在存储时嵌入。搜索查询在查询时嵌入。查询和记忆嵌入间的余弦相似性产生相关性评分。
+When Ollama is available with an embedding model (e.g., `nomic-embed-text`), memories are embedded at storage time. Search queries are embedded at query time. Cosine similarity between query and memory embeddings produces a relevance score.
 
-嵌入生成可选——无嵌入模型配置时，系统回退到仅BM25搜索，无关键字准确性降级。
+Embedding generation is optional — if no embedding model is configured, the system falls back to BM25-only search with no degradation in keyword accuracy.
 
-### 3. 图扩散激活
+### 3. Graph Spreading Activation
 
-BM25和向量结果收集后，记忆图遍历以通过类型化边查找相关记忆。相关记忆接收评分提升。
+After BM25 and vector results are collected, the memory graph is traversed to find related memories via typed edges. Associated memories receive a score boost.
 
-### 融合策略
+### Fusion Strategy
 
-来自所有三种信号的结果使用**倒数排名融合(RRF)**合并：
+Results from all three signals are merged using **Reciprocal Rank Fusion (RRF)**:
 
 $$\text{RRF}_{\text{score}}(d) = \sum_{i} \frac{1}{k + \text{rank}_i(d)}$$
 
-其中 $k = 60$（标准常数）和 $\text{rank}_i(d)$ 是文档 $d$ 在信号 $i$ 中的排名。这产生统一排名，受益于所有三种信号而不需评分标准化。
+Where $k = 60$ (standard constant) and $\text{rank}_i(d)$ is the rank of document $d$ in signal $i$. This produces a unified ranking that benefits from all three signals without requiring score normalization.
 
-### 重排序
+### Reranking
 
-融合后，结果可选使用四种策略之一重排序：
+After fusion, results are optionally reranked using one of four strategies:
 
-| 策略 | 方法 | 用例 |
+| Strategy | Method | Use Case |
 |----------|--------|----------|
-| RRF | 仅倒数排名融合 | 默认，快速 |
-| MMR | 最大边际相关性($\lambda = 0.7$) | 聚焦多样性 |
-| RRF+MMR | RRF后接MMR | 最佳质量 |
-| CrossEncoder | 模型基于重排序(回退到RRF+MMR) | 未来 |
+| RRF | Reciprocal rank fusion only | Default, fast |
+| MMR | Maximal marginal relevance ($\lambda = 0.7$) | Diversity-focused |
+| RRF+MMR | RRF followed by MMR | Best quality |
+| CrossEncoder | Model-based reranking (falls back to RRF+MMR) | Future |
 
-### 查询分类
+### Query Classification
 
-`hybrid_search.rs` 模块分析查询以确定最优搜索策略：
-- **事实查询**（谁、什么、何时、具体实体）→ BM25权重更高
-- **概念查询**（如何、为什么、解释、抽象主题）→ 向量相似性权重更高
-- 信号权重每查询动态调整
+The `hybrid_search.rs` module analyzes queries to determine the optimal search strategy:
+- **Factual queries** (who, what, when, specific entities) → weight BM25 higher
+- **Conceptual queries** (how, why, explain, abstract topics) → weight vector similarity higher
+- Signal weights are adjusted dynamically per query
 
 ---
 
-## 检索智能
+## Retrieval Intelligence
 
-搜索只是问题的一半。另一半是决定*是否*搜索，以及结果弱时*做什么*。Engram实现了受Self-RAG和CRAG研究启发的两阶段检索智能管道。
+Search is only half the problem. The other half is deciding *whether* to search, and *what to do* when results are weak. Engram implements a two-stage retrieval intelligence pipeline inspired by Self-RAG and CRAG research.
 
 ```mermaid
 flowchart TD
-    Q["入站查询"] --> GATE{"检索门控\n(<1ms)"}
+    Q["Inbound Query"] --> GATE{"Retrieval Gate\n(<1ms)"}
 
-    GATE -- "跳过" --> SKIP["无搜索\n(问候、数学、\n主题在工作记忆)"]
-    GATE -- "检索" --> SEARCH["混合搜索\n(BM25 + 向量 + 图)"]
-    GATE -- "深度检索" --> DEEP["扩展搜索\n(更高限制、2跳、\nGraphRAG社区)"]
+    GATE -- "Skip" --> SKIP["No search\n(greetings, math,\ntopic in working memory)"]
+    GATE -- "Retrieve" --> SEARCH["Hybrid Search\n(BM25 + Vector + Graph)"]
+    GATE -- "DeepRetrieve" --> DEEP["Extended Search\n(higher limits, 2-hop,\nGraphRAG communities)"]
 
-    SEARCH --> QC{"CRAG质量\n层级?"}
+    SEARCH --> QC{"CRAG Quality\nTier?"}
     DEEP --> QC
 
-    QC -- "正确(≥ 0.6)" --> INJECT["直接注入\n(提取支持句子)"]
-    QC -- "模糊(0.3–0.6)" --> REFINE["知识精炼\n(分解 + 重搜索 + 合并)"]
-    QC -- "错误(< 0.3)" --> REFUSE["拒绝 / 扩大范围\n/ 查询分解"]
+    QC -- "Correct (\u2265 0.6)" --> INJECT["Inject directly\n(extract supporting sentences)"]
+    QC -- "Ambiguous (0.3\u20130.6)" --> REFINE["Knowledge Refinement\n(decompose + re-search + merge)"]
+    QC -- "Incorrect (< 0.3)" --> REFUSE["Refuse / Broaden Scope\n/ Query Decomposition"]
 
     REFINE --> INJECT
-    REFUSE -- "重格式化" --> SEARCH
+    REFUSE -- "reformulated" --> SEARCH
 
-    GATE -- "推迟" --> ASK["请求用户\n澄清"]
+    GATE -- "Defer" --> ASK["Ask user for\nclarification"]
 ```
 
-### 检索门控
+### Retrieval Gate
 
-任何搜索执行前，`RetrievalGate`分类入站查询并决定检索策略。这增加<1ms延迟但消除不必要搜索周期并防止无关记忆注入污染上下文。
+Before any search executes, the `RetrievalGate` classifies the inbound query and decides the retrieval strategy. This adds <1ms of latency but eliminates unnecessary search cycles and prevents context pollution from irrelevant memory injection.
 
-五种检索模式：
+Five retrieval modes:
 
-| 模式 | 触发 | 行为 |
+| Mode | Trigger | Behavior |
 |------|---------|----------|
-| **跳过** | 计算查询、问候、主题已在工作记忆 | 无搜索。模型从自身知识或现有对话回答。 |
-| **检索** | 标准事实或程序查询 | 正常混合搜索管道(BM25 + 向量 + 图)。 |
-| **深度检索** | 探索或时间查询("告诉我关于…的一切") | 扩展搜索，更高结果限制、2跳图激活、更广范围。 |
-| **拒绝** | 后检索：最高结果相关性低于阈值 | 优雅拒绝——"我无该信息"而非从弱匹配伪造。 |
-| **推迟** | 需澄清的模糊引用 | 搜索前请求用户消歧。 |
+| **Skip** | Computational queries, greetings, topic already in working memory | No search. The model answers from its own knowledge or the existing conversation. |
+| **Retrieve** | Standard factual or procedural queries | Normal hybrid search pipeline (BM25 + vector + graph). |
+| **DeepRetrieve** | Exploratory or temporal queries ("tell me everything about…") | Extended search with higher result limits, 2-hop graph activation, and broader scope. |
+| **Refuse** | Post-retrieval: top result relevance below threshold | Graceful refusal — "I don't have information on that" rather than fabricating from weak matches. |
+| **Defer** | Ambiguous references needing clarification | Ask the user for disambiguation before searching. |
 
-门控默认基于规则，评估查询结构、意图分类和工作记忆覆盖。这避免LLM门控决策的延迟和不可靠性。
+The gate is rule-based by default, evaluating query structure, intent classification, and working memory coverage. This avoids the latency and unreliability of an LLM-based gating decision.
 
-### 后检索质量检查(CRAG三层)
+### Post-Retrieval Quality Check (CRAG Three-Tier)
 
-搜索返回结果后，`QualityGate`评估结果是否实际有用。受Corrective RAG启发，Engram将检索置信度分类为三层：
+After search returns results, the `QualityGate` evaluates whether the results are actually useful. Inspired by Corrective RAG, Engram classifies retrieval confidence into three tiers:
 
-| 置信层级 | 触发 | 行动 |
+| Confidence Tier | Trigger | Action |
 |---|---|---|
-| **正确**(≥ 0.6) | 最高结果高度相关查询 | 直接注入——提取支持句子用于聚焦上下文 |
-| **模糊**(0.3–0.6) | 结果相关但不明确对靶 | 知识精炼：分解查询为子查询，重搜索每个，合并结果 |
-| **错误**(< 0.3) | 结果离题或缺失 | 优雅拒绝，或扩大范围(图扩展、社区摘要)，或分解查询 |
+| **Correct** (≥ 0.6) | Top results are highly relevant to the query | Inject directly — extract supporting sentences for focused context |
+| **Ambiguous** (0.3–0.6) | Results are related but not clearly on-target | Knowledge refinement: decompose query into sub-queries, re-search each, merge results |
+| **Incorrect** (< 0.3) | Results are off-topic or absent | Refuse gracefully, or broaden scope (graph expansion, community summaries), or decompose the query |
 
-**具体纠正行动：**
+**Specific correction actions:**
 
-1. **知识精炼**(模糊层)——仅从检索记忆提取直接支持查询的句子，丢弃周围噪声。这是CRAG的关键洞察：即使部分相关记忆包含有用片段。
-2. **查询分解**——复杂查询整体失败时，分解为子查询独立搜索并合并结果。
-3. **范围扩大**——低置信结果，系统升级到图扩展搜索(2跳激活)或GraphRAG社区摘要。
-4. **优雅拒绝**——重格式化、扩展和分解全部失败时，系统拒绝而非注入低质量记忆。
+1. **Knowledge refinement** (Ambiguous tier) — Extract only the sentences from retrieved memories that directly support the query, discarding surrounding noise. This is CRAG’s key insight: even partially-relevant memories contain useful fragments.
+2. **Query decomposition** — If a complex query fails as a whole, it is decomposed into sub-queries that are searched independently and results merged.
+3. **Scope broadening** — For low-confidence results, the system escalates to graph-expanded search (2-hop activation) or GraphRAG community summaries.
+4. **Graceful refusal** — If reformulation, expansion, and decomposition all fail, the system refuses rather than injecting low-quality memories.
 
-**两个基础质量不变量**支撑每个层级决策：
+**Two foundational quality invariants** underpin every tier decision:
 
-1. **相关性检查**——最高结果评分低于0.3时，结果集分类为*错误*，无记忆原样注入。系统重格式化查询、通过图扩展扩大范围，或优雅拒绝而非用离题材料污染上下文。
-2. **覆盖检查**——探索查询，结果计数低于可配置阈值时，系统升级到深度检索模式：更高结果限制、2跳图激活、GraphRAG社区摘要参与填补差距，再返回部分答案。
+1. **Relevance check** — If the top result scores below 0.3, the result set is classified as *Incorrect* and no memories are injected as-is. The system reformulates the query, broadens scope via graph expansion, or refuses gracefully rather than polluting the context with off-topic material.
+2. **Coverage check** — For exploratory queries, if the result count falls below a configurable threshold, the system escalates to DeepRetrieve mode: higher result limits, 2-hop graph activation, and GraphRAG community summaries are engaged to fill the gap before returning a partial answer.
 
-### 统一检索路径(gated_search)
+### Unified Retrieval Path (gated_search)
 
-Engram中所有记忆检索通过单一 `gated_search()` 函数路由。这是关键架构不变量——无路径(聊天、任务、编排器、群组、流、代理工具)可直接调用搜索后端。统一路径保证：
+All memory retrieval in Engram routes through a single `gated_search()` function. This is a critical architectural invariant — no path (chat, tasks, orchestrator, swarm, flows, agent tools) may call the search backend directly. The unified path guarantees:
 
-- 每个搜索通过检索门控(跳过/检索/深度决策)
-- 每个搜索尊重每模型注入上限
-- 每个搜索应用CRAG三层质量检查
-- 每个搜索配置跟踪span和质量度量
-- 每个搜索尊重加密边界
+- Every search passes through the retrieval gate (skip/retrieve/deep decision)
+- Every search respects per-model injection caps
+- Every search applies CRAG three-tier quality checking
+- Every search is instrumented with tracing spans and quality metrics
+- Every search respects encryption boundaries
 
 ```rust
 pub async fn gated_search(
@@ -476,181 +476,181 @@ pub async fn gated_search(
     gate: &RetrievalGate,
     store: &dyn MemoryBackend,
 ) -> EngineResult<RecallResult> {
-    // 1. 门控决策: 跳过 / 检索 / 深度检索
-    // 2. 混合搜索(BM25 + 向量 + 图)
-    // 3. CRAG质量层级分类
-    // 4. 需要时纠正行动
-    // 5. 预算感知修剪，每模型上限
-    // 6. 质量度量计算
+    // 1. Gate decision: Skip / Retrieve / DeepRetrieve
+    // 2. Hybrid search (BM25 + vector + graph)
+    // 3. CRAG quality tier classification
+    // 4. Correction actions if needed
+    // 5. Budget-aware trimming with per-model cap
+    // 6. Quality metrics computation
 }
 ```
 
-这消除当前代码缺口，即任务、编排器和群组绕过ContextBuilder并硬编码 `limit=10` 无质量检查。
+This eliminates the current code gap where tasks, orchestrator, and swarm bypass the ContextBuilder and hardcode `limit=10` with no quality checking.
 
-这个两阶段管道意味着Engram在应该时检索，不应时跳过，结果弱时纠正——而非盲目注入搜索返回的任何内容。
+This two-stage pipeline means Engram retrieves when it should, skips when it shouldn't, and corrects when results are weak — rather than blindly injecting whatever the search returns.
 
 ---
 
-## 缓存架构
+## Caching Architecture
 
-Engram的三层设计本身是一个缓存层级。每层作为有界缓存运行，有独特的驱逐策略、TTL和访问模式——镜像CPU架构和生物认知中的缓存层级。
+Engram's three-tier design is itself a caching hierarchy. Each tier operates as a bounded cache with a distinct eviction policy, TTL, and access pattern — mirroring the cache hierarchy in both CPU architecture and biological cognition.
 
-### 生物缓存模型
+### The Biological Cache Model
 
-人类记忆的Atkinson-Shiffrin模型描述三个存储，访问速度递减容量递增。Engram的层级直接映射：
+The Atkinson-Shiffrin model of human memory describes three stores with decreasing access speed and increasing capacity. Engram's tiers map directly:
 
-| 层级 | Engram模块 | 生物类比 | 缓存角色 | 驱逐策略 |
+| Tier | Engram Module | Biological Analog | Cache Role | Eviction Policy |
 |------|---------------|-------------------|------------|-----------------|
-| Tier 0 | `SensoryBuffer` | 图标/声像记忆 | **感知缓存**——注意过滤前的原始刺激 | FIFO环形；溢出时驱逐最旧条目 |
-| Tier 1 | `WorkingMemory` | Baddeley中央执行 | **注意缓存**——代理主动思考的内容 | 基于优先级；超出令牌预算时驱逐最低优先级槽 |
-| Tier 2 | LTM图 | 海马长期存储 | **持久存储**——所有已知内容，通过检索访问 | 艾宾浩斯强度衰减 → 阈值下GC |
+| Tier 0 | `SensoryBuffer` | Iconic / echoic memory | **Perceptual cache** — raw stimuli before attentional filtering | FIFO ring; oldest entry evicted on overflow |
+| Tier 1 | `WorkingMemory` | Baddeley's central executive | **Attention cache** — what the agent is actively thinking about | Priority-based; lowest-priority slot evicted when token budget exceeded |
+| Tier 2 | LTM Graph | Hippocampal long-term store | **Persistent store** — everything known, accessed via retrieval | Ebbinghaus strength decay → GC below threshold |
 
-这不是松散类比。驱逐级联在功能上等同于认知心理学中的记忆痕迹转移：接收注意的感官痕迹提升到工作记忆；演练的工作记忆项目巩固到长期存储。未能提升的项目丢失——系统优雅遗忘。
+This is not a loose analogy. The eviction cascade is functionally identical to memory trace transfer in cognitive psychology: sensory traces that receive attention are promoted to working memory; working memory items that are rehearsed are consolidated to long-term storage. Items that fail to be promoted are lost — the system forgets gracefully.
 
-### Tier 0: 感官缓存
+### Tier 0: Sensory Cache
 
-`SensoryBuffer`是有界 `VecDeque` 环形缓冲区，带显式缓存语义：
+The `SensoryBuffer` is a bounded `VecDeque` ring buffer with explicit cache semantics:
 
-- **容量有界:** 可配置最大条目(默认20)
-- **FIFO驱逐:** 满 `push()` 驱逐最旧条目并返回以提升到工作记忆
-- **令牌感知:** 跟踪累积令牌计数；`drain_within_budget()` 返回适合给定令牌限制的项目
-- **易失:** 每代理轮次后丢弃内容
+- **Capacity-bounded:** configurable max entries (default 20)
+- **FIFO eviction:** when full, `push()` evicts the oldest entry and returns it for promotion to working memory
+- **Token-aware:** tracks cumulative token count; `drain_within_budget()` returns items that fit within a given token limit
+- **Volatile:** contents are discarded after each agent turn
 
-返回的驱逐条目是提升信号——它告诉调用者"此项目被推出感官注意；决定是否值得工作记忆槽"。这镜像人类感知中的注意门。
+The returned evicted entry is the promotion signal — it tells the caller "this item was pushed out of sensory attention; decide whether it deserves a working memory slot." This mirrors the attentional gate in human perception.
 
-### Tier 1: 注意缓存
+### Tier 1: Attention Cache
 
-`WorkingMemory`实现带LRU类似刷新语义的优先级管理缓存：
+`WorkingMemory` implements a priority-managed cache with LRU-like refresh semantics:
 
-- **令牌预算有界:** 总槽令牌不能超过配置预算(默认4,096)
-- **优先级驱逐:** `evict_lowest()` 移除最低优先级评分槽——未引用项目自然衰减
-- **优先级衰减:** 每轮次调用 `decay_priorities(0.95)`，乘法降低所有槽优先级。未引用项目约20轮次后老化退出
-- **优先级提升:** `boost_priority(id, delta)` 刷新最近访问项目，等同LRU"接触"操作
-- **快照持久化:** 代理切换时，整个工作记忆序列化到持久存储并在代理恢复时还原——缓存状态存活上下文切换
+- **Token-budget-bounded:** total slot tokens cannot exceed the configured budget (default 4,096)
+- **Priority eviction:** `evict_lowest()` removes the slot with the lowest priority score — items that haven't been referenced decay naturally
+- **Priority decay:** `decay_priorities(0.95)` is called each turn, multiplicatively reducing all slot priorities. Unreferenced items age out over ~20 turns
+- **Priority boost:** `boost_priority(id, delta)` refreshes recently-accessed items, equivalent to an LRU "touch" operation
+- **Snapshot persistence:** on agent switch, the entire working memory is serialized to the persistent store and restored when the agent resumes — cache state survives context switches
 
-### 动量缓存
+### Momentum Cache
 
-工作记忆维护最近查询嵌入滑动窗口(`momentum_embeddings: Vec<Vec<f32>>`，上限5)。此轨迹缓存服务两个目的：
+Working memory maintains a sliding window of recent query embeddings (`momentum_embeddings: Vec<Vec<f32>>`, capped at 5). This trajectory cache serves two purposes:
 
-1. **启动**——偏向检索朝当前对话方向，精确如人类认知中的语义启动工作
-2. **预期**——动量向量(最近嵌入质心)预测对话走向，在用户询问前预取可能需要的记忆
+1. **Priming** — biases retrieval toward the current conversation direction, exactly as semantic priming works in human cognition
+2. **Anticipation** — the momentum vector (centroid of recent embeddings) predicts where the conversation is heading, enabling pre-fetch of likely-needed memories before the user asks
 
-### 发布缓冲
+### Publication Buffer
 
-`MemoryBus`维护带TTL驱逐的有界FIFO发布队列：
+The `MemoryBus` maintains a bounded FIFO publication queue with TTL-based eviction:
 
-- **TTL过期:** 超过 `PUBLICATION_TTL_SECS` 的发布在每次插入丢弃
-- **容量上限:** 达到 `MAX_PENDING_PUBLICATIONS` 时，最旧发布被驱逐
-- **订阅扇出:** 待定发布在清空时交付注册订阅者，然后移除
+- **TTL expiry:** publications older than `PUBLICATION_TTL_SECS` are discarded on each insertion
+- **Capacity cap:** when `MAX_PENDING_PUBLICATIONS` is reached, the oldest publication is evicted
+- **Subscriber fan-out:** pending publications are delivered to registered subscribers upon drain, then removed
 
-这确保事件驱动记忆管道永不累积无界 backlog，即使消费者停滞。
+This ensures the event-driven memory pipeline never accumulates unbounded backlog, even if consumers stall.
 
-### 缓存一致性
+### Cache Coherence
 
-三层通过方向数据流维护一致性：
+The three tiers maintain coherence through directional data flow:
 
 ```mermaid
 flowchart LR
-    IN["新输入"] --> SB["感官缓冲区\n(Tier 0)"]
-    SB -- "提升" --> WM["工作记忆\n(Tier 1)"]
-    WM -- "巩固" --> LTM["长期记忆\n(Tier 2)"]
-    LTM -- "搜索召回" --> WM
-    WM -. "访问提升" .-> WM
+    IN["New Input"] --> SB["Sensory Buffer\n(Tier 0)"]
+    SB -- "promotion" --> WM["Working Memory\n(Tier 1)"]
+    WM -- "consolidation" --> LTM["Long-Term Memory\n(Tier 2)"]
+    LTM -- "recall on search" --> WM
+    WM -. "boost on access" .-> WM
 ```
 
-无缓存失效问题，因为层级是写前向：数据从快/易失流向慢/持久。长期记忆永不写回感官缓冲区。长期记忆通过搜索召回时，它作为源 `Recalled` 的*新槽*进入工作记忆——不尝试同步任何现有tier-0条目。
+There is no cache invalidation problem because the tiers are write-forward: data flows from fast/volatile to slow/persistent. Long-term memory never writes back to the sensory buffer. When a long-term memory is recalled via search, it enters working memory as a *new slot* with source `Recalled` — it does not attempt to synchronize with any existing tier-0 entry.
 
-此单向流消除困扰传统多级缓存的一致性复杂性。
+This unidirectional flow eliminates the coherence complexity that plagues traditional multi-level caches.
 
 ---
 
-## 巩固引擎
+## Consolidation Engine
 
-后台进程每5分钟运行一次(可配置)，执行四个操作：
+A background process runs every 5 minutes (configurable) performing four operations:
 
 ```mermaid
 flowchart TD
-    subgraph Cycle["巩固周期(每5分钟)"]
+    subgraph Cycle["Consolidation Cycle (every 5 min)"]
         direction TB
-        SAVE["保存点\n(预巩固基线)"]
-        SAVE --> PC["1. 模式聚类\ncosine ≥ 0.75 → union-find分组"]
-        PC --> CD["2. 矛盾检测\n相同主体+谓语，不同客体 → 解决"]
-        CD --> DECAY["3. 双层衰减\nLML β=0.8(慢) / SML β=1.2(快)"]
-        DECAY --> GC["4. 垃圾回收\n强度 < 0.1 → 两阶段删除"]
-        GC --> FUS["5. 记忆融合\ncosine ≥ 0.75 → 合并 → 墓碑"]
-        FUS --> NDCG{"NDCG差值\n< −5%?"}
-        NDCG -- 是 --> ROLL["回滚到保存点\n(无记忆丢失)"]
-        NDCG -- 否 --> COMMIT["提交\n(变更持久)"]
+        SAVE["SAVEPOINT\n(pre-consolidation baseline)"]
+        SAVE --> PC["1. Pattern Clustering\ncosine ≥ 0.75 → union-find grouping"]
+        PC --> CD["2. Contradiction Detection\nsame subject + predicate, different object → resolve"]
+        CD --> DECAY["3. Dual-Layer Decay\nLML β=0.8 (slow) / SML β=1.2 (fast)"]
+        DECAY --> GC["4. Garbage Collection\nstrength < 0.1 → two-phase delete"]
+        GC --> FUS["5. Memory Fusion\ncosine ≥ 0.75 → merge → tombstone"]
+        FUS --> NDCG{"NDCG delta\n< −5%?"}
+        NDCG -- Yes --> ROLL["ROLLBACK TO SAVEPOINT\n(no memories lost)"]
+        NDCG -- No --> COMMIT["COMMIT\n(changes persist)"]
     end
 
 ```
 
-### 1. 模式聚类
+### 1. Pattern Clustering
 
-余弦相似性≥ 0.75的记忆通过union-find聚类分组。相关记忆的簇被识别用于潜在融合。这防止重复类似观察的记忆膨胀。
+Memories with cosine similarity ≥ 0.75 are grouped using union-find clustering. Clusters of related memories are identified for potential fusion. This prevents memory bloat from repeated similar observations.
 
-### 2. 矛盾检测
+### 2. Contradiction Detection
 
-当两条记忆共享相同主体和谓语但客体不同时，矛盾被检测。解决：新记忆胜出，旧记忆的置信度比例转移，并创建 `Contradicts` 图边。
+When two memories share the same subject and predicate but have different objects, a contradiction is detected. Resolution: the newer memory wins, the older memory's confidence is transferred proportionally, and a `Contradicts` graph edge is created.
 
-### 3. 艾宾浩斯FadeMem双层强度衰减
+### 3. Ebbinghaus FadeMem Dual-Layer Strength Decay
 
-记忆强度遵循生物启发的双层模型衰减，源自艾宾浩斯FadeMem。非均匀艾宾浩斯衰减，记忆被分配到具有不同衰减特性的两层：
+Memory strength decays following a biologically-inspired dual-layer model derived from Ebbinghaus FadeMem. Instead of uniform Ebbinghaus decay, memories are assigned to one of two layers with different decay characteristics:
 
-**长期记忆层(LML)**——重要、频繁访问的记忆。衰减指数 $\beta = 0.8$ (亚线性)，产生约11.25天的半衰期。这些记忆缓慢淡出并跨会话持久。
+**Long Memory Layer (LML)** — Important, frequently-accessed memories. Decay exponent $\beta = 0.8$ (sub-linear), producing a half-life of ~11.25 days. These memories fade slowly and persist across sessions.
 
-**短期记忆层(SML)**——瞬时、低重要性记忆。衰减指数 $\beta = 1.2$ (超线性)，产生约5.02天的半衰期。这些记忆快速淡出以防止混乱。
+**Short Memory Layer (SML)** — Transient, low-importance memories. Decay exponent $\beta = 1.2$ (super-linear), producing a half-life of ~5.02 days. These memories fade quickly to prevent clutter.
 
-$$\text{强度}(t) = S_0 \cdot e^{-\lambda_{\text{base}} \cdot t^{\beta}}$$
+$$\text{strength}(t) = S_0 \cdot e^{-\lambda_{\text{base}} \cdot t^{\beta}}$$
 
-其中：
-- $\lambda_{\text{base}} = 0.1$ —— 基础衰减率
-- $\beta_{\text{LML}} = 0.8$ —— 长期亚线性
-- $\beta_{\text{SML}} = 1.2$ —— 短期超线性
+Where:
+- $\lambda_{\text{base}} = 0.1$ — base decay rate
+- $\beta_{\text{LML}} = 0.8$ — sub-linear for long-term
+- $\beta_{\text{SML}} = 1.2$ — super-linear for short-term
 
-**滞后机制:** 访问频率超过 $\theta_{\text{promote}} = 0.7$ 时，记忆从SML提升到LML，相关性低于 $\theta_{\text{demote}} = 0.3$ 时从LML降级到SML。阈值间隙防止振荡——记忆不会在边缘变化时在层间跳变。
+**Hysteresis mechanism:** Memories are promoted from SML to LML when access frequency exceeds $\theta_{\text{promote}} = 0.7$, and demoted from LML to SML when relevance drops below $\theta_{\text{demote}} = 0.3$. The gap between these thresholds prevents oscillation — a memory doesn't bounce between layers on marginal changes.
 
-**每类型衰减调制:** 衰减率进一步按记忆类型调整：
-- 程序记忆: $\lambda \times 0.5$ (技能持久更长)
-- 语义记忆: $\lambda \times 0.7$ (知识比情景衰减慢)
-- 情景记忆: $\lambda \times 1.0$ (体验按基础率衰减)
-- 频繁访问(>5次): $\lambda \times 0.7$ (使用记忆持久)
+**Per-type decay modulation:** Decay rates are further adjusted by memory type:
+- Procedural memories: $\lambda \times 0.5$ (skills persist longer)
+- Semantic memories: $\lambda \times 0.7$ (knowledge decays slower than episodes)
+- Episodic memories: $\lambda \times 1.0$ (experiences decay at base rate)
+- Frequently accessed (>5 accesses): $\lambda \times 0.7$ (used memories persist)
 
-此双层方法达到45%存储减少，同时*改善*检索质量——FadeMem消融研究展示移除双层衰减导致33.9% F1下降。
+This dual-layer approach achieves 45% storage reduction while *improving* retrieval quality — FadeMem's ablation study shows removing dual-layer decay causes a 33.9% F1 drop.
 
-### 4. 垃圾回收
+### 4. Garbage Collection
 
-强度低于阈值(默认0.1)的记忆为删除候选。重要记忆(重要性 ≥ 0.7)无论强度都被GC保护。删除两阶段：内容字段在行删除前清零(反取证措施)。
+Memories with strength below a threshold (default 0.1) are candidates for deletion. Important memories (importance ≥ 0.7) are protected from GC regardless of strength. Deletion is two-phase: content fields are zeroed before the row is deleted (anti-forensic measure).
 
-GC后，数据库重填充到512KB桶边界以防文件大小侧信道泄漏。
+After GC, the database is re-padded to 512KB bucket boundaries to prevent file-size side-channel leakage.
 
-### 事务性遗忘
+### Transactional Forgetting
 
-整个巩固周期(衰减 + GC + 融合)在事务性保存点内执行。周期开始前，50个最近查询样本运行搜索，其NDCG评分记录为基线。周期完成后，相同查询重评估。
+The entire consolidation cycle (decay + GC + fusion) executes within a transactional savepoint. Before the cycle begins, a sample of 50 recent queries is run through search and their NDCG scores are recorded as a baseline. After the cycle completes, the same queries are re-evaluated.
 
-如果NDCG下降超过5%，整个周期回滚到保存点——无记忆丢失。这使遗忘*可证明安全*: 系统只能以维持或改善检索质量的方式遗忘。
+If NDCG drops by more than 5%, the entire cycle rolls back to the savepoint — no memories are lost. This makes forgetting *provably safe*: the system can only forget in ways that maintain or improve retrieval quality.
 
 ```
 BEGIN TRANSACTION
   SAVEPOINT pre_consolidation
-  执行衰减、GC、融合
-  在留出查询集上度量NDCG差值
+  execute decay, GC, fusion
+  measure NDCG delta on held-out query set
   IF ndcg_delta < −0.05 THEN
-    ROLLBACK TO pre_consolidation    // 无记忆丢失
+    ROLLBACK TO pre_consolidation    // no memories lost
   ELSE
     RELEASE pre_consolidation
     COMMIT
   END IF
 ```
 
-### 间隙检测
+### Gap Detection
 
-巩固引擎还检测三种知识间隙：
-- **缺失上下文**——引用实体无关联记忆
-- **时间间隙**——活跃代理无记忆活动的时段
-- **类别不平衡**——代理记忆重度集中在一个类别
+The consolidation engine also detects three types of knowledge gaps:
+- **Missing context** — references to entities that have no associated memories
+- **Temporal gaps** — periods with no memory activity for an active agent
+- **Category imbalance** — agents with memory heavily concentrated in one category
 
-间隙记录用于诊断目的。
+Gaps are logged for diagnostic purposes.
 
 ---
 

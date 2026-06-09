@@ -20,33 +20,33 @@ Project Engram 是一种面向桌面AI代理的三层记忆架构。它取代了
 
 ## 目录
 
-1. [Motivation](#motivation)
-2. [Design Principles](#design-principles)
-3. [Architecture Overview](#architecture-overview)
-4. [The Three Memory Tiers](#the-three-memory-tiers)
-5. [Long-Term Memory Graph](#long-term-memory-graph)
-6. [Hybrid Search — BM25 + Vector Fusion](#hybrid-search)
-7. [Retrieval Intelligence](#retrieval-intelligence)
-8. [Caching Architecture](#caching-architecture)
-9. [Consolidation Engine](#consolidation-engine)
-10. [Adaptive Forgetting — FadeMem Dual-Layer Architecture](#adaptive-forgetting)
-11. [Memory Fusion](#memory-fusion)
-12. [GraphRAG — Community-Based Global Retrieval](#graphrag)
-13. [Compounding Skill Library](#compounding-skill-library)
-14. [Context Window Intelligence](#context-window-intelligence)
-15. [Memory Security](#memory-security)
-16. [Memory Lifecycle Integration](#memory-lifecycle-integration)
-17. [Concurrency Architecture](#concurrency-architecture)
-18. [Observability](#observability)
-19. [Category Taxonomy](#category-taxonomy)
-20. [Schema Design](#schema-design)
-21. [Configuration](#configuration)
-22. [Frontier Capabilities](#frontier-capabilities)
-23. [Quality Evaluation](#quality-evaluation)
-24. [Context Continuity](#context-continuity)
-25. [The Intelligence Loop](#the-intelligence-loop)
-26. [Verification & Operational Completeness](#verification--operational-completeness)
-27. [References](#references)
+1. [动机](#动机)
+2. [设计原则](#设计原则)
+3. [架构概述](#架构概述)
+4. [三层记忆体系](#三层记忆体系)
+5. [长期记忆图](#长期记忆图)
+6. [混合搜索 — BM25 + 向量融合](#混合搜索--bm25--向量融合)
+7. [检索智能](#检索智能)
+8. [缓存架构](#缓存架构)
+9. [巩固引擎](#巩固引擎)
+10. [自适应遗忘 — FadeMem双层架构](#自适应遗忘--fademem双层架构)
+11. [记忆融合](#记忆融合)
+12. [GraphRAG — 基于社区的全球检索](#graphrag--基于社区的全球检索)
+13. [复合技能库](#复合技能库)
+14. [上下文窗口智能](#上下文窗口智能)
+15. [记忆安全](#记忆安全)
+16. [记忆生命周期集成](#记忆生命周期集成)
+17. [并发架构](#并发架构)
+18. [可观测性](#可观测性)
+19. [类别分类](#类别分类)
+20. [模式设计](#模式设计)
+21. [配置](#配置)
+22. [前沿能力](#前沿能力)
+23. [质量评估](#质量评估)
+24. [上下文连续性](#上下文连续性)
+25. [智能循环](#智能循环)
+26. [验证与操作完整性](#验证与操作完整性)
+27. [参考文献](#参考文献)
 
 ---
 
@@ -654,314 +654,314 @@ BEGIN TRANSACTION
 
 ---
 
-## Adaptive Forgetting — FadeMem Dual-Layer Architecture
+## 自适应遗忘 — FadeMem双层架构
 
-Traditional memory systems treat forgetting as a failure mode. Engram treats it as a first-class cognitive mechanism, inspired by the FadeMem which demonstrates that *measured* forgetting can reduce storage by 45% while simultaneously improving retrieval quality.
+传统记忆系统将遗忘视为失败模式。Engram将其视为一等认知机制，受FadeMem启发，其证明了*有度量的*遗忘可减少45%存储，同时改善检索质量。
 
-### The Core Insight
+### 核心洞察
 
-Human memory does not decay uniformly. Frequently-rehearsed information consolidates into long-term storage while transient details fade rapidly. FadeMem formalizes this with a dual-layer architecture that Engram adopts:
+人类记忆不均匀衰减。频繁演练的信息巩固到长期存储，而瞬时细节快速淡出。FadeMem用双层架构形式化这一点，Engram采用：
 
 ```mermaid
 flowchart TB
-    subgraph LML["Long Memory Layer (LML)"]
+    subgraph LML["长期记忆层(LML)"]
         direction TB
-        L1["β = 0.8 — sub-linear decay"]
-        L2["half-life ≈ 11.25 days"]
-        L3["Important facts · verified knowledge\nhigh-use procedural memories · user-explicit stores"]
+        L1["β = 0.8 — 亚线性衰减"]
+        L2["半衰期 ≈ 11.25天"]
+        L3["重要事实 · 已验证知识\n高频程序记忆 · 用户显式存储"]
     end
 
-    subgraph SML["Short Memory Layer (SML)"]
+    subgraph SML["短期记忆层(SML)"]
         direction TB
-        S1["β = 1.2 — super-linear decay"]
-        S2["half-life ≈ 5.02 days"]
-        S3["Session context · transient observations\nauto-captured details · low-importance entries"]
+        S1["β = 1.2 — 超线性衰减"]
+        S2["半衰期 ≈ 5.02天"]
+        S3["会话上下文 · 瞬时观察\n自动捕获细节 · 低重要性条目"]
     end
 
-    SML -- "promote when\naccess_freq > θ_promote (0.7)" --> LML
-    LML -- "demote when\nrelevance < θ_demote (0.3)" --> SML
+    SML -- "提升条件\n访问频率 > θ_promote (0.7)" --> LML
+    LML -- "降级条件\n相关性 < θ_demote (0.3)" --> SML
 
 ```
 
-### Interference-Based Decay
+### 干扰驱动的衰减
 
-Beyond the dual-layer structure, decay is modulated by *interference* — how much a memory conflicts with or is superseded by newer information:
+除双层结构外，衰减被*干扰*调制——记忆与更新信息冲突或被替代的程度：
 
-- **Retrieval interference:** Memories that are frequently searched for but rarely selected accumulate negative signal. They occupy search results without providing value.
-- **Semantic overlap:** When new memories are stored that cover the same semantic space, older overlapping memories decay faster — the new information has effectively superseded them.
-- **Access recency:** A memory accessed yesterday decays slower than one last accessed 30 days ago, independent of creation date.
+- **检索干扰:** 频繁搜索但很少选择的记忆累积负面信号。它们占据搜索结果而不提供价值。
+- **语义重叠:** 当新记忆覆盖相同语义空间存储时，旧重叠记忆衰减更快——新信息已有效替代它们。
+- **访问近因:** 昨天访问的记忆比30天前访问的衰减更慢，独立于创建日期。
 
-The combined formula:
+组合公式：
 
-$$\lambda_\text{eff} = \lambda_\text{base} \times \textit{typeModifier} \times \textit{interferenceFactor} \times (1 + \textit{semanticOverlap})$$
+$$\lambda_\text{有效} = \lambda_\text{基础} \times \textit{类型修饰符} \times \textit{干扰因子} \times (1 + \textit{语义重叠})$$
 
-This produces *adaptive* forgetting: universally useful knowledge persists almost indefinitely (low interference, frequent access, LML layer), while transient noise evaporates quickly (high interference, no access, SML layer).
+这产生*自适应*遗忘：普遍有用知识几乎无限期持久（低干扰、频繁访问、LML层），而瞬时噪声快速蒸发（高干扰、无访问、SML层）。
 
-### Four Conflict Types
+### 四种冲突类型
 
-When memories conflict during consolidation, Engram classifies the relationship into one of four types (from FadeMem's conflict resolution model):
+记忆巩固期间冲突时，Engram将关系分类为四种类型之一（源自FadeMem冲突解决模型）：
 
-| Relation | Meaning | Resolution |
+| 关系 | 含义 | 解决 |
 |----------|---------|------------|
-| **Compatible** | Both memories are true simultaneously | Fuse into unified entry |
-| **Contradictory** | Mutually exclusive claims | Most recent wins; loser's confidence transferred; `Contradicts` edge created |
-| **Subsumes** | New memory is a superset of old | Absorb old into new; old becomes tombstone |
-| **Subsumed** | Old memory is a superset of new | Keep old; boost its strength; discard new |
+| **兼容** | 两条记忆同时为真 | 融合为统一条目 |
+| **矛盾** | 互斥主张 | 最新胜出；失败方置信度转移；创建`Contradicts`边 |
+| **包含** | 新记忆是旧记忆的超集 | 吸收旧到新；旧变为墓碑 |
+| **被包含** | 旧记忆是新记忆的超集 | 保留旧；提升其强度；丢弃新 |
 
-Every conflict resolution is recorded in the audit log with full provenance: which memories conflicted, what relation was detected, which resolution strategy was applied, and who won.
+每次冲突解决记录在审计日志，包含完整溯源：哪些记忆冲突、检测到什么关系、应用什么解决策略、谁胜出。
 
-### FadeMem Ablation Results
+### FadeMem消融结果
 
-The FadeMem paper provides ablation evidence that directly informs Engram's implementation priority:
+FadeMem论文提供消融证据，直接指导Engram实现优先级：
 
-| Component Removed | F1 Drop | Implication |
+| 移除组件 | F1下降 | 暗示 |
 |---|---|---|
-| Fusion engine | **-53.7%** | Highest-impact single component — must implement first |
-| Dual-layer decay | -33.9% | Second priority — uniform decay is significantly worse |
-| Conflict resolution | -19.2% | Third — blind "newest wins" loses important context |
-| Adaptive decay rates | -12.8% | Fourth — per-type tuning adds measurable value |
+| 融合引擎 | **-53.7%** | 最高影响单一组件——必须首先实现 |
+| 双层衰减 | -33.9% | 第二优先级——均匀衰减显著更差 |
+| 冲突解决 | -19.2% | 第三——盲目"最新胜出"丢失重要上下文 |
+| 自适应衰减率 | -12.8% | 第四——每类型调优增加可度量价值 |
 
-FadeMem achieves F1 = 29.43 (beating Mem0's 28.37), 82.1% critical fact retention at 55% storage, and 77.2% Retrieval Precision@10.
-
----
-
-## Memory Fusion
-
-Consolidation handles clustering and contradiction detection, but it does not address **near-duplicate memories** — entries that express the same information in slightly different words. Over months of use, these duplicates accumulate linearly: "User prefers dark mode", "User prefers dark mode in editors", "User uses dark mode" all occupy separate storage, search bandwidth, and context tokens.
-
-Memory fusion addresses this directly, inspired by FadeMem's fusion mechanism.
-
-### Fusion Pipeline
-
-During each consolidation cycle, the fusion engine:
-
-```mermaid
-flowchart TD
-    SCAN["Scan Memory Pairs"] --> COS{"Cosine\nSimilarity\n\u2265 0.75?"}
-    COS -- No --> SKIP["Skip\n(distinct memories)"]
-    COS -- Yes --> CLASS{"Classify\nRelation"}
-
-    CLASS -- Compatible --> FUSE["Fuse into\nunified entry"]
-    CLASS -- Contradictory --> CONTRA["Recent wins\nConfidence transferred\nContradicts edge created"]
-    CLASS -- Subsumes --> ABSORB["Absorb old into new\nOld becomes tombstone"]
-    CLASS -- Subsumed --> KEEP["Keep old\nBoost strength\nDiscard new"]
-
-    FUSE & CONTRA & ABSORB & KEEP --> EDGE["Redirect Graph Edges\nto merged entry"]
-    EDGE --> TOMB["Tombstone Originals\n(recoverable)"]
-    TOMB --> QC{"NDCG\ndelta OK?"}
-    QC -- "Drop > 5%" --> ROLLBACK["Rollback fusion cycle"]
-    QC -- OK --> DONE["Commit \u2014 storage reduced"]
-
-```
-
-1. **Candidate detection** — Identify memory pairs with cosine similarity $\geq \theta_{\text{fusion}}$ (0.75, derived from FadeMem paper — the plan originally used 0.92 but the paper demonstrates 0.75 is the optimal threshold) and compatible scopes (same agent, same scope tier).
-2. **Relation classification** — Classify each pair as Compatible, Contradictory, Subsumes, or Subsumed using the four-type conflict model.
-3. **Merge** — For Compatible pairs: create a single strengthened entry with the union of propositions from both sources, the maximum of their strength values, and a provenance chain linking back to the originals.
-4. **Edge redirection** — All graph edges pointing to the original entries are redirected to the merged entry, preserving graph connectivity.
-5. **Tombstoning** — Original entries are marked as tombstones rather than deleted immediately. This allows recovery if a merge was too aggressive and maintains audit trail integrity.
-
-### Quality Measurement
-
-Every fusion cycle is measured:
-
-- **Chain integrity percentage** — Multi-hop graph traversals that succeed before and after fusion. A fusion that breaks a retrieval chain is detected.
-- **NDCG delta** — Normalized discounted cumulative gain is computed on a fixed query set before and after fusion. If NDCG drops by more than 5%, the fusion cycle is rolled back.
-- **Storage reduction** — Bytes freed and entries removed are tracked per cycle.
-
-The threshold ($\theta_{\text{fusion}} = 0.75$ cosine) is derived from FadeMem's paper. Higher values produce more conservative merging. Lower values risk merging memories that carry distinct nuance.
+FadeMem达到F1 = 29.43（超过Mem0的28.37），55%存储时82.1%关键事实保留，77.2%检索精度@10。
 
 ---
 
-## GraphRAG — Community-Based Global Retrieval
+## 记忆融合
 
-Traditional retrieval (BM25 + vector + spreading activation) answers *local* queries well: "What does the user prefer for dark mode?" finds specific memories. But *global* queries fail: "Summarize everything I know about Project Alpha" requires reasoning across many memories that may not share keywords or embedding similarity.
+巩固处理聚类和矛盾检测，但不解决**近似重复记忆**——用略微不同词语表达相同信息的条目。使用数月后，这些重复线性累积："用户偏好深色模式"、"用户在编辑器中偏好深色模式"、"用户使用深色模式"各自占据独立存储、搜索带宽和上下文令牌。
 
-GraphRAG addresses this by treating the memory graph as a knowledge graph with detectable communities. Engram implements a dual-plane retrieval system inspired by Microsoft GraphRAG, Deep GraphRAG, and informed by WildGraphBench failure analysis.
+记忆融合直接解决此问题，受FadeMem融合机制启发。
 
-### Community Detection
+### 融合管道
 
-The memory graph undergoes Louvain community detection during consolidation. Communities are groups of densely-connected memories that represent coherent topics or projects:
-
-```
-Project Alpha community:
-  ├─ "Set up Rust backend" (episodic)
-  ├─ "Project Alpha uses Tauri v2" (semantic)
-  ├─ "API rate limit is 100/min" (semantic)
-  ├─ "Deployed to staging" (episodic)
-  └─ "Deploy procedure for Alpha" (procedural)
-```
-
-Each community gets a **hierarchical summary** — an LLM-generated description of the community's contents, stored with its own embedding. This enables global queries to match against community-level descriptions rather than individual memories.
-
-### Deep GraphRAG Three-Stage Pipeline
-
-For queries that require community-level reasoning, Engram uses a three-stage hierarchical pipeline from Deep GraphRAG:
+每个巩固周期期间，融合引擎：
 
 ```mermaid
 flowchart TD
-    Q["Query"] --> ROUTER{"Query\nPlane?"}
+    SCAN["扫描记忆对"] --> COS{"余弦\n相似性\n≥ 0.75?"}
+    COS -- 否 --> SKIP["跳过\n(不同记忆)"]
+    COS -- 是 --> CLASS{"分类\n关系"}
 
-    ROUTER -- Local --> LOCAL["Standard Hybrid Search\nBM25 + Vector + 1-hop Graph"]
-    ROUTER -- Global --> S1
-    ROUTER -- Hybrid --> BOTH["Local Search +\nCommunity Summaries"]
+    CLASS -- 兼容 --> FUSE["融合为\n统一条目"]
+    CLASS -- 矛盾 --> CONTRA["最新胜出\n置信度转移\n创建矛盾边"]
+    CLASS -- 包含 --> ABSORB["吸收旧到新\n旧变为墓碑"]
+    CLASS -- 被包含 --> KEEP["保留旧\n提升强度\n丢弃新"]
 
-    subgraph Pipeline["Deep GraphRAG Three-Stage Pipeline"]
-        S1["Stage 1: Inter-Community Filter\nEmbed query \u2192 match community summaries\n\u2192 select top-k communities"]
-        S1 --> S2["Stage 2: Intra-Community Retrieval\nHybrid search within each\nselected community"]
-        S2 --> S3["Stage 3: Knowledge Integration\nDeduplicate \u2192 cross-community edges\n\u2192 budget-aware ranking"]
+    FUSE & CONTRA & ABSORB & KEEP --> EDGE["重定向图边\n到合并条目"]
+    EDGE --> TOMB["墓碑原条目\n(可恢复)"]
+    TOMB --> QC{"NDCG\n差值OK?"}
+    QC -- "下降 > 5%" --> ROLLBACK["回滚融合周期"]
+    QC -- OK --> DONE["提交 — 存储减少"]
+
+```
+
+1. **候选检测**——识别余弦相似性 $\geq \theta_{\text{融合}}$（0.75，源自FadeMem论文——计划原用0.92但论文证明0.75为最优阈值）且兼容范围（相同代理、相同范围层级）的记忆对。
+2. **关系分类**——使用四类型冲突模型将每对分类为兼容、矛盾、包含或被包含。
+3. **合并**——兼容对：创建单个强化条目，包含两源的命题联合、强度值最大值、链接回原条目的溯源链。
+4. **边重定向**——指向原条目的所有图边重定向到合并条目，保持图连通性。
+5. **墓碑**——原条目标记为墓碑而非立即删除。这允许恢复过于激进的合并并维护审计追踪完整性。
+
+### 质量度量
+
+每个融合周期被度量：
+
+- **链完整度百分比**——融合前后成功的多跳图遍历。检测破坏检索链的融合。
+- **NDCG差值**——固定查询集上融合前后计算标准化折扣累积增益。如果NDCG下降超过5%，融合周期回滚。
+- **存储减少**——每周期跟踪释放字节和移除条目。
+
+阈值（$\theta_{\text{融合}} = 0.75$余弦）源自FadeMem论文。更高值产生更保守合并。更低值冒合并携带独特细微差别记忆的风险。
+
+---
+
+## GraphRAG — 基于社区的全球检索
+
+传统检索（BM25 + 向量 + 扩散激活）回答*局部*查询良好："用户对深色模式有何偏好？"找到特定记忆。但*全局*查询失败："总结我对Project Alpha的所有知识"需要跨许多可能不共享关键字或嵌入相似性的记忆推理。
+
+GraphRAG通过将记忆图视为带可检测社区的知识图解决此问题。Engram实现双平面检索系统，受Microsoft GraphRAG、Deep GraphRAG启发，并基于WildGraphBench失败分析。
+
+### 社区检测
+
+记忆图在巩固期间经历Louvain社区检测。社区是密集连接记忆的组，代表连贯主题或项目：
+
+```
+Project Alpha社区:
+  ├─ "设置Rust后端" (情景)
+  ├─ "Project Alpha使用Tauri v2" (语义)
+  ├─ "API速率限制为100/min" (语义)
+  ├─ "部署到staging" (情景)
+  └─ "Alpha部署程序" (程序)
+```
+
+每个社区获得**层级摘要**——LLM生成的社区内容描述，带自身嵌入存储。这使全局查询匹配社区级描述而非个体记忆。
+
+### Deep GraphRAG三阶段管道
+
+需社区级推理的查询，Engram使用来自Deep GraphRAG的三阶段层级管道：
+
+```mermaid
+flowchart TD
+    Q["查询"] --> ROUTER{"查询\n平面?"}
+
+    ROUTER -- 局部 --> LOCAL["标准混合搜索\nBM25 + 向量 + 1跳图"]
+    ROUTER -- 全局 --> S1
+    ROUTER -- 混合 --> BOTH["局部搜索 +\n社区摘要"]
+
+    subgraph Pipeline["Deep GraphRAG三阶段管道"]
+        S1["阶段1: 社区间过滤\n嵌入查询 → 匹配社区摘要\n→ 选择top-k社区"]
+        S1 --> S2["阶段2: 社区内检索\n在每个选定社区内\n混合搜索"]
+        S2 --> S3["阶段3: 知识整合\n去重 → 跨社区边\n→ 预算感知排名"]
     end
 
-    LOCAL --> RESULTS["Ranked Results"]
+    LOCAL --> RESULTS["排名结果"]
     S3 --> RESULTS
     BOTH --> RESULTS
 
 ```
 
-1. **Inter-community filter** — Embed the query, compare against all community summary embeddings, select the top-k most relevant communities. This narrows the search space from the entire graph to a few coherent clusters.
+1. **社区间过滤**——嵌入查询，与所有社区摘要嵌入比较，选择top-k最相关社区。这将搜索空间从整个图缩小到几个连贯簇。
 
-2. **Intra-community retrieval** — Within each selected community, run the full hybrid search pipeline (BM25 + vector + graph activation) to find the most relevant individual memories.
+2. **社区内检索**——在每个选定社区内，运行完整混合搜索管道（BM25 + 向量 + 图激活）找到最相关个体记忆。
 
-3. **Knowledge integration** — Combine results across communities with deduplication, cross-community edge traversal, and budget-aware ranking. The final result set represents a coherent answer drawing from multiple knowledge clusters.
+3. **知识整合**——跨社区合并结果，去重、跨社区边遍历和预算感知排名。最终结果集代表从多个知识簇绘制的连贯答案。
 
-### Dual-Plane Query Router
+### 双平面查询路由器
 
-The retrieval gate classifies queries into three planes:
+检索门控将查询分类为三平面：
 
-| Plane | Query Type | Search Strategy |
+| 平面 | 查询类型 | 搜索策略 |
 |-------|-----------|----------------|
-| **Local** | Specific factual/procedural queries | Standard hybrid search (BM25 + vector + 1-hop graph) |
-| **Global** | Summary/exploration/"tell me everything" queries | Community filter → intra-community search → integration |
-| **Hybrid** | Queries needing both specific facts and broader context | Local search + community summaries combined |
+| **局部** | 特定事实/程序查询 | 标准混合搜索（BM25 + 向量 + 1跳图） |
+| **全局** | 摘要/探索/"告诉我一切"查询 | 社区过滤 → 社区内搜索 → 整合 |
+| **混合** | 需特定事实和更广上下文的查询 | 局部搜索 + 社区摘要组合 |
 
-### WildGraphBench Failure Defenses
+### WildGraphBench失败防御
 
-WildGraphBench identifies five failure modes where GraphRAG systems degrade. Engram defends against each:
+WildGraphBench识别GraphRAG系统退化的五种失败模式。Engram防御每种：
 
-| Failure Mode | Defense |
+| 失败模式 | 防御 |
 |---|---|
-| GraphRAG hurts summarization tasks | Intent classifier routes summarization to global plane only when beneficial |
-| Community detection produces noisy clusters | Minimum community size threshold; orphan nodes fall back to local search |
-| Stale community summaries | Incremental re-summarization during consolidation when community membership changes |
-| Over-reliance on graph structure | Hybrid plane combines graph-based and text-based results |
-| Query-type blindness | 6-intent classifier dynamically selects the optimal retrieval plane |
+| GraphRAG损害摘要任务 | 意图分类器仅在有益时将摘要路由到全局平面 |
+| 社区检测产生噪声簇 | 最小社区大小阈值；孤立节点回退到局部搜索 |
+| 过期社区摘要 | 社区成员变更时巩固期间增量重摘要 |
+| 过度依赖图结构 | 混合平面组合基于图和基于文本的结果 |
+| 查询类型盲目 | 6意图分类器动态选择最优检索平面 |
 
-### DW-GRPO and Small Model Quality
+### DW-GRPO和小模型质量
 
-Deep GraphRAG's DW-GRPO training technique (Distributed Weighted Group Relative Policy Optimization) demonstrates that 1.5B parameter models can approach 70B model quality for knowledge integration tasks. This is critical for Engram's local-first architecture: users running Ollama with small local models can still achieve high-quality GraphRAG retrieval through the three-stage pipeline.
+Deep GraphRAG的DW-GRPO训练技术（分布式加权组相对策略优化）证明1.5B参数模型可接近70B模型质量用于知识整合任务。这对Engram本地优先架构关键：运行Ollama小本地模型的用户仍可通过三阶段管道实现高质量GraphRAG检索。
 
-### GraphRAG-R1 Reward Signals
+### GraphRAG-R1奖励信号
 
-GraphRAG-R1 introduces two reward signals for training retrieval policies:
+GraphRAG-R1引入两个奖励信号用于训练检索策略：
 
-- **PRA (Progressive Retrieval Attenuation)** — Penalizes shallow single-hop retrieval. Rewards multi-hop reasoning that follows graph edges to deeper answers. Applied as a retrieval depth bonus: deeper traversals earn higher scores.
-- **CAF (Cost-Aware F1)** — Penalizes over-retrieval. A system that retrieves 50 memories to answer a simple question is punished even if the answer is correct. This naturally encourages budget-efficient retrieval.
+- **PRA（渐进检索衰减）**——惩罚浅层单跳检索。奖励跟随图边到更深答案的多跳推理。应用为检索深度奖金：更深遍历获更高评分。
+- **CAF（成本感知F1）**——惩罚过度检索。为回答简单问题检索50记忆的系统被惩罚，即使答案正确。这自然鼓励预算高效检索。
 
-Pending RL training infrastructure, Engram implements PRA and CAF as heuristic reward signals in the reranking pipeline, boosting results that demonstrate multi-hop reasoning and penalizing over-retrieval.
+待RL训练基础设施，Engram在重排序管道实现PRA和CAF作为启发奖励信号，提升展示多跳推理的结果并惩罚过度检索。
 
-Engram is the **first local-first GraphRAG implementation** in any agent memory system.
+Engram是**首个本地优先GraphRAG实现**于任何代理记忆系统。
 
 ---
 
-## Compounding Skill Library
+## 复合技能库
 
-Most agent memory systems only store *facts* — what happened, what is true. Engram also stores *skills* — executable, composable procedures that improve with every interaction. This is inspired by Voyager, Reflexion, and HELPER.
+大多数代理记忆系统仅存储*事实*——发生了什么、什么是真的。Engram还存储*技能*——可执行、可组合、每次交互改进的程序。这受Voyager、Reflexion和HELPER启发。
 
 ```mermaid
 flowchart TD
-    TASK["Agent Completes\nMulti-Step Task"] --> EXTRACT["Auto-Extract\nReusable Skill"]
-    EXTRACT --> VERIFY{"Skill Verifier\nTools exist? Outcomes match?\nNo hallucinations? No danger?"}
-    VERIFY -- Pass --> LIB["Skill Library\n(composable procedures)"]
-    VERIFY -- Fail --> DISCARD["Discard"]
+    TASK["代理完成\n多步任务"] --> EXTRACT["自动提取\n可重用技能"]
+    EXTRACT --> VERIFY{"技能验证器\n工具存在？结果匹配？\n无幻觉？无危险?"}
+    VERIFY -- 通过 --> LIB["技能库\n(可组合程序)"]
+    VERIFY -- 失败 --> DISCARD["丢弃"]
 
-    LIB --> SUGGEST["Proactive Suggestion\n(pattern match on context)"]
-    SUGGEST --> EXEC["Skill Execution"]
-    EXEC --> SUCCESS{"Outcome?"}
-    SUCCESS -- Success --> BOOST["Increment success_count\nBoost strength"]
-    SUCCESS -- Failure --> REFLECT["Reflexion Analysis\n(root cause \u2192 correction)"]
-    REFLECT --> VARIANT["Store as skill variant\nor guard condition"]
+    LIB --> SUGGEST["主动建议\n(上下文模式匹配)"]
+    SUGGEST --> EXEC["技能执行"]
+    EXEC --> SUCCESS{"结果?"}
+    SUCCESS -- 成功 --> BOOST["增加success_count\n提升强度"]
+    SUCCESS -- 失败 --> REFLECT["Reflexion分析\n(根因 → 纠正)"]
+    REFLECT --> VARIANT["存储为技能变体\n或守卫条件"]
 
     VARIANT --> LIB
     BOOST --> LIB
-    LIB --> COMPOSE["Compositional Hierarchy\n(skills reference sub-skills)"]
+    LIB --> COMPOSE["组合层级\n(技能引用子技能)"]
     COMPOSE --> LIB
 
 ```
 
-### Auto-Extraction
+### 自动提取
 
-When an agent successfully completes a multi-step task (file editing, API debugging, deployment), the interaction is analyzed and a reusable skill is extracted:
+当代理成功完成多步任务（文件编辑、API调试、部署），交互被分析并提取可重用技能：
 
 ```
-Skill: "Deploy to staging via Docker"
-Steps:
-  1. Build image: docker build -t app:latest .
-  2. Push to registry: docker push registry.example.com/app:latest
-  3. SSH to staging: ssh deploy@staging
-  4. Pull and restart: docker compose pull && docker compose up -d
-Trigger: "deploy to staging" OR "push to staging"
+技能: "通过Docker部署到staging"
+步骤:
+  1. 构建镜像: docker build -t app:latest .
+  2. 推送到registry: docker push registry.example.com/app:latest
+  3. SSH到staging: ssh deploy@staging
+  4. 拉取并重启: docker compose pull && docker compose up -d
+触发: "部署到staging" OR "推送到staging"
 ```
 
-### Skill Verification
+### 技能验证
 
-Before a skill is promoted to the library, the `SkillVerifier` checks:
-- All referenced tool calls actually exist and are callable
-- Expected outcomes match actual outcomes from the extraction context
-- No hallucinated steps (steps claimed but not actually executed in the source interaction)
-- No dangerous operations without confirmation steps
+技能提升到库前，`SkillVerifier`检查：
+- 所有引用工具调用实际存在且可调用
+- 预期结果匹配提取上下文的实际结果
+- 无幻觉步骤（声称但实际未在源交互执行的步骤）
+- 无确认步骤的危险操作
 
-### Compositional Hierarchy
+### 组合层级
 
-Skills compose. A "deploy to production" skill can reference the "deploy to staging" skill as a sub-step, plus add production-specific steps (health checks, rollback preparation). This creates a compositional hierarchy where complex workflows are built from verified primitives.
+技能组合。"部署到生产"技能可引用"部署到staging"技能作为子步骤，加生产特定步骤（健康检查、回滚准备）。这创建组合层级，复杂工作流从验证原语构建。
 
-### Reflexion-Style Failure Learning
+### Reflexion风格失败学习
 
-When a skill execution fails, the failure is analyzed and stored as a **negative example**:
+技能执行失败时，失败被分析并存储为**负面示例**：
 
-- What went wrong (error message, failed step)
-- Why it went wrong (LLM-generated root cause analysis)
-- What to do differently (correction stored as a skill variant or guard condition)
+- 哪里出错（错误消息、失败步骤）
+- 为什么出错（LLM生成根因分析）
+- 如何不同（纠正存储为技能变体或守卫条件）
 
-This mirrors Reflexion's verbal reinforcement learning: the agent doesn't need weight updates to learn from mistakes. It stores the lesson in memory and retrieves it the next time a similar task arises.
+这镜像Reflexion的言语强化学习：代理不需要权重更新从错误学习。它将教训存储在记忆中并在下次类似任务出现时检索。
 
-### Proactive Skill Suggestion
+### 主动技能建议
 
-The `SkillSuggester` monitors the current conversation context and proactively suggests relevant skills. When a user says "I need to set up the CI pipeline," the suggester checks the skill library for matching procedures and injects them into the agent's context with a note: *"I have a verified procedure for this from a previous session."*
+`SkillSuggester`监控当前对话上下文并主动建议相关技能。当用户说"我需要设置CI管道"，建议器检查技能库匹配程序并注入到代理上下文附注：*"我从前一会话对此有验证程序。"
 
-### Quantified Compounding Effect
+### 量化的复合效应
 
-With a mature skill library (~50+ verified skills), agents demonstrate measurable improvement:
+成熟技能库（~50+验证技能），代理展示可度量改进：
 
-| Metric | Without Skills | With Skills | Improvement |
+| 度量 | 无技能 | 有技能 | 改进 |
 |---|---|---|---|
-| Task completion steps | Baseline | -50% | Fewer redundant explorations |
-| Success rate | Baseline | +20% | Verified procedures reduce errors |
-| Repeat errors | Baseline | -80% | Failure memories prevent recurrence |
-| Token cost per task | Baseline | -40% | Reusable skills avoid re-deriving solutions |
+| 任务完成步骤 | 基线 | -50% | 更少冗余探索 |
+| 成功率 | 基线 | +20% | 验证程序减少错误 |
+| 重复错误 | 基线 | -80% | 失败记忆防止复发 |
+| 每任务令牌成本 | 基线 | -40% | 可重用技能避免重推导解决方案 |
 
-No competing memory system implements a self-improving procedural memory library.
+无竞争记忆系统实现自改进程序记忆库。
 
 ---
 
-## Context Window Intelligence
+## 上下文窗口智能
 
 ### ContextBuilder
 
-The ContextBuilder is a fluent API for assembling the final prompt within a token budget:
+ContextBuilder 是一个流畅的 API，用于在令牌预算内组装最终提示：
 
 ```mermaid
 flowchart TD
-    subgraph Budget["Token Budget Allocation (priority order)"]
+    subgraph Budget["令牌预算分配 (优先级顺序)"]
         direction TB
-        P1["1. System Prompt\n(always included — first priority)"]
-        P1 --> P2["2. Recalled Memories\n(packed by importance × relevance score)"]
-        P2 --> P3["3. Working Memory Slots\n(packed by priority)"]
-        P3 --> P4["4. Sensory Buffer Items\n(packed by recency)"]
-        P4 --> P5["5. Conversation Messages\n(newest-first until budget exhausted)"]
+        P1["1. 系统提示\n(始终包含 — 第一优先级)"]
+        P1 --> P2["2. 回忆的记忆\n(按重要性 × 相关性分数打包)"]
+        P2 --> P3["3. 工作记忆槽\n(按优先级打包)"]
+        P3 --> P4["4. 感官缓冲项目\n(按最近度打包)"]
+        P4 --> P5["5. 对话消息\n(最新优先直到预算用完)"]
     end
 
-    MODEL["Model Capability\nRegistry"] --> BUDGET["Total Token\nBudget"]
+    MODEL["模型能力\n注册表"] --> BUDGET["总令牌\n预算"]
     BUDGET --> Budget
-    Budget --> PROMPT["Final Assembled\nPrompt"]
+    Budget --> PROMPT["最终组装\n提示"]
 
 ```
 
@@ -975,144 +975,144 @@ let prompt = ContextBuilder::new(model_caps)
     .build();
 ```
 
-**Budget allocation strategy:**
-1. System prompt gets first priority (always included)
-2. Recalled memories packed by $\text{importance} \times \text{relevance score}$
-3. Working memory slots packed by priority
-4. Sensory buffer items packed by recency
-5. Conversation messages packed newest-first until budget exhausted
+**预算分配策略：**
+1. 系统提示获得第一优先级（始终包含）
+2. 回忆的记忆按 $\text{重要性} \times \text{相关性分数}$ 打包
+3. 工作记忆槽按优先级打包
+4. 感官缓冲项按最近度打包
+5. 对话消息按最新优先排序，直到预算耗尽
 
-### Model Capability Registry
+### 模型能力注册表
 
-Every supported model has a capability fingerprint:
-- Context window size
-- Maximum output tokens
-- Tool/function calling support
-- Vision support
-- Extended thinking support
-- Streaming support
-- Tokenizer type
+每种支持的模型都有一个能力指纹：
+- 上下文窗口大小
+- 最大输出令牌数
+- 工具/函数调用支持
+- 视觉支持
+- 扩展思维支持
+- 流式传输支持
+- 分词器类型
 
-The registry covers all models from OpenAI, Anthropic, Google, DeepSeek, Mistral, xAI, Ollama, and OpenRouter. Unknown models fall back to conservative defaults (32K context, 4K output).
+注册表涵盖了 OpenAI、Anthropic、Google、DeepSeek、Mistral、xAI、Ollama 和 OpenRouter 的所有模型。未知模型回退到保守的默认值（32K 上下文，4K 输出）。
 
-### Tokenizer
+### 分词器
 
-Model-specific token estimation:
-- `Cl100kBase` — GPT-4, Claude ($\div 3.4$ bytes)
-- `O200kBase` — o1, o3, o4 ($\div 3.8$ bytes)
-- `Gemini` — Gemini models ($\div 3.3$ bytes)
-- `SentencePiece` — Llama, Mistral, local models ($\div 3.0$ bytes)
-- `Heuristic` — Fallback ($\div 4.0$ bytes)
+特定模型的令牌估算：
+- `Cl100kBase` — GPT-4, Claude ($\div 3.4$ 字节)
+- `O200kBase` — o1, o3, o4 ($\div 3.8$ 字节)
+- `Gemini` — Gemini 模型 ($\div 3.3$ 字节)
+- `SentencePiece` — Llama, Mistral, 本地模型 ($\div 3.0$ 字节)
+- `Heuristic` — 后备 ($\div 4.0$ 字节)
 
-All calculations use `ceil()` to round up and are UTF-8 safe (truncation never splits a multi-byte character).
+所有计算都使用 `ceil()` 向上舍入并且是 UTF-8 安全的（截断操作绝不会分割多字节字符）。
 
 ---
 
-## Memory Security
+## 记忆安全
 
-### Field-Level Encryption
+### 字段级加密
 
-Memories containing PII are encrypted with AES-256-GCM before storage. The encryption key is stored in the unified OS keychain vault (`openpawz`) alongside all other purpose keys.
+包含 PII（个人信息标识符）的内存存储前用 AES-256-GCM 加密。加密密钥存储在统一的操作系统密钥链保险库 (`openpawz`) 中，与其他所有用途的密钥一起存放。
 
-**Automatic PII detection** uses a two-layer approach:
+**自动 PII 检测** 使用两层方法：
 
-**Layer 1 — Static pattern matching.** 17 compiled regex patterns run on every memory at storage time, covering:
-- SSN (with and without hyphens), credit card (including Amex), phone numbers (US and international)
-- Email addresses, physical addresses, IP addresses (IPv4)
-- Person names, geographic locations
-- Credentials (passwords, API keys, JWT tokens, AWS access keys, private key blocks)
-- Government IDs, IBAN bank account numbers
+**第 1 层 — 静态模式匹配。** 17 种编译正则表达式在每次存储时运行于每个内存，覆盖：
+- SSN（带或不带连字符）、信用卡号（包括 Amex）、电话号码（美国和国际）
+- 电子邮件地址、实体地址、IP 地址（IPv4）
+- 人名、地理位置
+- 凭据（密码、API 密钥、JWT 令牌、AWS 访问密钥、私钥块）
+- 政府 ID、IBAN 银行账号
 
-**Layer 2 — LLM-assisted secondary scan.** During idle-time consolidation, memories stored as cleartext are re-scanned using the configured model as a PII classifier. This catches semantic PII that no regex can detect — unstructured references to names, addresses, health conditions, and context-dependent identifiers. Memories retroactively found to contain PII are encrypted in place.
+**第 2 层 — LLM 辅助二次扫描。** 在空闲时间整理期间，以明文形式存储的记忆会使用配置的模型作为 PII 分类器进行重新扫描。这能捕获任何正则表达式无法检测到的语义性 PII — 名称、地址、健康状况和上下文相关的标识符的非结构化引用。被追溯发现包含 PII 的记忆会在原地进行加密。
 
-**Encryption flow:**
+**加密流程：**
 
 ```mermaid
 flowchart TD
-    A["New Memory Content"] --> B["detect_pii(content)\n17 regex patterns"]
-    B --> C{"PII Found?"}
-    C -- No --> L2["LLM secondary scan\n(during consolidation)"]
-    L2 -- "PII found" --> E
-    L2 -- Clean --> D["Cleartext\nStore as-is"]
-    C -- Yes --> E["classify_tier(pii_types)"]
-    E --> F{"Tier"}
-    F -- Sensitive --> G["AES-256-GCM Encrypt\nenc:base64(nonce‖ciphertext‖tag)"]
-    F -- Confidential --> G
-    G --> H["Store encrypted in database"]
-    H --> I["On retrieval: decrypt with keychain key"]
+    A["新记忆内容"] --> B["detect_pii(content)\n17 种正则表达式模式"]
+    B --> C{"找到 PII？"}
+    C -- 否 --> L2["LLM 二次扫描\n(在整理期间)"]
+    L2 -- "发现 PII" --> E
+    L2 -- 清洁 --> D["明文\n直接存储"]
+    C -- 是 --> E["classify_tier(pii_types)"]
+    E --> F{"级别"}
+    F -- 敏感 --> G["AES-256-GCM 加密\nenc:base64(nonce‖ciphertext‖tag)"]
+    F -- 机密 --> G
+    G --> H["在数据库中存储加密内容"]
+    H --> I["检索时：使用密钥链密钥解密"]
 ```
 
-### Inter-Agent Memory Trust
+### 代理间内存信任
 
-The memory bus enables cross-agent knowledge sharing, but shared memory introduces a trust boundary — a compromised or misconfigured agent could inject poisoned memories into the fleet. Engram defends against this at three layers:
+内存总线启用跨代理知识共享，但共享内存引入了信任边界 — 被破坏或配置错误的代理可能会向集群注入中毒内存。Engram 从三个方面防范此问题：
 
-1. **Publish-side validation** — Every memory published to the bus passes through the injection scanner before entering the queue. Detected payloads are blocked at publish time, not just at recall time.
-2. **Capability-scoped publishing** — Each agent receives a signed capability token at creation that encodes its maximum publish scope (agent-only, squad, project, or global), maximum self-assignable importance, and per-cycle rate limit. Attempts to exceed the capability ceiling are rejected with an audit log entry.
-3. **Trust-weighted contradiction resolution** — When a published memory contradicts an existing fact, the resolution factors in the source agent's trust score, not just recency. A less-trusted agent cannot override a more-trusted agent's knowledge without a significant confidence differential.
+1. **发布端验证** — 每个发布到总线上的内存都在进入队列之前通过注入扫描器。检测到的载荷在发布时就被阻止，而不仅仅是回忆时。
+2. **基于功能范围的发布** — 每个代理在创建时都会收到一个签名的权限令牌，它编码了其最大发布范围（仅代理、团队、项目或全局），最大可自我分配的重要性，以及每周期速率限制。试图超出权限上限的尝试会被拒绝并记录审计日志。
+3. **信用加权反驳解决** — 当发布的内存与现有事实相矛盾时，解决方式会考虑源代理的信任分数，而不仅仅是时效性。不可信的代理若无显著置信差异就无法覆盖可信代理的知识。
 
-### Query Sanitization
+### 查询净化
 
-Full-text search operators are stripped from user queries before they reach the storage engine. This prevents full-text injection attacks that could extract data via crafted queries.
+全文搜索运算符从用户查询中移除后再送到存储引擎。这可以防止通过巧妙设计的查询提取数据的全文注入攻击。
 
-### Prompt Injection Defense
+### 提示注入防护
 
-Every recalled memory passes through a two-stage sanitization pipeline before reaching the agent:
+每个回忆的记忆在到达代理之前都要经过两阶段净化流水线：
 
-1. **Pattern redaction** — 10 compiled regex patterns detect common injection payloads ("ignore previous instructions", "you are now", system prompt markers, override/bypass attempts). Matched regions are replaced with `[REDACTED:injection]` — the payload never reaches the model.
-2. **Structural isolation** — Recalled memories are wrapped in explicit data-boundary markers in the prompt, instructing the model to treat memory content as data, not instructions.
+1. **模式脱敏** — 10 个预编译正则表达式检测常见的注入载荷（"忽略之前的指令"、"你现在是"、系统提示标记、覆盖/绕过尝试）。匹配区域替换为 `[REDACTED:injection]` — 载荷永远不会到达模型。
+2. **结构隔离** — 回忆的记忆被包装到显式的数据边界标记中以提示模型将内存内容视为数据，而非指令。
 
-Injection attempts that evade static patterns remain a known limitation of regex-based scanning. The current defense is a first layer — it blocks known attack shapes but cannot guarantee coverage against novel obfuscation techniques (unicode substitution, multi-turn payload assembly, encoded instructions). The architecture is designed for a future secondary scan using the model itself as a classifier.
+逃避静态模式的注入尝试仍然是基于正则表达式的扫描的一个已知限制。当前防护属于第一道防线 — 它会阻拦已知的攻击形式，但不能保证覆盖针对新型混淆技术（Unicode 替换、多轮负载组合、编码指令）的检测。架构的设计目标是采用模型本身作为分类器进行未来的二次扫描。
 
-### Anti-Forensic Measures
+### 反取证措施
 
-- **Two-phase secure deletion** — Content zeroed before row deletion
-- **Vault-size quantization** — Database padded to 512KB buckets
-- **8KB pages** — Reduces file-size granularity
-- **Incremental auto-vacuum** — Prevents immediate file shrinkage after deletions
-- **Secure delete** — freed pages are zeroed by the storage engine
+- **两阶段安全删除** — 在删除行之前内容清零
+- **保险库大小量化** — 数据库填充到 512KB 桶
+- **8KB 页面** — 减少文件大小粒度
+- **增量自动清理** — 防止删除后文件立即缩小
+- **安全删除** — 存储引擎对被释放的页面清零
 
-### GDPR Compliance
+### GDPR 合规性
 
-`engram_purge_user(identifiers)` securely erases all memories matching a list of user identifiers across all tables, including snapshots and audit logs. Implements Article 17 (right to be forgotten).
+`engram_purge_user(identifiers)` 安全地清除所有表中与用户标识符列表匹配的记忆，包括快照和审计日志，实现第 17 条（被遗忘权）。
 
 ---
 
-## Memory Lifecycle Integration
+## 记忆生命周期集成
 
-Engram is wired into every major execution path:
+Engram 连接到每个主要执行路径：
 
 ```mermaid
 flowchart TD
-    subgraph Recall["Pre-Recall (before agent turn)"]
-        R1["Chat auto-recall"]
-        R2["Task memory injection"]
-        R3["Orchestrator pre-recall"]
-        R4["Swarm agent recall"]
+    subgraph Recall["预回忆 (代理回合之前)"]
+        R1["聊天自动回忆"]
+        R2["任务内存注入"]
+        R3["调度器预回忆"]
+        R4["集群代理回忆"]
     end
 
-    subgraph Capture["Post-Capture (after agent turn)"]
-        CH["Chat"] --> PC["Auto-capture facts"]
-        TA["Tasks"] --> PC2["Store task_result"]
-        OR["Orchestrator"] --> PC3["Store project outcome"]
-        CO["Compaction"] --> PC4["Store session summary"]
-        CB["Channel Bridges\n(Discord, Slack, Telegram…)"] --> PC5["Store with scope metadata"]
+    subgraph Capture["后捕获 (代理回合之后)"]
+        CH["聊天"] --> PC["自动捕获事实"]
+        TA["任务"] --> PC2["存储 task_result"]
+        OR["协调器"] --> PC3["存储项目结果"]
+        CO["压缩"] --> PC4["存储会话摘要"]
+        CB["渠道桥接\n(Discord, Slack, Telegram…)"] --> PC5["存储范围元数据"]
     end
 
-    R1 & R2 & R3 & R4 --> RG["Retrieval Gate\n(Skip / Retrieve / Deep)"]
-    RG --> HS["Hybrid Search\n(BM25 + Vector + Graph)"]
-    HS --> QG["Quality Gate\n(relevance check)"]
-    QG --> CTX["ContextBuilder\n(budget-aware inject into prompt)"]
+    R1 & R2 & R3 & R4 --> RG["检索门\n(跳过 / 检索 / 深度)"]
+    RG --> HS["混合搜索\n(BM25 + 向量 + 图)"]
+    HS --> QG["质量门\n(相关性检查)"]
+    QG --> CTX["ContextBuilder\n(预算意识注入提示)"]
 
-    PC & PC2 & PC3 & PC4 & PC5 --> BR["Engram Bridge\n(PII encrypt → dedup → embed → store)"]
-    BR --> DB[("Persistent Store\nEpisodic / Knowledge / Procedural")]
+    PC & PC2 & PC3 & PC4 & PC5 --> BR["Engram 桥接\n(PII 加密 → 去重 → 嵌入 → 存储)"]
+    BR --> DB[("持久存储\n情节记忆 / 知识 / 程序性记忆")]
     DB --> HS
 
-    AT["Agent Tools\n(store, search, knowledge,\nstats, delete, update, list)"] <--> BR
+    AT["代理工具\n(store, search, knowledge,\nstats, delete, update, list)"] <--> BR
     AT <--> HS
 
-    subgraph Background["Background (every 5 min)"]
-        CON["Consolidation Engine\n(cluster → contradict → decay → GC)"]
-        FUS["Memory Fusion\n(dedup → merge → tombstone)"]
+    subgraph Background["后台 (每 5 分钟)"]
+        CON["整合引擎\n(聚类 → 反驳 → 衰减 → 垃圾收集)"]
+        FUS["内存融合\n(去重 → 合并 → 墓碑)"]
     end
 
     DB <--> CON
@@ -1120,93 +1120,93 @@ flowchart TD
     FUS --> DB
 ```
 
-### Chat
+### 聊天
 
-When `auto_recall` is enabled for an agent, the ContextBuilder performs a hybrid search and injects relevant memories into the system prompt before each agent turn. Agent responses can trigger auto-capture of facts, preferences, and observations.
+当为代理启用 `auto_recall` 时，ContextBuilder 执行混合搜索，并在每次代理转换之前将相关内存注入到系统提示中。代理响应可以触发对事实、偏好和观察的自动捕获。
 
-### Tasks
+### 任务
 
-Before a task agent runs, the top 10 relevant memories are searched and injected as a "Relevant Memories" system prompt section. After the agent completes, the task result is stored in episodic memory via the Engram bridge with category `task_result`.
+在一个任务代理运行之前，搜索前 10 个相关内存并将其作为"相关内存"系统提示部分注入。代理完成之后，任务结果通过 Engram 桥接存储在情节记忆中，类别为 `task_result`。
 
-### Orchestrator
+### 协调器
 
-The boss agent in multi-agent orchestration receives pre-recalled memories relevant to the project goal. After the orchestration completes, the project outcome is captured in episodic memory.
+多代理协调中的主管代理接收与项目目标相关的预回忆内存。协调完成后，项目成果被捕获在情节记忆中。
 
-### Session Compaction
+### 会话压缩
 
-When a conversation is compacted (summarized to free context space), the compaction summary is stored in Engram episodic memory with category `session`. This ensures knowledge survives compaction.
+当对话被压缩（总结以释放上下文空间）时，压缩摘要存储在 Engram 情节内存中，类型为 `session`。这确保了知识在压缩后仍能保留。
 
-### Channel Bridges
+### 渠道桥接
 
-Messages from Discord, Slack, Telegram, and other channels are stored with channel and user scope metadata. This enables per-channel memory isolation — a user's Discord memories don't bleed into their Telegram conversations.
+来自 Discord、Slack、Telegram 和其他渠道的消息都伴随着渠道和用户范围的元数据存储。这实现了每个渠道内存隔离 — 用户的 Discord 内存不会影响他们的 Telegram 会话。
 
-### Agent Tools
+### 代理工具
 
-Agents have direct access to memory through 7 tools:
+代理可以通过 7 种工具直接访问内存：
 
-| Tool | Purpose |
+| 工具 | 用途 |
 |------|---------|
-| `memory_store` | Store a memory with category and importance |
-| `memory_search` | Hybrid search across all memory types |
-| `memory_knowledge` | Store structured SPO triples |
-| `memory_stats` | Get memory system statistics |
-| `memory_delete` | Delete a specific memory |
-| `memory_update` | Update memory content |
-| `memory_list` | Browse memories by category |
+| `memory_store` | 存储带有类别和重要性的内存 |
+| `memory_search` | 混合搜索所有内存类型 |
+| `memory_knowledge` | 存储结构化的 SPO 三元组 |
+| `memory_stats` | 获取内存系统统计信息 |
+| `memory_delete` | 删除特定内存 |
+| `memory_update` | 更新内存内容 |
+| `memory_list` | 按类别浏览内存 |
 
 ---
 
-## Concurrency Architecture
+## 并发架构
 
-A desktop AI platform serves multiple concurrent consumers: the chat UI, background tasks, orchestration pipelines, 11+ channel bridges, and the consolidation engine — all reading and writing memory simultaneously. The concurrency model must handle this without blocking the Tokio runtime or causing write contention.
+桌面AI平台服务于多个并发消费者：聊天UI、后台任务、编排管道、11个以上的频道桥接以及整合引擎——所有这些都在同时读写内存。并发模型必须在不阻塞Tokio运行时或引起写入争用的情况下处理这种情况。
 
-### Read Pool + Write Channel
+### 读取池 + 写入通道
 
-Engram separates reads from writes using a two-path architecture:
+Engram使用双路径架构将读取和写入分离：
 
 ```mermaid
 flowchart LR
-    subgraph Consumers["Concurrent Consumers"]
+    subgraph Consumers["并发消费者"]
         direction TB
-        C1["Chat UI"]
-        C2["Background Tasks"]
-        C3["Orchestration"]
-        C4["Channel Bridges\n(11+)"]
-        C5["Consolidation\nEngine"]
+        C1["聊天界面"]
+        C2["后台任务"]
+        C3["编排"]
+        C4["通道桥接\n(11+)"]
+        C5["整合\n引擎"]
     end
 
-    subgraph ReadPath["Read Path (concurrent)"]
+    subgraph ReadPath["读取路径 (并发)"]
         direction TB
-        RP["Connection Pool\n8 WAL read-only connections"]
+        RP["连接池\n8个WAL只读连接"]
     end
 
-    subgraph WritePath["Write Path (serialized)"]
+    subgraph WritePath["写入路径 (序列化)"]
         direction TB
-        WC["tokio::mpsc channel"]
-        WC --> WT["Dedicated writer task\n(single connection)"]
+        WC["tokio::mpsc 通道"]
+        WC --> WT["专用写入任务\n(单个连接)"]
     end
 
-    Consumers -- "search, traverse,\nstat reads" --> ReadPath
-    Consumers -- "insert, update,\ndelete, consolidate" --> WritePath
+    Consumers -- "搜索, 遍历,\n状态读取" --> ReadPath
+    Consumers -- "插入, 更新,\n删除, 整合" --> WritePath
 
-    ReadPath --> DB[("Storage\nEngine")]
+    ReadPath --> DB[("存储\n引擎")]
     WritePath --> DB
 
 ```
 
-- **Read path** — A connection pool with 8 read-only connections operating in WAL (Write-Ahead Logging) mode. All search queries, graph traversals, and stat reads execute on the pool concurrently. WAL mode allows readers to proceed without blocking on writers.
-- **Write path** — A dedicated writer task receives all mutations through a `tokio::mpsc` channel. The writer serializes all inserts, updates, deletions, and consolidation writes through a single connection, eliminating write contention entirely.
+- **读取路径** — 具有8个只读连接的连接池，在WAL（预写日志）模式下运行。所有搜索查询、图形遍历和状态读取都并行在池中执行。WAL模式允许读取器在不需要等待写入器的情况下继续操作。
+- **写入路径** — 专用写入任务通过`tokio::mpsc`通道接收所有变化。编写器通过单个连接序列化所有插入、更新、删除和整合写入，完全消除写入争用。
 
 ```
-Read requests ──→ connection pool [8 WAL connections] ──→ result
-Write requests ──→ mpsc channel ──→ dedicated writer task ──→ storage engine
+读取请求 ──→ 连接池 [8个WAL连接] ──→ 结果
+写入请求 ──→ mpsc通道 ──→ 专用写入任务 ──→ 存储引擎
 ```
 
-The `mpsc::send()` + `oneshot::recv()` pattern is fully async-safe — no synchronous mutexes appear in async code, which prevents Tokio thread starvation under load.
+`mpsc::send()` + `oneshot::recv()` 模式是完全异步安全的——同步互斥锁不会出现在异步代码中，这防止了高负载下的Tokio线程饥饿。
 
-### Storage Backend Trait
+### 存储后端trait
 
-All storage access is mediated through the `MemoryBackend` trait, which abstracts the underlying database:
+所有存储访问都通过`MemoryBackend` trait中介，这抽象了底层数据库：
 
 ```rust
 #[async_trait]
@@ -1218,105 +1218,105 @@ pub trait MemoryBackend: Send + Sync {
     async fn get_neighbors(&self, memory_id: &str, min_weight: f64) -> EngineResult<Vec<(String, f64)>>;
     async fn apply_decay(&self, half_life_days: f64) -> EngineResult<usize>;
     async fn garbage_collect(&self, threshold: f64) -> EngineResult<usize>;
-    // ... additional operations for semantic, procedural, graph, and lifecycle
+    // ... 语义、程序性、图关系及生命周期的其他操作
 }
 ```
 
-This trait enables `MockMemoryStore` for test isolation, backend swaps, and clean dependency injection across all modules.
+这个trait使`MockMemoryStore`能够用于测试隔离、后端交换和跨模块的清晰依赖注入。
 
-### Vector Index Strategy
+### 向量索引策略
 
-Vector similarity search uses a tiered indexing strategy:
+向量相似性搜索使用分层索引策略：
 
-| Memory Count | Index | Latency | RAM |
-|-------------|-------|---------|-----|
-| < 1,000 | Brute-force cosine scan | < 5ms | Negligible |
-| 1,000 – 100,000 | HNSW (in-memory, pure Rust) | < 5ms | ~3KB/vector |
-| > 100,000 | HNSW with disk-backed fallback | < 25ms | Bounded |
+| 内存数量 | 索引 | 延迟 | RAM |
+|----------|------|------|-----|
+| < 1,000 | 暴力余弦扫描 | < 5ms | 可忽略 |
+| 1,000 – 100,000 | HNSW (内存中, 纯Rust) | < 5ms | ~3KB/向量 |
+| > 100,000 | 带磁盘后备的HNSW | < 25ms | 有界 |
 
-Both implementations sit behind a `VectorIndex` trait. The index warms from the database on startup and receives new embeddings on the write path. If no embedding model is available, vector search is disabled entirely and the system falls back to BM25-only with no loss in keyword accuracy.
-
----
-
-## Observability
-
-A memory system without measurement is a memory system without improvement. Engram instruments every operation to make debugging, optimization, and quality evaluation possible.
-
-### Tracing
-
-All public functions are instrumented with `tracing::instrument` spans organized in a hierarchy:
-
-- `engram.search` — Covers the full search pipeline: gate decision, BM25, vector, graph activation, reranking, quality check
-- `engram.store` — Covers PII detection, encryption, embedding generation, deduplication, and database write
-- `engram.consolidate` — Covers pattern clustering, contradiction detection, fusion, decay, and garbage collection
-- `engram.context` — Covers the ContextBuilder prompt assembly pass
-
-Span metadata includes agent ID, query text (redacted if PII), result count, latency, and quality scores. These spans integrate with any `tracing::Subscriber` — local log files, structured JSON, or external collectors.
-
-### Metrics
-
-The `metrics` crate provides three categories of runtime instrumentation:
-
-| Type | Metric | Purpose |
-|------|--------|---------|
-| Counter | `engram.search_count` | Total searches executed |
-| Counter | `engram.store_count` | Total memories stored |
-| Counter | `engram.gc_count` | Garbage collection cycles |
-| Counter | `engram.gate_skip_count` | Retrieval gate skips (queries that didn't need memory) |
-| Gauge | `engram.memory_count` | Current total memory count |
-| Gauge | `engram.hnsw_size` | Current HNSW index size |
-| Gauge | `engram.pool_active` | Active read pool connections |
-| Histogram | `engram.search_latency_ms` | Search latency distribution |
-| Histogram | `engram.store_latency_ms` | Store latency distribution |
-| Histogram | `engram.consolidation_ms` | Consolidation cycle duration |
-
-### Cognitive Debug Events
-
-For real-time debugging, Engram emits Tauri events that the frontend debug panel can display:
-
-- `engram:search` — Query, gate decision, result count, top scores, latency
-- `engram:store` — Memory ID, category, importance, PII detected, encrypted fields
-- `engram:quality` — NDCG score, relevance warnings, chain integrity
-
-These events enable developers and users to observe the memory system's decision-making in real time without parsing log files.
+两种实现都在`VectorIndex` trait之后。索引在启动时从数据库加载并在写入路径上接收新嵌入。如果没有可用的嵌入模型，完全禁用向量搜索并系统回退到仅BM25，且不会损失关键词准确性。
 
 ---
 
-## Category Taxonomy
+## 可观察性
 
-18 categories, unified across Rust backend, agent tools, and frontend UI:
+没有测量就没有改善的内存系统。Engram对每个操作进行检测，以使调试、优化和质量评估成为可能。
 
-| Category | Description | Typical Source |
-|----------|-------------|----------------|
-| `general` | Uncategorized information | Fallback |
-| `preference` | User preferences and settings | Agent observation |
-| `fact` | Verified factual information | Agent or user |
-| `skill` | Capability-related knowledge | Skill execution |
-| `context` | Situational context | Auto-capture |
-| `instruction` | User-provided directives | Explicit instruction |
-| `correction` | Corrected information (supersedes prior) | User correction |
-| `feedback` | Quality feedback on agent behavior | User feedback |
-| `project` | Project-specific knowledge | Task/orchestrator |
-| `person` | Information about people | Agent observation |
-| `technical` | Technical details (APIs, configs, specs) | Agent or tools |
-| `session` | Session summaries from compaction | Compaction engine |
-| `task_result` | Outcomes of completed tasks | Task post-capture |
-| `summary` | Condensed summaries | Consolidation |
-| `conversation` | Conversational context | Auto-capture |
-| `insight` | Derived observations and patterns | Agent reasoning |
-| `error_log` | Error information for debugging | Error handlers |
-| `procedure` | Step-by-step procedures | Procedural store |
+### 跟踪
 
-Unknown categories gracefully fall back to `general` via the `FromStr` implementation.
+所有公共函数都使用`tracing::instrument` spans进行检测，这些spans按照层次结构组织：
+
+- `engram.search` — 包含完整的搜索管道：门限决策、BM25、向量、图激活、重新排序、质量检查
+- `engram.store` — 包含PII检测、加密、嵌入生成、重复数据删除和数据库写入
+- `engram.consolidate` — 包含模式聚类、矛盾检测、融合、衰退和垃圾回收
+- `engram.context` — 包含ContextBuilder提示装配传递
+
+Span元数据包括代理ID、查询文本（如果PII则脱敏）、结果计数、延迟和质量评分。这些span与任何`tracing::Subscriber`集成——本地日志文件、结构化JSON或外部收集器。
+
+### 指标
+
+`metrics` crate提供三类运行时检测：
+
+| 类型 | 指标 | 目的 |
+|------|------|------|
+| 计数器 | `engram.search_count` | 执行的总搜索量 |
+| 计数器 | `engram.store_count` | 存储的记忆总量 |
+| 计数器 | `engram.gc_count` | 垃圾回收周期 |
+| 计数器 | `engram.gate_skip_count` | 检索大门跳过（不需要记忆的查询） |
+| 仪表器 | `engram.memory_count` | 当前总记忆计数 |
+| 仪表器 | `engram.hnsw_size` | 当前HNSW索引大小 |
+| 仪表器 | `engram.pool_active` | 活跃的读取池连接 |
+| 直方图 | `engram.search_latency_ms` | 搜索延迟分布 |
+| 直方图 | `engram.store_latency_ms` | 存储延迟分布 |
+| 直方图 | `engram.consolidation_ms` | 整合周期持续时间 |
+
+### 认知调试事件
+
+为了实时调试，Engram发出Tauri事件，前端调试面板可以显示它们：
+
+- `engram:search` — 查询、门限决策、结果数量、最高分数、延迟
+- `engram:store` — 内存ID、类别、重要性、检测到的PII、加密字段
+- `engram:quality` — NDCG得分、相关性警告、链完整性
+
+这些事件使开发人员和用户能够在不解析日志文件的情况下实时观察内存系统的决策过程。
 
 ---
 
-## Schema Design
+## 分类法分类
 
-Six persistent stores with full-text indices and 13 secondary indices:
+18个类别，统一应用于Rust后端、代理工具和前端UI：
+
+| 类别 | 描述 | 典型来源 |
+|------|------|----------|
+| `general` | 未分类信息 | 后备选项 |
+| `preference` | 用户偏好和设置 | 代理观察 |
+| `fact` | 经验证的事实信息 | 代理或用户 |
+| `skill` | 能力相关知识 | 技能执行 |
+| `context` | 情境上下文 | 自动捕获 |
+| `instruction` | 用户提供的指令 | 明确指令 |
+| `correction` | 更正信息（取代先前信息） | 用户更正 |
+| `feedback` | 代理行为质量反馈 | 用户反馈 |
+| `project` | 项目特定知识 | 任务/编排器 |
+| `person` | 关于人的信息 | 代理观察 |
+| `technical` | 技术细节（API、配置、规范） | 代理或工具 |
+| `session` | 来自压缩的会话摘要 | 压缩引擎 |
+| `task_result` | 已完成任务的结果 | 任务后捕获 |
+| `summary` | 压缩摘要 | 整合 |
+| `conversation` | 对话上下文 | 自动捕获 |
+| `insight` | 衍生观察和模式 | 代理推理 |
+| `error_log` | 用于调试的错误信息 | 错误处理器 |
+| `procedure` | 逐步程序 | 程序化存储器 |
+
+未知类别在`FromStr`实现中默认回退到`general`。
+
+---
+
+## 模式设计
+
+六个持久化存储与全文索引和13个二级索引：
 
 ```
--- Episodic memories (what happened)
+-- 情景记忆 (发生了什么)
 episodic_memories (
     id, content, content_summary, content_key_facts, content_tags,
     outcome, category, importance, agent_id, session_id, source,
@@ -1328,394 +1328,393 @@ episodic_memories (
     created_at, last_accessed_at, access_count
 )
 
--- Semantic knowledge (SPO triples)
+-- 语义知识 (SPO三元组)
 semantic_memories (
     id, subject, predicate, object, category, confidence,
     agent_id, source, embedding, embedding_model,
     created_at, updated_at
 )
 
--- Procedural memory (how-to)
+-- 程序化记忆 (如何做)
 procedural_memories (
     id, content, trigger_condition, category,
     agent_id, source, success_count, failure_count,
     embedding, embedding_model, created_at, updated_at
 )
 
--- Graph edges connecting memories
+-- 连接记忆的图边
 memory_graph_edges (
     id, source_id, source_type, target_id, target_type,
     edge_type, weight, metadata, created_at
 )
 
--- Working memory snapshots for agent switching
+-- 代理切换的工作记忆快照
 working_memory_snapshots (
     agent_id, snapshot_json, saved_at
 )
 
--- Audit trail
+-- 审计追踪
 memory_audit_log (
     id, action, memory_type, memory_id, agent_id,
     details, created_at
 )
 ```
 
-Full-text indices are maintained over `episodic_memories` and `semantic_memories` to enable keyword search. Change triggers keep full-text indices synchronized with the primary stores.
+在`episodic_memories`和`semantic_memories`上维护全文索引以启用关键词搜索。更改触发器保持全文索引与主存储同步。
 
 ---
 
-## Configuration
+## 配置
 
-The `EngramConfig` struct provides 30+ tunable parameters:
+`EngramConfig`结构提供30多个可调参数：
 
-| Parameter | Default | Description |
-|-----------|---------|-------------|
-| `sensory_buffer_capacity` | 20 | Max items in sensory buffer |
-| `working_memory_budget` | 4096 | Token budget for working memory |
-| `consolidation_interval_secs` | 300 | Background consolidation cycle |
-| `decay_rate` | 0.05 | Ebbinghaus decay lambda |
-| `gc_strength_threshold` | 0.1 | Minimum strength to survive GC |
-| `gc_importance_protection` | 0.7 | Importance above this is GC-immune |
-| `search_limit` | 10 | Default search result count |
-| `min_relevance_threshold` | 0.2 | Minimum score for search results |
-| `clustering_similarity_threshold` | 0.75 | Cosine similarity for clustering |
-| `auto_recall_enabled` | true | Pre-recall before agent turns |
-| `auto_capture_enabled` | true | Post-capture after agent turns |
-| `decay_lambda_base` | 0.1 | FadeMem base decay rate |
-| `beta_lml` | 0.8 | Long Memory Layer decay exponent (sub-linear) |
-| `beta_sml` | 1.2 | Short Memory Layer decay exponent (super-linear) |
-| `promote_threshold` | 0.7 | Access frequency to promote SML → LML |
-| `demote_threshold` | 0.3 | Relevance below which LML → SML |
-| `fusion_similarity_threshold` | 0.75 | Cosine similarity for memory fusion |
-| `ndcg_rollback_threshold` | 0.05 | Max NDCG drop before consolidation rollback |
+| 参数 | 默认值 | 描述 |
+|------|--------|------|
+| `sensory_buffer_capacity` | 20 | 感官缓存中项目的最大数量 |
+| `working_memory_budget` | 4096 | 工作记忆的令牌预算 |
+| `consolidation_interval_secs` | 300 | 后台整合周期 |
+| `decay_rate` | 0.05 | 艾宾浩斯衰减lambda |
+| `gc_strength_threshold` | 0.1 | 能够通过GC的最小强度 |
+| `gc_importance_protection` | 0.7 | GC免疫的重要性阈值以上 |
+| `search_limit` | 10 | 默认搜索结果数 |
+| `min_relevance_threshold` | 0.2 | 搜索结果的最低分数 |
+| `clustering_similarity_threshold` | 0.75 | 聚类的余弦相似度 |
+| `auto_recall_enabled` | true | 代理回合前的预回忆 |
+| `auto_capture_enabled` | true | 代理回合后的后捕获 |
+| `decay_lambda_base` | 0.1 | FadeMem基础衰减率 |
+| `beta_lml` | 0.8 | 长期记忆层衰减指数（次线性） |
+| `beta_sml` | 1.2 | 短期记忆层衰减指数（超线性） |
+| `promote_threshold` | 0.7 | 促进SML→LML的访问频率 |
+| `demote_threshold` | 0.3 | LML→SML的相关性阈值以下 |
+| `fusion_similarity_threshold` | 0.75 | 内存融合的余弦相似度 |
+| `ndcg_rollback_threshold` | 0.05 | 整合回滚前的最大NDCG降幅 |
 
-Two presets are provided:
+提供了两个预设：
 
-- **Conservative** (default) — Uses traditional Ebbinghaus decay with forgiving thresholds. Suitable for users who prefer to keep more memories longer.
-- **FadeMem Paper** — Uses the exact parameters from the FadeMem research paper ($\lambda = 0.1$, $\beta_{\text{LML}} = 0.8$, $\beta_{\text{SML}} = 1.2$, $\theta_{\text{promote}} = 0.7$, $\theta_{\text{demote}} = 0.3$, $\theta_{\text{fusion}} = 0.75$). Optimized for storage efficiency with proven quality preservation.
-
----
-
-## Frontier Capabilities
-Beyond the core architecture, Engram implements cognitive modules drawn from neuroscience research and frontier AI papers. Each module integrates through formal trait boundaries.
-
-### Cognitive Modules (Implemented)
-
-- **Emotional memory dimension** (`emotional_memory.rs`) — The `emotional_memory.rs` module implements an affective scoring pipeline measuring valence, arousal, dominance, and surprise for each memory. Emotionally significant memories decay at 60% of the normal rate, receive consolidation priority boosts, and get retrieval score amplification. This models the well-documented effect that emotionally charged experiences are retained more strongly in biological memory.
-
-- **Reflective meta-cognition** (`meta_cognition.rs`) — The `meta_cognition.rs` module performs periodic self-assessment of knowledge confidence per domain, generating "I know / I don't know" maps across the agent's memory space. These maps guide anticipatory pre-loading — if the agent knows its knowledge of a topic is sparse, it can signal this to the user rather than hallucinating from weak memories.
-
-- **Temporal-axis retrieval** (`temporal_index.rs`) — The `temporal_index.rs` module treats time as a first-class retrieval signal. A B-tree temporal index supports range queries ("what happened last week?"), proximity scoring (memories closer in time to the query context rank higher), and pattern detection (recurring events, periodic activity). This resolves temporal queries natively rather than forcing them through keyword or vector search.
-
-- **Intent-aware retrieval weighting** (`intent_classifier.rs`) — The `intent_classifier.rs` module implements a 6-intent classifier (informational, procedural, comparative, debugging, exploratory, confirmatory) that dynamically weights all retrieval signals per query type. A debugging query boosts error logs and technical memories. An exploratory query triggers broader graph activation. The intent signal feeds into the retrieval gate, the reranking pipeline, and the GraphRAG plane router.
-- **Entity lifecycle tracking** (`entity_tracker.rs`) — The `entity_tracker.rs` module maintains canonical entity profiles with name resolution (aliases, abbreviations, misspellings all resolve to the same entity), evolving entity state, entity-centric queries ("what do I know about Project X?"), and relationship emergence detection across all memory types.
-
-- **Hierarchical semantic compression** (`abstraction.rs`) — The `abstraction.rs` module builds a multi-level abstraction tree: individual memories → clusters → super-clusters → domain summaries. This enables navigation of knowledge at any zoom level — from a single data point up to a high-level summary of an entire domain. The compression tree is rebuilt incrementally during consolidation and provides input to GraphRAG community summaries.
-
-- **Multi-agent memory sync** (`memory_bus.rs`) — The `memory_bus.rs` module implements a CRDT-inspired protocol for peer-to-peer knowledge sharing between agents. Vector-clock conflict resolution ensures convergence when multiple agents modify related memories concurrently. Agents can share discoveries, coordinate on projects, and maintain consistent world models without a central coordinator. Publish-side authentication prevents rogue agents from injecting poisoned memories — every publication is validated against the agent's capability token and scanned for injection payloads before entering the bus.
-
-- **Memory replay and dream consolidation** (`dream_replay.rs`) — The `dream_replay.rs` module runs during idle periods, implementing hippocampal-inspired memory replay. During replay, memories are reactivated, latent connections between temporally distant memories are discovered, and embeddings are regenerated with evolved context. This mirrors the role of sleep in biological memory consolidation — strengthening important memories and discovering patterns that weren't obvious during waking activity.
-
-### Infrastructure Modules (Planned/Partial)
-
-- **HNSW vector index** — O(log n) approximate nearest neighbor search via pluggable `VectorIndex` trait
-- **Proposition-level storage** — LLM-based decomposition of complex statements into atomic, independently retrievable facts
-- **Smart history compression** — Three-tier message storage (verbatim → compressed → summary) with automatic age-based tiering
-- **Topic-change detection** — Cosine divergence between consecutive messages to trigger working memory eviction
-- **Momentum vectors** — Trajectory of recent query embeddings biases search toward conversational direction
-- **Pluggable vector backends** — Trait-based abstraction allowing HNSW, product quantization, or external vector stores
-- **Process memory hardening** — `mlock` to prevent swapping, core dump prevention, `zeroize` Drop implementations
-- **Full database encryption at rest** — Transparent encryption of the entire persistent store via an integrated cipher layer
-
-These eight modules are connected through 13 integration contracts ensuring they operate as a synergistic network. For example, emotional scoring feeds into the retrieval gate's relevance calculation; intent classification adjusts the reranking strategy and selects the GraphRAG plane; entity tracking informs memory fusion's scope compatibility check; and the abstraction tree provides input to community-level summaries.
+- **保守** (默认) — 使用传统的艾宾浩斯衰减和宽容阈值。适合喜欢保留更多记忆且持续时间更长的用户。
+- **FadeMem论文** — 使用来自FadeMem研究论文的确切参数 ($\lambda = 0.1$, $\beta_{\text{LML}} = 0.8$, $\beta_{\text{SML}} = 1.2$, $\theta_{\text{promote}} = 0.7$, $\theta_{\text{demote}} = 0.3$, $\theta_{\text{fusion}} = 0.75$)。针对存储效率优化，具有经过验证的质量保持能力。
 
 ---
 
-## Quality Evaluation
+## 前沿能力
+除了核心架构外，Engram还实现了来自神经科学研究和前沿AI论文的认知模块。每个模块通过形式化的特征边界进行集成。
 
-Engram's quality evaluation framework ensures that every subsystem is measurable and regressions are caught automatically.
+### 认知模块（已实现）
+
+- **情感记忆维度** (`emotional_memory.rs`) — `emotional_memory.rs` 模块实现了一个情感评分管道，用于测量每条记忆的情感效价、唤醒度、支配感和惊讶程度。情感重要的记忆以正常速率的60%衰减，获得整合优先级提升，并得到检索分数放大。这模拟了已有文献充分证实的现象：情绪化体验在生物记忆中保存得更牢固。
+
+- **反思性元认知** (`meta_cognition.rs`) — `meta_cognition.rs` 模块对各个领域的知识置信度进行定期自我评估，在代理的记忆空间中生成"我知道/我不知道"地图。这些地图指导预测性预加载——如果代理知道其某个主题知识稀疏，它可以向用户发出信号，而不是从薄弱的记忆中产生幻觉。
+
+- **时间轴检索** (`temporal_index.rs`) — `temporal_index.rs` 模块将时间作为一级检索信号。B树时间索引支持范围查询（"上周发生了什么？"）、邻近性评分（时间上接近查询上下文的记忆排名更高）和模式检测（重复事件、周期性活动）。这原生地解析时间查询，而非强制它们通过关键词或向量搜索。
+
+- **意图感知检索加权** (`intent_classifier.rs`) — `intent_classifier.rs` 模块实现了一个6类意图分类器（信息型、程序型、比较型、调试型、探索型、确认型），动态调整所有检索信号相对于查询类型权重。调试查询会提升错误日志和技术记忆的权重。探索查询会触发更广泛的图激活。意图信号输入到检索门、重排序管道和GraphRAG平面路由器。
+- **实体生命周期跟踪** (`entity_tracker.rs`) — `entity_tracker.rs` 模块维护具有名称解析的规范实体配置文件（别名、缩写、拼写错误都解析为同一实体），演变实体状态，以实体为中心的查询（"我对项目X了解什么？"），以及跨所有内存类型的关系出现检测。
+
+- **层次语义压缩** (`abstraction.rs`) — `abstraction.rs` 模块构建一个多级抽象树：个体内存→簇→超簇→领域总结。这使得在任何缩放级别上浏览知识成为可能——从单个数据点到整个领域的高层总结。压缩树在整合过程中增量重建，并为GraphRAG社区摘要提供输入。
+
+- **多代理内存同步** (`memory_bus.rs`) — `memory_bus.rs` 模块实现了一个受CRDT启发的协议，用于代理之间的点对点知识共享。向量时钟冲突解决确保当多个代理同时修改相关记忆时达成一致。代理可以共享发现、协调项目，并且在没有中央协调器的情况下维持一致的世界模型。发布端验证防止恶意代理注入污染的记忆——每次发布都会对照代理的能力令牌进行验证，并在进入总线之前扫描注入有效载荷。
+
+- **内存回放与梦整合** (`dream_replay.rs`) — `dream_replay.rs` 模块在空闲期间运行，实施海马体启发的内存回放。在回放期间，记忆被重新激活，时距较远的记忆之间的潜在连接被发现，并且使用演化的情境重新生成嵌入。这反映了睡眠在生物学记忆整合中的作用——加强重要记忆并发现醒着时并不明显出现的模式。
+
+### 基础设施模块（计划中/部分实现）
+
+- **HNSW向量索引** — 通过可插拔的`VectorIndex`特性实现O(log n)近似最近邻搜索
+- **命题级存储** — 基于LLM将复杂陈述分解为原子化、可独立检索的事实
+- **智能历史压缩** — 三层消息存储（逐字记录 → 压缩 → 总结）配合基于时间的自动分级
+- **话题变更检测** — 连续消息间的余弦散度来触发工作记忆清除
+- **动量向量** — 最近查询嵌入轨迹偏差搜索方向朝向对话方向
+- **可插拔向量后端** — 基于特性的抽象允许HNSW、产品量化或外部向量存储
+- **流程内存强化** — `mlock`防止交换，核心转储预防，`zeroize`Drop实施
+- **静态全数据库加密** — 通过集成加密层对整个持久存储透明加密
+
+这八个模块通过13个集成合同连接，确保它们像协合网络一样运作。例如，情感评分输出到检索门的相关性计算；意图分类调整重排序策略并选择GraphRAG平面；实体跟踪告知内存融合的范围兼容性检查；并且抽象树为社区级摘要提供输入。
+
+---
+
+## 质量评估
+
+Engram的质量评估框架确保每个子系统都是可测量的，并且自动捕捉回归问题。
 
 ```mermaid
 flowchart TD
-    subgraph Retrieval["Retrieval Quality"]
+    subgraph Retrieval["检索质量"]
         direction TB
-        RQ1["NDCG\nranking quality"]
-        RQ2["Precision@k\nrelevance ratio"]
-        RQ3["Latency\n<10ms target at 10K"]
+        RQ1["NDCG\n排序质量"]
+        RQ2["Precision@k\n相关性比率"]
+        RQ3["延迟\n在10K条件下<10ms目标"]
     end
 
-    subgraph Faith["Faithfulness Evaluation"]
+    subgraph Faith["保真度评估"]
         direction TB
-        FE1["Faithfulness\nfactual consistency"]
-        FE2["Context Relevancy\ninjection quality"]
-        FE3["Answer Relevancy\nresponse quality"]
+        FE1["保真度\n事实一致性"]
+        FE2["上下文相关性\n注入质量"]
+        FE3["回答相关性\n回应质量"]
     end
 
-    subgraph Forget["Forgetting Regression"]
+    subgraph Forget["遗忘回归"]
         direction TB
-        FR1["Pre/post NDCG\ncomparison"]
-        FR2["Chain integrity\nmulti-hop check"]
-        FR3["Auto-rollback\nif \u0394 > 5%"]
+        FR1["前后NDCG\n比较"]
+        FR2["链完整性\n多跳跃检查"]
+        FR3["自动回滚\n如果Δ > 5%"]
     end
 
-    subgraph Dilution["PAPerBench Dilution"]
+    subgraph Dilution["PAPerBench稀释"]
         direction TB
-        PA1["Personalization axis"]
-        PA2["Privacy axis"]
-        PA3["Injection-Faithfulness axis"]
+        PA1["个性化轴"]
+        PA2["隐私轴"]
+        PA3["注入-忠实度轴"]
     end
 
-    Retrieval --> CI["CI Quality Gates"]
+    Retrieval --> CI["CI质量门"]
     Faith --> CI
     Forget --> CI
     Dilution --> CI
 
-    CI --> MERGE{"Pass all\nthresholds?"}
-    MERGE -- Yes --> ALLOW["Merge allowed"]
-    MERGE -- No --> BLOCK["Merge blocked"]
+    CI --> MERGE{"通过所有\n阈值?"}
+    MERGE -- 是 --> ALLOW["允许合并"]
+    MERGE -- 否 --> BLOCK["阻止合并"]
 
 ```
 
-### Retrieval Quality
+### 检索质量
 
-Every search returns quality metadata alongside results:
+每次搜索都返回质量元数据伴随结果：
 
-- **NDCG (Normalized Discounted Cumulative Gain)** — Measures ranking quality against relevance judgments. Computed per-query and tracked over time.
-- **Precision@k** — What fraction of the top-k returned memories are actually relevant to the query.
-- **Latency** — End-to-end search time including gate decision, BM25, vector, graph activation, and reranking. Target: <10ms at 10K memories.
+- **NDCG（归一化折损累积增益）** — 基于相关性判断来衡量排序质量。按查询计算并随时间追踪。
+- **Precision@k** — 返回的top-k记忆中实际上与查询相关的比例是多少。
+- **延迟** — 端到端搜索时间包括门决策、BM25、向量、图激活和重新排序。目标：在10K记忆时<10ms。
 
-### Faithfulness Evaluation
+### 保真度评估
 
-Memory injection quality is evaluated along three dimensions:
+内存注入质量沿着三个维度进行评估：
 
-1. **Faithfulness** — Are the injected memories factually consistent with the stored content? Claim decomposition verifies that the agent's response doesn't misrepresent memories.
-2. **Context relevancy** — What percentage of injected memories are actually relevant to the query? Irrelevant injections waste context budget and risk attention dilution.
-3. **Answer relevancy** — Does the agent's response actually address the user's query, given the injected memories?
+1. **保真度** — 注入的记忆是否在事实上与存储内容一致？声明分解确保代理的响应不会歪曲记忆。
+2. **上下文相关性** — 注入的记忆中实际上与查询相关的百分比是多少? 无关注入会浪费上下文预算并导致注意力稀释风险。
+3. **回答相关性** — 给定注入的记忆后，代理的响应是否真正解决了用户的查询？
 
-### Unanswerability Detection
+### 回答不可达性检测
 
-Not every query has an answer in memory. The `UnanswerabilityDetector` evaluates whether the system should refuse rather than fabricate:
+并不是每个查询都能在内存中找到答案。`UnanswerabilityDetector`评估系统应该是拒绝还是编造答案：
 
-- Intent-aware thresholds: factual queries require higher confidence (0.5) than exploratory queries (0.25)
-- Procedural queries use an intermediate threshold (0.4) — partial procedures are worse than no procedure
-- Detection feeds back into the retrieval gate's Refuse mode
+- 意图感知阈值: 事实查询需要比探索性查询更高的置信度（0.5 vs 0.25）
+- 程序查询使用中间阈值（0.4）——部分程序还不如没有程序
+- 检测回馈到检索门的拒绝模式
 
-### Forgetting Regression
+### 遗忘回归
 
-Every consolidation cycle (decay + garbage collection + fusion) is evaluated for quality impact:
+每次聚合周期（衰退+垃圾收集+融合）都要评估对质量的影响：
 
-- Pre/post NDCG comparison on a fixed query set
-- Chain integrity — multi-hop graph traversals that succeed before and after the cycle
-- Automatic rollback if NDCG degrades by more than 5%
+- 在固定查询集上进行前后 NDCG 比较
+- 链完整性 — 成功穿越多跃图前后一致
+- 自动回滚，如果 NDCG 下降超过 5%
 
-This prevents the system from forgetting useful information in pursuit of storage efficiency.
+这样可以防止系统为了储存效率而忘记有用的信息。
 
-### Benchmark Harness
+### 基准测试套件
 
-A Criterion benchmark suite measures core operations at scale:
+一个准则基准测试套件在更大规模下度量核心操作：
 
-| Benchmark | Target (10K memories) | Target (100K memories) |
+| 基准测试 | 目标（10K内存） | 目标（100K内存） |
 |-----------|----------------------|------------------------|
-| Hybrid search | < 10ms | < 25ms |
-| Memory store | < 5ms | < 5ms |
-| Consolidation cycle | < 500ms | < 2s |
-| Context assembly | < 10ms | < 10ms |
+| 混合搜索 | < 10ms | < 25ms |
+| 内存存储 | < 5ms | < 5ms |
+| 整合周期 | < 500ms | < 2s |
+| 上下文装配 | < 10ms | < 10ms |
 
-These benchmarks run in CI. Performance regressions beyond defined thresholds block merges.
+这些基准测试会在CI中运行。超过定义阈值的性能回归会阻止合并。
 
-### PAPerBench — Attention Dilution Testing
+### PAPerBench — 注意力稀释测试
 
-PAPerBench reveals a critical truth: as context length grows, both personalization accuracy (PA) and privacy protection (PP) degrade — "attention dilution." Worse, **privacy degrades before quality** for every model tested. This directly affects memory injection.
+PAPerBench 揭示了一个关键的事实：随着上下文长度的增加，个性化准确性（PA）和隐私保护（PP）都会下降- "注意力稀释"。更糟糕的是，对于每一个测试模型，**隐私在质量之前就衰退了**。这直接影响了内存注入。
 
-Engram implements three-axis dilution testing derived from PAPerBench:
+Engram 实施了从 PAPerBench 衍生的三轴稀释测试：
 
-1. **Personalization axis** — Inject N memories, measure answer accuracy. Find the per-model inflection point where adding more memories stops helping.
-2. **Privacy axis** — Inject N memories containing PII, measure whether the model leaks PII in its response. Find the inflection point where the model starts ignoring privacy instructions.
-3. **Injection-Faithfulness axis** — Inject N memories, measure whether the model stays faithful to memory content vs. hallucinating.
+1. **个性化轴** — 注入 N 个内存，测量答案准确性。找出每个模型的拐点即添加更多内存不会再有所帮助的点。
+2. **隐私轴** — 注入包含 PII 的 N 个内存，测量模型是否在其响应中泄露 PII。找出模型开始忽略隐私指令的拐点。
+3. **注入-忠实性轴** — 注入 N 个内存，测量模型是否保持对其内存内容的忠实而不是产生幻觉。
 
-Per-model optimal injection caps are stored in the `ModelCapabilities` registry:
+每个模型最佳注入上限存储在 `ModelCapabilities` 注册表中：
 
-| Model | Optimal Injection Cap | Context Window | Notes |
+| 模型 | 最佳注入上限 | 上下文窗口 | 注释 |
 |---|---|---|---|
-| GPT-4 (8K) | 3 | 8K | Tiny window — every token matters |
-| Claude Opus 4.6 (200K) | 15 | 200K | Large window but dilution still applies |
-| Gemini 3.1 Pro (1M) | 20 | 1M | Largest window; still has inflection |
-| Ollama local (varies) | min(8, context/8000) | Varies | Conservative for resource-constrained |
+| GPT-4 (8K) | 3 | 8K | 小窗口 — 每个 token 很重要 |
+| Claude Opus 4.6 (200K) | 15 | 200K | 大窗口但是稀释仍然适用 |
+| Gemini 3.1 Pro (1M) | 20 | 1M | 最大窗口；但仍有点阵效应 |
+| Ollama local（根据情况变化） | min(8, context/8000) | 根据情况变化 | 为了资源受限采取保守策略 |
 
-### DeepResearch Bench II — Binary Rubric Evaluation
+### DeepResearch Bench II — 二进制评估
 
-DeepResearch Bench II provides the most rigorous evaluation methodology for deep research agents: 132 tasks across 22 domains evaluated with 9,430 binary rubrics. Even the best system (GPT-5.3) achieves only 45.40% overall satisfaction.
+DeepResearch Bench II 提供了最严格的研究代理评估方法：通过9430个二元评估在22个领域中的132个任务。即使是最好的系统（GPT-5.3）也只能达到45.40%的总体满意度。
 
-Engram adopts their three-tier rubric approach for self-evaluation:
+Engram 采用他们的三级评估方法用于自我评估：
 
-| Tier | What It Measures | Weight |
+| 层级 | 测量的内容 | 权重 |
 |---|---|---|
-| **Information Recall** | Did the agent retrieve and cite relevant memories? | 40% |
-| **Analysis** | Did the agent reason correctly over retrieved memories? | 35% |
-| **Presentation** | Is the response well-structured and actionable? | 25% |
+| **信息回想** | 代理是否检索并引用了相关记忆？ | 40% |
+| **分析** | 代理是否在检索到的记忆上进行了正确的推理？ | 35% |
+| **展现** | 响应是否有良好的结构且可行？ | 25% |
 
-When a rubric failure is detected, Engram traces it to a specific component:
-- **Recall failure** → retrieval pipeline problem (search, reranking, or gate)
-- **Analysis failure** → context assembly problem (wrong memories injected, budget misallocation)
-- **Presentation failure** → downstream of Engram (model behavior, not memory system)
+当检测到评级失败时，Engram 会追踪到相应的组件：
+- **召回失败** → 检索管道问题（搜索、重排名或门控）
+- **分析失败** → 上下文组装问题（注入了错误的记忆、预算错配）
+- **展现失败** → Engram的下游（模型行为，而不是内存系统）
 
-CI quality gates enforce minimum thresholds:
+CI质量门强制施加最小阈值：
 
-| Metric | Threshold | Blocks Merge |
+| 指标 | 阈值 | 阻止合并 |
 |---|---|---|
-| NDCG@10 | ≥ 0.45 | Yes |
-| Context relevancy | ≥ 0.60 | Yes |
-| Faithfulness | ≥ 0.70 | Yes |
-| Search latency (10K) | ≤ 10ms | Yes |
-| Unanswerability detection | ≥ 0.80 | Yes |
-| Privacy leakage rate | ≤ 0.05 | Yes |
+| NDCG@10 | ≥ 0.45 | 是 |
+| 上下文相关性 | ≥ 0.60 | 是 |
+| 保真度 | ≥ 0.70 | 是 |
+| 搜索延迟（10K） | ≤ 10ms | 是 |
+| 回答不可达性检测 | ≥ 0.80 | 是 |
+| 隐私泄露率 | ≤ 0.05 | 是 |
 
-The paper's explicit conclusion — *"Agent Memory is the future direction"* — validates Engram's entire thesis.
+这篇论文的明确结论 — *"代理内存是未来方向"* — 验证了 Engram 的整个理论。
 
 ---
 
-## Context Continuity
+## 上下文连续性
 
-Long-running agent sessions inevitably exceed context limits. Most systems handle this with silent truncation — conversation history is cut from the front and the agent loses context. Engram implements a checkpoint-and-continue system that preserves cognitive state across context boundaries.
+长时间运行的代理会话不可避免地超出上下文限制。大多数系统用无声截断处理这个问题 — 对话历史从前面被切断，代理失去上下文。Engram 实现了跨上下文边界保护认知状态的检查点和继续系统。
 
 ```mermaid
 flowchart TD
-    RUNNING["Agent Running"] --> SIDE{"Side-effect\noperation?"}
-    SIDE -- No --> RUNNING
-    SIDE -- Yes --> CAPTURE["Capture Checkpoint\nconversation + working memory\n+ file hashes + task progress"]
-    CAPTURE --> STORE[("Persistent Store")]
-    STORE --> CONTINUE["Continue Execution"]
+    RUNNING["代理运行"] --> SIDE{"副作用\n操作?"}
+    SIDE -- 否 --> RUNNING
+    SIDE -- 是 --> CAPTURE["捕获检查点\n对话+工作内存\n+文件哈希+任务进展"]
+    CAPTURE --> STORE[("持久存储")]
+    STORE --> CONTINUE["继续执行"]
 
-    CONTINUE --> LIMIT{"Context\nlimit\nreached?"}
-    LIMIT -- No --> RUNNING
-    LIMIT -- Yes --> MODE{"Continuation\nmode?"}
+    CONTINUE --> LIMIT{"上下文\n限制\n达到?"}
+    LIMIT -- 否 --> RUNNING
+    LIMIT -- 是 --> MODE{"连续\n模式?"}
 
-    MODE -- Automatic --> SUMMARIZE["Task-Aware Summarize\npending work + key decisions\n+ relevant memories"]
-    SUMMARIZE --> NEW["New context with summary"]
+    MODE -- 自动 --> SUMMARIZE["任务感知摘要\n待办工作+关键决策\n+相关记忆"]
+    SUMMARIZE --> NEW["带摘要的新上下文"]
     NEW --> RUNNING
 
-    MODE -- Manual --> CHOICE["User chooses:\n\u2022 Continue with summary\n\u2022 Revert to checkpoint\n\u2022 Start fresh"]
+    MODE -- 手动 --> CHOICE["用户选择:\n\u2022 用摘要继续\n\u2022 恢复到检查点\n\u2022 重新开始"]
+``
 
-```
+### 工作区检查点
 
-### Workspace Checkpoints
+在任何副作用操作之前（文件写入、工具执行、内存变异），Engram 捕获一个检查点：
 
-Before any side-effect operation (file write, tool execution, memory mutation), Engram captures a checkpoint:
+- **对话状态** — 截至检查点的完整消息历史
+- **工作内存快照** — 包含优先级和源的所有活动槽
+- **文件状态** — 读取或修改的文件的哈希值
+- **任务进展** — 待办事项、已完成项目、关键决策
 
-- **Conversation state** — Full message history up to the checkpoint
-- **Working memory snapshot** — All active slots with priorities and sources
-- **File state** — Hashes of files that have been read or modified
-- **Task progress** — Pending work items, completed items, key decisions
+检查点存储在持久存储中。任何检查点都可以恢复，将代理恢复到确切的先前认知状态。
 
-Checkpoints are stored in the persistent store. Any checkpoint can be reverted to, restoring the agent to an exact prior cognitive state.
+### 混合连续性
 
-### Hybrid Continuation
+当达到上下文限制时，有两种可用的连续模式：
 
-When context limits are reached, two continuation modes are available:
+- **自动**（代理循环、任务、编排）— 系统使用任务感知提取自动总结对话（待办工作+关键决策+相关记忆），用摘要创建新上下文并继续执行。代理从不会失去对正在做什么的跟踪。
+- **手动**（交互式聊天）— 用户会被告知上下文正在被总结，并可以选择继续使用摘要、恢复到检查点或全新重启。
 
-- **Automatic** (agent loops, tasks, orchestration) — The system automatically summarizes the conversation using task-aware extraction (pending work + key decisions + relevant memories), creates a new context with the summary, and continues execution. The agent never loses track of what it was doing.
-- **Manual** (interactive chat) — The user is informed that context is being summarized and offered the choice to continue, revert to a checkpoint, or start fresh.
-
-This replaces silent truncation with intelligent handoffs. No competing product offers checkpoint + continue that spans conversation + files + working memory.
+这取代了静默截断，代之以智能交接。没有竞争对手的产品提供涵盖对话+文件+工作内存的检查点+继续功能。
 
 ---
 
-## The Intelligence Loop
+## 智能循环
 
-Engram's architecture is not a collection of independent features — it is a reinforcing loop where each principle strengthens the others. The Grand Research Synthesis reveals a unified intelligence architecture:
+Engram 的架构不是独立功能的集合 — 它是一个强化循环，每个原理加强其他的原理。大研究综合揭示了一致的智能架构：
 
 ```mermaid
 flowchart LR
-    GATE["GATE\n\nSelf-RAG · CRAG\nDecide WHETHER\nto search"] --> RETRIEVE["RETRIEVE\n\nDeep GraphRAG\nGraphRAG-R1\nFind the right\nmemories"]
-    RETRIEVE --> CAP["CAP\n\nPAPerBench\nInject the right\nAMOUNT"]
-    CAP --> SKILL["SKILL\n\nVoyager · Reflexion\nApply learned\nprocedures"]
-    SKILL --> EVAL["EVALUATE\n\nDRB-II · RAGAs\nMeasure everything\ncatch regressions"]
-    EVAL --> FORGET["FORGET\n\nFadeMem\nRemove noise\nprovably safely"]
+    GATE["门\n\nSelf-RAG · CRAG\n决定是否\n搜索"] --> RETRIEVE["检索\n\n深层次 GraphRAG\nGraphRAG-R1\n找到正确的\n记忆"]
+    RETRIEVE --> CAP["限额\n\nPAPerBench\n注入正确的\n数量"]
+    CAP --> SKILL["技能\n\nVoyager · Reflexion\n应用学到的\n过程"]
+    SKILL --> EVAL["评估\n\nDRB-II · RAGAs\n衡量一切\n捕捉回归"]
+    EVAL --> FORGET["遗忘\n\nFadeMem\n可证明地安全\n去除噪音"]
     FORGET --> GATE
 ```
 
-> **Each principle reinforces the others:**
-> Gating makes retrieval efficient → Retrieval makes capping meaningful → Capping makes skills focused → Skills make evaluation concrete → Evaluation makes forgetting safe → Forgetting makes gating accurate
+> **每个原理强化其他原理:**
+> 门控让检索更高效 → 检索使限额有意义 → 限额让技能聚焦 → 技能让评估具体 → 评估让遗忘安全 → 遗忘让门控准确
 
-### Six Principles
+### 六大原理
 
-| Principle | Component | Paper(s) | Function |
+| 原理 | 组件 | 论文 | 功能 |
 |---|---|---|---|
-| **Gate** | RetrievalGate + IntentClassifier | Self-RAG, CRAG | Decide WHETHER to search (saves ~40% of searches) |
-| **Retrieve** | Hybrid Search + GraphRAG + Graph Activation | Deep GraphRAG, GraphRAG-R1 | Find the right memories across local and global planes |
-| **Cap** | ContextBuilder + Per-Model Injection Limits | PAPerBench | Inject the right AMOUNT (not too many, not too few) |
-| **Skill** | Skill Library + Procedural Memory + Reflexion | Voyager, Reflexion | Apply learned procedures; compound over time |
-| **Evaluate** | Quality Metrics + DRB-II Rubrics + PAPerBench Dilution | DRB-II, PAPerBench, RAGAs | Measure everything; catch regressions |
-| **Forget** | FadeMem Dual-Layer + Fusion + Transactional GC | FadeMem | Remove noise provably safely; keep the store lean |
+| **门控** | RetrievalGate + IntentClassifier | Self-RAG, CRAG | 判定是否搜索（节省约40%搜索） |
+| **检索** | 混合搜索 + GraphRAG + 图激活 | Deep GraphRAG, GraphRAG-R1 | 在本地和平面图中查找正确的记忆 |
+| **限额** | ContextBuilder + 每模型注入限度 | PAPerBench | 注入正确的数量（不多不少） |
+| **技能** | 技能库 + 程序记忆 + Reflexion | Voyager, Reflexion | 应用学习的过程；随时间积累 |
+| **评估** | 质量指标 + DRB-II 评分 + PAPerBench 稀释 | DRB-II, PAPerBench, RAGAs | 衡量一切；捕捉回归 |
+| **遗忘** | FadeMem 双层 + 融合 + 事务 GC | FadeMem | 可证明的安全移除噪音；保持存储简洁 |
 
-The key insight: **intelligent memory is not more memory — it is better memory.** Every component in the loop works to ensure that only the right information reaches the model at the right time, and that the system learns and improves with every interaction.
+主要见解：**智能内存不是更多的内存 — 它是更好的内存。** 循环中的每个组件都确保正确信息在正确时间到达模型，系统在每次互动中学习和改进。
 
-This six-principle loop represents the synthesis of 21 research papers spanning 5 years. No competing product implements all six principles as a unified architecture.
+这六原理循环代表了5年期间21篇研究论文的综合。没有竞争对手的产品将全部六个原理实现为统一架构。
 
 ---
 
-## Verification & Operational Completeness
+## 验证与运行完整性
 
-An architecture of this complexity — 22 modules spanning three memory tiers, eight cognitive subsystems, and a six-principle intelligence loop — requires a verification model that is itself a first-class design concern. This section describes Engram's approach to ensuring that every architectural contract described in §1–§25 is exercised, measured, and proven correct under realistic conditions.
+这种复杂度的架构——涵盖三个内存层级的22个模块、八个认知子系统和一个六原则智能循环——需要一个验证模型本身作为一流的设计考虑。本节描述Engram确保每一项在§1-§25中描述的架构合同在真实条件下得到执行、测量并证明正确性的方法。
 
-The verification architecture addresses four fundamental challenges that arise in any cognitive memory system: ensuring that multi-tier data pipelines flow correctly end-to-end, that scoring and ranking produce consistent results across system boundaries, that modules compose without silent degradation, and that the system's quality can be measured continuously rather than assumed.
+验证架构解决了任何认知内存系统中出现的四个基本挑战：确保多层数据管道端到端流正确无误，在不同系统边界上评分和排名产生一致结果，模块组合不会无声降级，以及可以连续测量而非假设系统的质量。
 
-### 26.1 Layered Verification Model
+### 26.1 分层验证模型
 
-Engram's verification follows a four-layer pyramid. Each layer catches a different class of failure:
+Engram的验证遵循四层金字塔结构。每层捕获不同类型故障：
 
 ```mermaid
 graph TB
-    subgraph "Layer 4: Cognitive Scenario Tests"
-        L4["10 end-to-end scenarios exercising<br/>the full pipeline from sensory input<br/>through consolidation to retrieval"]
+    subgraph "第4层：认知场景测试"
+        L4["通过从感官输入到整合检索<br/>的完整工作流程<br/>执行10个端到端场景"]
     end
-    subgraph "Layer 3: Cross-Module Integration"
-        L3["Store → consolidate → search → recall →<br/>context build as a single transaction"]
+    subgraph "第3层：跨模块集成"
+        L3["存储 → 整合 → 搜索 → 回忆 →<br/>上下文构建作为一个事务"]
     end
-    subgraph "Layer 2: Contract Tests"
-        L2["Each module's public API tested against<br/>typed contracts: EngineResult invariants,<br/>scope isolation, budget compliance"]
+    subgraph "第2层：契约测试"
+        L2["每个模块的API根据<br/>类型化契约进行测试：<br/>EngineResult不变量、<br/>作用域隔离、预算合规性"]
     end
-    subgraph "Layer 1: Unit Tests"
-        L1["Pure function correctness: decay curves,<br/>Jaccard similarity, RRF scoring, PII regex,<br/>tokenizer accuracy, NDCG computation"]
+    subgraph "第1层：单元测试"
+        L1["纯函数正确性：<br/>衰减曲线、<br/>雅卡尔相似度、RRF评分、PII正则表达式、<br/>词元器精度、NDCG计算"]
     end
     L4 --> L3 --> L2 --> L1
 ```
 
-**Layer 1 — Unit tests** verify pure functions in isolation. These include decay curve monotonicity, Jaccard/cosine similarity correctness, RRF scoring, PII detection regex coverage, tokenizer per-model accuracy, and NDCG computation. Property-based testing (via `proptest`) is used for consolidation clustering invariants — specifically that cluster membership is reflexive and symmetric, that fusion never increases total memory count, and that decay is monotonically decreasing.
+**第1层——单元测试** 在隔离环境中验证纯函数。这些包括衰减曲线单调性、Jaccard/cosine 相似度正确性、RRF 评分、PII检测正则表达式覆盖率、每种模型的词元器精确度和NDCG计算。基于属性的测试(通过`proptest`)用于整合同类不变量——具体而言是集群成员关系是自反和对称的，融合永远不增加总内存计数，并且衰减是单调递减的。
 
-**Layer 2 — Contract tests** verify that each module's public API upholds its typed contract. Every function returning `EngineResult` is tested for both success and error paths. Scope isolation is verified: agent A's store operations are invisible to agent B's searches. Budget compliance is verified: the ContextBuilder never produces output exceeding the model's declared context window.
+**第2层——契约测试** 验证每个模块的公共 API是否符合适当的合约。每个返回 `EngineResult` 的函数都要针对成功和错误路径进行测试。作用域隔离经验证：代理A的存储操作在代理B搜索时不可见。预算合规性经验证：ContextBuilder永远不会生成超过模型声明上下文窗口的输出。
 
-**Layer 3 — Cross-module integration** tests exercise multi-module pipelines as single logical operations. The canonical pipeline — store → consolidate → search → recall → context build — is tested with deterministic mocks (no LLM or embedding model required). Each integration test asserts that data flows correctly between tiers and that intermediate representations (embeddings, trust scores, quality metrics) propagate through the full chain.
+**第3层——跨模块集成** 测试将多模块管道作为单一逻辑操作来执行。规范管道——存储→整合→搜索→回忆→上下文构建——通过确定性模拟进行测试（不需要LLM或嵌入模型）。每个集成测试都断言数据在各层之间正确流动，中间表示形式（嵌入向量、可信度分数、质量指标）传播通过完整链条。
 
-**Layer 4 — Cognitive scenario tests** exercise the system as a whole against realistic usage patterns. These 10 scenarios form the system's acceptance criteria:
+**第4层——认知场景测试** 根据现实使用模式全面测试整个系统。这10个场景构成了系统的验收标准：
 
-| Scenario | Modules Exercised | Invariant |
+| 场景 | 执行的模块 | 不变量 |
 |---|---|---|
-| Memory Lifecycle | graph, consolidation, schema | 50 episodic memories → clusters formed, semantic triples extracted |
-| Forgetting Quality | graph, consolidation, retrieval_quality | Decay + GC cycle → NDCG does not degrade (transactional rollback) |
-| Three-Tier Flow | sensory_buffer, working_memory, graph | 30 messages → sensory → working memory promotion → long-term storage |
-| Multi-Agent Isolation | memory_bus, encryption, graph | 3 agents → scope-isolated search + bus delivery with capability tokens |
-| Encryption Round-Trip | encryption, graph, schema | PII stored → encrypted at rest → decrypted on search → GDPR purge zero-residual |
-| Context Budget Fidelity | context_builder, model_caps, tokenizer | 5 model sizes → token counts never exceed window → correct priority ordering |
-| Dream Replay Idempotency | dream_replay, graph, meta_cognition | Two replay cycles → no duplicate edges, no double-strengthening |
-| Entity Lifecycle | entity_tracking, graph | Aliased mentions → canonical resolution → entity-scoped retrieval |
-| Contradiction Resolution | consolidation, graph | Conflicting facts → newer wins, `Contradicts` edge, confidence transferred |
-| Skill Compounding | graph (procedural), bridge | Task success → skill extracted → failure → failure variant stored |
+| 记忆生命周期 | 图算法(graph)、整合(consolidation)、模式(schema) | 50个情节记忆 → 形成集群，提取语义三元组 |
+| 遗忘质量 | 图算法(graph)、整合(consolidation)、检索质量(retrieval_quality) | 衰减+ GC 循环 → NDCG 不会下降 (事务回滚) |
+| 三层流转 | 感官缓冲器(sensory_buffer)、工作记忆(working_memory)、图算法(graph) | 30 条消息 → 感官 → 工作记忆提升 → 长期存储 |
+| 多代理隔离 | 内存总线(memory_bus)、加密(encryption)、图(graph) | 3个代理 → 作用域隔离搜索 + 带有功能令牌的总线传输 |
+| 加密往返 | 加密(encryption)、图(graph)、模式(schema) | PII 存储 → 静态加密 → 搜索时解密 → GDPR擦除零残留 |
+| 上下文预算保真度 | 上下文构建器(context_builder)、模型能力(model_caps)、词元器(tokenizer) | 5 种模型尺寸 → 代币数量从不超过窗口 → 正确优先级排序 |
+| 梦想重放幂等性 | 梦回(dream_replay)、图(graph)、元认知(meta_cognition) | 两个重播周期 → 无重复边，无双重强化 |
+| 实体生命周期 | 实体跟踪(entity_tracking)、图(graph) | 别名提及 → 规范解析 → 实体作用域检索 |
+| 矛盾解决 | 整合(consolidation)、图(graph) | 冲突事实 → 新事实获胜、`Contradicts` 边、置信度转移 |
+| 技能复合 | 图(graph)(程序性)、桥接(bridge) | 任务成功 → 技能提取 → 失败 → 失败变体存储 |
 
-### 26.2 Single Source of Truth Principle
+### 26.2 单一事实来源原则
 
-A critical design constraint for multi-layer systems is that scoring, ranking, and token estimation must happen in exactly one place. Engram enforces this by treating the Rust engine as the sole authority for all numerical computation:
+对于多层系统的关键设计约束是，评分、排名和代币估算是必须只发生在一个地方。Engram通过将Rust引擎视为所有数值计算的唯一权威来强制执行这一点：
 
 ```mermaid
 flowchart LR
-    subgraph "Frontend (TypeScript)"
-        UI["Display Layer"]
-        IPC["IPC Passthrough"]
+    subgraph "前端 (TypeScript)"
+        UI["显示层"]
+        IPC["IPC 透传"]
     end
-    subgraph "Engine (Rust)"
-        TOK["Tokenizer<br/>(model-specific)"]
-        SCORE["Scoring Pipeline<br/>(decay · MMR · RRF · NDCG)"]
-        CONFIG["SearchConfig<br/>(tunable parameters)"]
+    subgraph "引擎 (Rust)"
+        TOK["词元器<br/>(特定于模型)"]
+        SCORE["评分流水线<br/>(衰减·MMR·RRF·NDCG)"]
+        CONFIG["搜索配置<br/>(可调整参数)"]
     end
     UI --> IPC
     IPC --> TOK
@@ -1726,74 +1725,74 @@ flowchart LR
     CONFIG --> IPC
 ```
 
-Token estimation uses model-specific divisors (Cl100k: $\div 3.4$, O200k: $\div 3.8$, Gemini: $\div 3.3$, SentencePiece: $\div 3.0$) rather than a fixed heuristic. Temporal decay, MMR diversity reranking, and quality scoring are computed server-side in Rust and returned as final scores. The frontend receives pre-scored, pre-ranked results and renders them without modification. Configuration parameters (BM25/vector weight, decay half-life, MMR lambda, relevance threshold) are read from the engine via IPC at startup, not duplicated as client-side constants.
+代币估算使用特定于模型的除数（Cl100k: $\div 3.4$，O200k: $\div 3.8$，Gemini: $\div 3.3$，SentencePiece: $\div 3.0$），而不是固定启发式策略。时间衰减、MMR多样性重排序和质量评分公司在服务器端用Rust计算并以最终得分返回。前端接收预评分、预排位的结果并直接渲染，不做修改。配置参数（BM25/向量权重、衰减半衰期、MMR lambda、相关性阈值）在启动时通过IPC从引擎读取，而非复制为客户端常量。
 
-This eliminates an entire class of divergence bugs where the frontend and backend disagree on compaction thresholds or result ordering.
+这样就消除了前端和后端在压缩阈值或结果排序上分歧导致的一整类分歧错误。
 
-### 26.3 Cognitive Pipeline Integration
+### 26.3 认知流水线集成
 
-The three-tier memory pipeline (§4) is designed as a unidirectional flow: Sensory Buffer → Working Memory → Long-Term Store. The verification model enforces that every tier is instantiated, connected, and exercised:
+三级内存流水线（§4）被设计为单向流程：感知缓冲区 → 工作内存 → 长期存储。验证模型确保每一个层级都被实例化、连接并执行：
 
 ```mermaid
 flowchart LR
-    IN["Incoming<br/>Message"] --> SB["Sensory Buffer<br/>(ring buffer, O(1) push)"]
-    SB -->|"eviction on<br/>capacity overflow"| WM["Working Memory<br/>(priority-sorted slots)"]
-    WM -->|"lowest-priority<br/>eviction"| LTM["Long-Term Store<br/>(SQLite graph)"]
-    LTM -->|"recall by<br/>ContextBuilder"| WM
-    SB -->|"drain within<br/>token budget"| CTX["ContextBuilder<br/>(budget-aware assembly)"]
-    WM -->|"priority-ordered<br/>slots"| CTX
-    LTM -->|"auto-recalled<br/>memories"| CTX
-    CTX --> LLM["LLM Prompt"]
+    IN["传入<br/>消息"] --> SB["传感缓冲区<br/>(环形缓冲区，O(1) 推送)"]
+    SB -->|"容量溢出时<br/>驱逐"| WM["工作内存<br/>(优先排序槽位)"]
+    WM -->|"最低优先级<br/>驱逐"| LTM["长期存储<br/>(SQLite 图)"]
+    LTM -->|"ContextBuilder<br/>召回"| WM
+    SB -->|"在代币预算<br/>内清空"| CTX["ContextBuilder<br/>(预算感知组装)"]
+    WM -->|"优先排序<br/>槽位"| CTX
+    LTM -->|"自动召回<br/>记忆"| CTX
+    CTX --> LLM["LLM 提示"]
 ```
 
-The IntentClassifier gates every retrieval operation, producing signal weights that adapt hybrid search (§6) to the query type: factual queries weight BM25 higher, conceptual queries weight vector similarity higher, procedural queries boost the procedural memory store. This intent-adapted weighting feeds through the full pipeline — from the initial `classify_intent()` call through `resolve_hybrid_weight()` to the final `rerank_results()` output.
+IntentClassifier 控制每一次检索操作，生成适应混合搜索（§6）查询类型的信号权重：事实性查询赋予更高的BM25权值，概念性查询赋予更高的向量相似性权值，过程性查询提升过程性内存存储。这种意图适配加权通过整个管道传递——从最初的`classify_intent()`调用通过 `resolve_hybrid_weight()` 到最终的 `rerank_results()` 输出。
 
-All consumer paths — chat, tasks, orchestrator, swarm, channel bridges — route through a single `gated_search()` entry point. This guarantees that every retrieval operation receives gate classification, intent-adapted weighting, encryption-aware decryption, CRAG quality checking, and NDCG measurement. No path bypasses the quality pipeline.
+所有消费者路径——聊天、任务、编排器、swarm、频道桥接——都通过一个单一的`gated_search()`入口路由。这保证了每次检索操作都能接受门控分类、意图适配加权、感知加密解密、CRAG质量检查和NDCG计量。没有路径绕过质量流水线。
 
-### 26.4 Embedding Model Portability
+### 26.4 嵌入模型可移植性
 
-Vector embeddings are model-specific: cosine similarity between vectors from different models is meaningless. Engram handles model migration through the Dream Replay subsystem:
+向量嵌入是模型特有的：来自不同模型的向量间的余弦相似性是没有意义的。Engram 通过Dream Replay子系统处理模型迁移：
 
-1. Every memory records the embedding model that generated its vector (stored in the `embedding_model` column).
-2. When the configured embedding model changes, all existing vectors are marked stale.
-3. Dream Replay Phase 2 (re-embed stale) processes stale vectors during idle time, generating new embeddings with the current model.
-4. During the transition period, the hybrid search pipeline falls back gracefully to BM25-only for memories with stale embeddings — the system degrades to keyword search rather than producing invalid similarity scores.
+1. 每个记忆记录生成其向量的嵌入模型（存储在 `embedding_model` 列中）。
+2. 当配置的嵌入模型更改时，所有现有向量均被标记为过时。
+3. Dream Replay 第二阶段（重新嵌入过时）会在空闲时间内处理过时的向量，使用当前模型生成新的嵌入。
+4. 在过渡期间，混合搜索流程会对带有过时嵌入的内存优雅地退回到BM25专用模式——系统退化为关键词搜索，而不是产生无效的相似度评分。
 
-This design ensures that users can switch between embedding models (e.g., `nomic-embed-text` → `mxbai-embed-large`) without data loss or retrieval corruption.
+此设计确保用户可以在嵌入模型之间切换（例如，`nomic-embed-text` → `mxbai-embed-large`）而不丢失数据或检索损坏。
 
-### 26.5 Scale Verification
+### 26.5 规模验证
 
-The system's performance characteristics must be verified at realistic scale, not just assumed from algorithmic complexity bounds. Engram defines five scale tiers with target latency budgets:
+系统的性能特征必须在现实规模上验证，而不能仅从算法复杂度界限中假设。Engram定义了五个目标延迟预算的规模级别：
 
-| Memory Count | Search Latency | Consolidation Cycle | Concurrent Readers | RAM Budget |
+| 内存量 | 搜索延迟 | 合并周期 | 并发读者 | RAM预算 |
 |---|---|---|---|---|
 | 1K | <5ms | <100ms | 8 | <50MB |
 | 10K | <10ms | <500ms | 8 | <100MB |
 | 50K | <15ms | <2s | 8 | <200MB |
 | 100K | <25ms | <5s | 8 | <350MB |
-| 500K | <50ms (HNSW disk) | <15s | 8 | <500MB |
+| 500K | <50ms (HNSW磁盘) | <15s | 8 | <500MB |
 
-These targets are enforced through Criterion benchmark suites that run against seeded databases at each tier. Regressions beyond the target latency block merge. The tiered vector index transitions automatically from brute-force (< 1K) to in-memory HNSW (1K–100K) to disk-backed HNSW (> 100K), keeping search latency sublinear across the full range.
+这些目标通过对各层级播种数据库运行Criterion基准套件来强制实施。超出目标延迟的回归会阻止合并。分级向量索引自动从暴力破解（< 1K）转换为内存中HNSW（1K-100K）再到磁盘支持的HNSW（> 100K），保持搜索延迟在整个范围内亚线性增长。
 
-### 26.6 Quality Feedback Loop
+### 26.6 质量反馈循环
 
-Verification is not a one-time activity — it is a continuous feedback loop built into the system's runtime. Every search operation produces a `RetrievalQualityMetrics` payload containing:
+验证不是一次性活动——它是一个集成到系统运行时中的持续反馈循环。每个搜索操作都会生成一个包含以下内容的 `RetrievalQualityMetrics` 有效载荷：
 
-- **NDCG** — Normalized Discounted Cumulative Gain measuring ranking quality (§23)
-- **Average relevancy** — Mean composite trust score across returned memories
-- **Candidates filtered** — How many memories were considered vs. returned
-- **Search latency** — Wall-clock time for the full pipeline
-- **Rerank strategy applied** — Which of the four strategies was selected
+- **NDCG** — 衡量排名质量的归一化折扣累积增益（§23）
+- **平均相关性** — 返回记忆的平均复合信任得分
+- **已筛选候选项** — 考虑了多少记忆与实际返回了多少
+- **搜索延迟** — 全流程的时钟时间
+- **应用的重排序策略** — 选择的是四种策略的哪种
 
-These metrics serve dual purposes: they surface in the cognitive debug panel for developer inspection, and they feed the transactional forgetting system. If a garbage collection cycle degrades NDCG by more than 5%, the cycle is rolled back via vector savepoint. This ensures that the system can never silently degrade its own retrieval quality through its maintenance operations.
+这些指标具有双重用途：它们在认知调试面板中浮出水面供开发人员检查，并且反馈给事务遗忘系统。如果垃圾回收周期使NDCG退化超过5%，循环将通过向量保存点回滚。这确保该系统通过维护操作绝不会悄悄降低自己的检索质量。
 
-The consolidation engine reports its own metrics per cycle: candidates processed, clusters formed, semantic triples extracted, contradictions resolved, and knowledge gaps discovered. These allow the system to track its learning velocity — how efficiently it converts raw episodic experience into structured semantic knowledge over time.
+整合同步引擎报告每次循环的自身指标：处理的候选项目、形成的集群、提取的语义三元组、解决的矛盾，以及发现的知识缺口。这些使得系统能够跟踪其学习速度——随着时间推移将原始的片段经验转换为结构化语义知识的有效程度。
 
 ---
 
-## References
+## 参考文献
 
-### Foundations
+### 基础理论
 
 - Ebbinghaus, H. (1885). *Memory: A Contribution to Experimental Psychology.*
 - Anderson, J. R. (1983). *A Spreading Activation Theory of Memory.* Journal of Verbal Learning and Verbal Behavior, 22(3), 261-295.
@@ -1802,7 +1801,7 @@ The consolidation engine reports its own metrics per cycle: candidates processed
 - Bartlett, F. C. (1932). *Remembering: A Study in Experimental and Social Psychology.* Cambridge University Press.
 - Nader, K., Schafe, G. E., & LeDoux, J. E. (2000). *Fear Memories Require Protein Synthesis in the Amygdala for Reconsolidation After Retrieval.* Nature, 406, 722-726.
 
-### Information Retrieval
+### 信息检索
 
 - Robertson, S. E., & Zaragoza, H. (2009). *The Probabilistic Relevance Framework: BM25 and Beyond.* Foundations and Trends in IR, 3(4), 333-389.
 - Carbonell, J., & Goldstein, J. (1998). *The Use of MMR, Diversity-Based Reranking for Reordering Documents and Producing Summaries.* SIGIR '98.
@@ -1810,19 +1809,19 @@ The consolidation engine reports its own metrics per cycle: candidates processed
 - Malkov, Y. A., & Yashunin, D. A. (2018). *Efficient and Robust Approximate Nearest Neighbor Using Hierarchical Navigable Small World Graphs.* IEEE TPAMI.
 - Chen, J., et al. (2023). *Dense X Retrieval: What Retrieval Granularity Should We Use?* ACL 2024.
 
-### Neuroscience & Cognition
+### 神经科学与认知
 
 - Cahill, L., & McGaugh, J. L. (1995). *A Novel Demonstration of Enhanced Memory Associated with Emotional Arousal.* Consciousness and Cognition, 4(4), 410-421.
 - Flavell, J. H. (1979). *Metacognition and Cognitive Monitoring.* American Psychologist, 34(10), 906-911.
 - Wilson, M. A., & McNaughton, B. L. (1994). *Reactivation of Hippocampal Ensemble Memories During Sleep.* Science, 265(5172), 676-679.
 - Diekelmann, S., & Born, J. (2010). *The Memory Function of Sleep.* Nature Reviews Neuroscience, 11(2), 114-126.
 
-### Distributed Systems
+### 分布式系统
 
 - Shapiro, M. et al. (2011). *Conflict-Free Replicated Data Types.* SSS 2011.
 - Getoor, L., & Machanavajjhala, A. (2012). *Entity Resolution: Theory, Practice & Open Challenges.* VLDB Tutorial.
 
-### Agent Architectures
+### 智能体架构
 
 - Park, J. S., et al. (2023). *Generative Agents: Interactive Simulacra of Human Behavior.* UIST '23.
 - Packer, C., et al. (2023). *MemGPT: Towards LLMs as Operating Systems.* arXiv:2310.08560.
@@ -1830,7 +1829,7 @@ The consolidation engine reports its own metrics per cycle: candidates processed
 - Shinn, N., et al. (2023). *Reflexion: Language Agents with Verbal Reinforcement Learning.* NeurIPS 2023.
 - Du, Y., et al. (2023). *HELPER: Memory-Augmented LLMs for Instruction-Following Embodied Agents.* EMNLP 2023.
 
-### Retrieval-Augmented Generation
+### 增强检索生成
 
 - Asai, A., et al. (2024). *Self-RAG: Learning to Retrieve, Generate, and Critique Through Self-Reflection.* ICLR 2024.
 - Yan, S., et al. (2024). *Corrective Retrieval Augmented Generation (CRAG).* ICLR 2024.
@@ -1841,16 +1840,16 @@ The consolidation engine reports its own metrics per cycle: candidates processed
 - Jiang, Z., et al. (2023). *LLMLingua: Compressing Prompts for Accelerated Inference.* EMNLP 2023.
 - Santhanam, K., et al. (2022). *ColBERTv2: Effective and Efficient Retrieval via Lightweight Late Interaction.* NAACL 2022.
 
-### 2026 Research (Revolutionary Advances)
+### 2026 研究 （革命性进展）
 
-- Zhang, Y., et al. (2026). *FadeMem: Biologically-Inspired Forgetting for Efficient Agent Memory.* arXiv:2601.18642. — Dual-layer adaptive forgetting with measured quality; 45% storage reduction, F1=29.43.
-- Agarwal, S., et al. (2026). *Long Context, Less Focus: A Scaling Gap in LLMs Revealed through Privacy and Personalization* (PAPerBench). arXiv:2602.15028. — Proves attention dilution degrades personalization and privacy; validates budget-first injection.
-- Li, H., et al. (2026). *Deep GraphRAG: A Balanced Approach to Hierarchical Retrieval and Adaptive Integration.* arXiv:2601.11144. — Three-stage hierarchical pipeline; DW-GRPO enables 1.5B→70B quality.
-- Chen, W., et al. (2026). *WildGraphBench: Benchmarking GraphRAG with Wild-Source Corpora.* arXiv:2602.02053. — Reveals GraphRAG failure modes; validates query-type routing.
-- Wang, Z., et al. (2026). *DeepResearch Bench II: Diagnosing Deep Research Agents via Rubrics from Expert Reports.* arXiv:2601.08536. — 9,430 binary rubrics across 132 tasks; best system achieves 45.40%; calls Agent Memory the future.
-- Xu, R., et al. (2026). *GraphRAG-R1: Graph Retrieval-Augmented Generation with Process-Constrained Reinforcement Learning.* arXiv:2507.23581 (accepted WWW 2026). — PRA + CAF reward signals for retrieval policy training.
-- Zhao, P., et al. (2026). *Retrieval-Augmented Generation for AI-Generated Content: A Survey.* Data Science and Engineering, Springer. — Comprehensive RAG taxonomy and benchmark map.
+- Zhang, Y., et al. (2026). *FadeMem: Biologically-Inspired Forgetting for Efficient Agent Memory.* arXiv:2601.18642. — 具有测量质量的双层自适应遗忘；减少45%的存储空间，F1=29.43。
+- Agarwal, S., et al. (2026). *Long Context, Less Focus: A Scaling Gap in LLMs Revealed through Privacy and Personalization* (PAPerBench). arXiv:2602.15028. — 证明注意力稀释会降低个性化和隐私保护；验证预算优先注入。
+- Li, H., et al. (2026). *Deep GraphRAG: A Balanced Approach to Hierarchical Retrieval and Adaptive Integration.* arXiv:2601.11144. — 三级层次结构流水线；DW-GRPO实现1.5B→70B质量。
+- Chen, W., et al. (2026). *WildGraphBench: Benchmarking GraphRAG with Wild-Source Corpora.* arXiv:2602.02053. — 揭示GraphRAG失效模式；验证查询类型路由。
+- Wang, Z., et al. (2026). *DeepResearch Bench II: Diagnosing Deep Research Agents via Rubrics from Expert Reports.* arXiv:2601.08536. — 涵盖132项任务的9,430项二进制评分标准；最佳系统达到45.40％的分数；宣称代理内存是未来。
+- Xu, R., et al. (2026). *GraphRAG-R1: Graph Retrieval-Augmented Generation with Process-Constrained Reinforcement Learning.* arXiv:2507.23581 (accepted WWW 2026). — PRA + CAF奖励信号用于检索策略训练。
+- Zhao, P., et al. (2026). *Retrieval-Augmented Generation for AI-Generated Content: A Survey.* Data Science and Engineering, Springer. — 全面的RAG分类法与基准图谱。
 
 ---
 
-*Project Engram is part of OpenPawz, an open-source AI platform licensed under MIT. Contributions welcome.*
+*Project Engram 是 OpenPawz 的一部分，一款采用 MIT 许可的开源人工智能平台。欢迎贡献。*

@@ -59,8 +59,17 @@ export async function loadModelsSettings() {
       !enterpriseStatus?.enterprise_build_mode ||
       !enterpriseStatus.authenticated ||
       enterpriseStatus.can_manage_model_providers;
+    const enterpriseProvidersManaged =
+      Boolean(enterpriseStatus?.authenticated) && !enterpriseStatus?.can_manage_model_providers;
 
     container.innerHTML = '';
+    updateModelsSettingsHero(enterpriseProvidersManaged);
+
+    if (enterpriseProvidersManaged && enterpriseStatus) {
+      container.appendChild(buildEnterpriseAccountSection(enterpriseStatus));
+      container.appendChild(await buildEnterpriseAvailableModelsSection());
+      return;
+    }
 
     // ── Provider Overview ────────────────────────────────────────────────
     const overviewSection = document.createElement('div');
@@ -203,6 +212,10 @@ export async function loadModelsSettings() {
     container.appendChild(buildAvailableModelsPanel(providers));
 
     // ── Provider Cards (edit/remove each) ────────────────────────────────
+    if (enterpriseProvidersManaged) {
+      return;
+    }
+
     const provHeader = document.createElement('div');
     provHeader.style.cssText =
       'display:flex;justify-content:space-between;align-items:center;margin-top:24px';
@@ -237,6 +250,91 @@ export async function loadModelsSettings() {
   } catch (e) {
     container.innerHTML = `<p style="color:var(--danger)">${t('Failed to load')}: ${esc(String(e))}</p>`;
   }
+}
+
+function updateModelsSettingsHero(enterpriseProvidersManaged: boolean): void {
+  const panel = $('settings-panel-models');
+  const title = panel?.querySelector<HTMLElement>('.settings-panel-hero-title');
+  const subtitle = panel?.querySelector<HTMLElement>('.settings-panel-hero-sub');
+  if (!title || !subtitle) {
+    return;
+  }
+
+  title.textContent = enterpriseProvidersManaged ? t('Enterprise Model Access') : t('Providers & Models');
+  subtitle.textContent = enterpriseProvidersManaged
+    ? t('View organization-managed credits, gateway, and available models')
+    : t('Add AI providers, manage API keys, and configure model routing');
+}
+
+function buildEnterpriseAccountSection(status: EnterpriseStatus): HTMLDivElement {
+  const section = document.createElement('div');
+  section.className = 'settings-subsection';
+  section.innerHTML = `<h3 class="settings-subsection-title">${t('Enterprise Account')}</h3>
+    <p class="settings-section-desc">${t('Your organization manages model access through the enterprise gateway.')}</p>`;
+
+  const rows = [
+    [t('Account'), status.user_email ?? '—'],
+    [t('Plan'), status.plan ?? '—'],
+    [t('Credits'), formatEnterpriseCredits(status.user_points)],
+    [t('Gateway'), status.gateway_url ?? '—'],
+  ];
+  const table = document.createElement('table');
+  table.style.cssText =
+    'width:100%;border-collapse:collapse;font-size:13px;margin:8px 0 16px 0';
+  table.innerHTML = `<tbody>${rows
+    .map(
+      ([label, value]) =>
+        `<tr style="border-bottom:1px solid var(--border-light, rgba(255,255,255,0.06))">
+          <th style="width:140px;padding:6px 12px 6px 0;text-align:left;color:var(--text-muted);font-weight:500">${esc(label)}</th>
+          <td style="padding:6px 12px;font-family:monospace;font-size:12px">${esc(value)}</td>
+        </tr>`,
+    )
+    .join('')}</tbody>`;
+  section.appendChild(table);
+  return section;
+}
+
+async function buildEnterpriseAvailableModelsSection(): Promise<HTMLDivElement> {
+  const section = document.createElement('div');
+  section.className = 'settings-subsection';
+  section.style.marginTop = '20px';
+  section.innerHTML = `<h3 class="settings-subsection-title">${t('Available Models')}</h3>
+    <p class="settings-section-desc">${t('These models are provided by your organization through the enterprise gateway.')}</p>`;
+
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;margin-top:12px';
+  section.appendChild(wrap);
+
+  try {
+    const models = await pawEngine.listProviderModels('enterprise-cloud');
+    if (!models.length) {
+      wrap.innerHTML = `<p style="color:var(--text-muted);font-size:13px;margin:0">${t('No models found — check URL and API key')}</p>`;
+      return section;
+    }
+
+    for (const model of models) {
+      const chip = document.createElement('span');
+      chip.style.cssText =
+        'display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--border);border-radius:999px;background:var(--bg-secondary);font-family:monospace;font-size:12px;color:var(--text-primary)';
+      chip.textContent = model.display_name || model.raw_id;
+      chip.title = model.raw_id;
+      wrap.appendChild(chip);
+    }
+  } catch (e) {
+    wrap.innerHTML = `<p style="color:var(--danger);font-size:13px;margin:0">${t('Failed to load')}: ${esc(String(e))}</p>`;
+  }
+
+  return section;
+}
+
+function formatEnterpriseCredits(points: number | undefined): string {
+  if (typeof points !== 'number' || !Number.isFinite(points)) {
+    return '—';
+  }
+  return new Intl.NumberFormat(undefined, {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(points);
 }
 
 function buildModelProxySection(config: EngineConfig): HTMLDivElement {
