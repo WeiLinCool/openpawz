@@ -38,9 +38,15 @@ Use `branding/taiji/brand.json` as the default template:
 - `identifier`: platform bundle identifier.
 - `logo`: startup/sidebar logo source image.
 - `favicon`: browser/dev favicon source image.
+- `avatarsDir`: optional directory of branded agent avatars named `1.png`, `2.png`, ... .
+- `avatarCount`: optional explicit avatar count when `avatarsDir` is used.
+- `defaultAvatar`: optional default avatar token. Use `"brand-logo"` to make the main agent use the brand logo directly.
 - `iconsDir` and `iconFiles`: Tauri package icons.
 
 Paths are resolved relative to the `brand.json` file.
+
+When `avatarsDir` is present, the build wrapper copies it into `.brand/public/brand/avatars`,
+and agent sprite rendering switches from `/src/assets/avatars/` to `/brand/avatars/` for that build.
 
 ## Build Commands
 

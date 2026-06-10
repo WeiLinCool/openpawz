@@ -17,6 +17,9 @@ interface BrandConfig {
   repositoryUrl: string;
   logoUrl: string;
   faviconUrl: string;
+  avatarBaseUrl: string;
+  avatarCount: number;
+  defaultAvatar: string;
 }
 
 const fallbackBrand: BrandConfig = {
@@ -31,6 +34,9 @@ const fallbackBrand: BrandConfig = {
   repositoryUrl: 'https://github.com/OpenPawz/openpawz',
   logoUrl: '/brand/logo.png',
   faviconUrl: '/brand/favicon.png',
+  avatarBaseUrl: '/src/assets/avatars',
+  avatarCount: 25,
+  defaultAvatar: '5',
 };
 
 function loadBrand(): BrandConfig {

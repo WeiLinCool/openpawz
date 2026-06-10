@@ -188,10 +188,7 @@ fn owner_password() -> String {
 /// `role` column vs `globalRole` relation, etc.).  This function
 /// introspects the actual schema via PRAGMA and adapts accordingly.
 fn reset_n8n_owner_in_db() -> Result<(), String> {
-    let base = dirs::home_dir()
-        .unwrap_or_else(|| std::path::PathBuf::from("."))
-        .join(".openpawz")
-        .join("n8n-data");
+    let base = openpawz_core::engine::paths::openpawz_data_dir().join("n8n-data");
 
     let candidates = [
         base.join(".n8n").join("database.sqlite"), // Process mode

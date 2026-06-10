@@ -7,6 +7,7 @@ import {
   AVATAR_COLORS,
   SPRITE_AVATARS,
   DEFAULT_AVATAR,
+  BRAND_LOGO_AVATAR,
 } from './atoms';
 
 // ── isAvatar ───────────────────────────────────────────────────────────
@@ -33,7 +34,7 @@ describe('spriteAvatar', () => {
   it('returns img tag for numeric avatar', () => {
     const html = spriteAvatar('5');
     expect(html).toContain('<img');
-    expect(html).toContain('/src/assets/avatars/5.png');
+    expect(html).toContain('/5.png');
   });
 
   it('respects size parameter', () => {
@@ -46,6 +47,12 @@ describe('spriteAvatar', () => {
     const html = spriteAvatar('🐱');
     expect(html).toContain('<span');
     expect(html).toContain('🐱');
+  });
+
+  it('returns brand logo for logo avatar token', () => {
+    const html = spriteAvatar(BRAND_LOGO_AVATAR);
+    expect(html).toContain('<img');
+    expect(html).toContain('/brand/logo.png');
   });
 });
 
@@ -105,7 +112,8 @@ describe('SPRITE_AVATARS', () => {
 });
 
 describe('DEFAULT_AVATAR', () => {
-  it('is "5"', () => {
-    expect(DEFAULT_AVATAR).toBe('5');
+  it('is configured', () => {
+    expect(typeof DEFAULT_AVATAR).toBe('string');
+    expect(DEFAULT_AVATAR.length).toBeGreaterThan(0);
   });
 });

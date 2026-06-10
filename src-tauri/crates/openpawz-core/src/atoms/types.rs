@@ -938,6 +938,77 @@ pub struct AgentMessage {
     pub created_at: String,
 }
 
+// ── Agent Templates (Remote Configuration) ───────────────────────────────────
+
+/// Personality configuration for agent templates.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TemplatePersonality {
+    pub tone: String,       // "casual", "balanced", "formal"
+    pub initiative: String, // "reactive", "balanced", "proactive"
+    pub detail: String,     // "brief", "balanced", "thorough"
+}
+
+impl Default for TemplatePersonality {
+    fn default() -> Self {
+        Self {
+            tone: "balanced".to_string(),
+            initiative: "balanced".to_string(),
+            detail: "balanced".to_string(),
+        }
+    }
+}
+
+/// A reusable agent template stored in the database.
+/// Templates can be created by admins and downloaded by users.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AgentTemplate {
+    pub id: String,
+    pub name: String,
+    pub icon: String,
+    pub description: String,
+    pub category: String,
+    pub model: String,
+    pub skills: Vec<String>,
+    pub system_prompt: String,
+    pub personality: TemplatePersonality,
+    pub boundaries: Vec<String>,
+    pub version: String,
+    pub author: String,
+    pub is_public: bool,
+    pub is_verified: bool,
+    pub popularity: u32,
+    pub tags: Vec<String>,
+    pub source: String, // "builtin", "remote", "custom"
+    pub created_at: String,
+    pub updated_at: String,
+}
+
+impl Default for AgentTemplate {
+    fn default() -> Self {
+        Self {
+            id: uuid::Uuid::new_v4().to_string(),
+            name: "Untitled Template".to_string(),
+            icon: "smart_toy".to_string(),
+            description: "".to_string(),
+            category: "productivity".to_string(),
+            model: "default".to_string(),
+            skills: vec!["web_search".to_string(), "read_file".to_string(), "write_file".to_string()],
+            system_prompt: "You are a helpful assistant.".to_string(),
+            personality: TemplatePersonality::default(),
+            boundaries: vec![],
+            version: "1.0.0".to_string(),
+            author: "admin".to_string(),
+            is_public: true,
+            is_verified: false,
+            popularity: 0,
+            tags: vec![],
+            source: "custom".to_string(),
+            created_at: chrono::Utc::now().to_rfc3339(),
+            updated_at: chrono::Utc::now().to_rfc3339(),
+        }
+    }
+}
+
 // ── Agent Squads ───────────────────────────────────────────────────────────
 
 /// A named group of agents that can be assigned goals collectively.

@@ -56,16 +56,13 @@ fn app_data_dir(app_handle: &tauri::AppHandle) -> std::path::PathBuf {
 /// Get the n8n data directory at a space-free path.
 ///
 /// node-gyp / native npm packages break when the install path contains
-/// spaces (macOS `~/Library/Application Support/...`).  We use
-/// `~/.openpawz/n8n-data` instead — no spaces, no node-gyp failures.
+/// spaces (macOS `~/Library/Application Support/...`).  We use a hidden
+/// home-directory path derived from the active install namespace instead.
 ///
 /// On first call, if old data exists at `<app_data_dir>/n8n-data`, it is
 /// moved to the new location automatically.
 pub fn n8n_data_dir(app_handle: &tauri::AppHandle) -> std::path::PathBuf {
-    let new_dir = dirs::home_dir()
-        .unwrap_or_else(|| std::path::PathBuf::from("."))
-        .join(".openpawz")
-        .join("n8n-data");
+    let new_dir = openpawz_core::engine::paths::openpawz_data_dir().join("n8n-data");
 
     // Migrate from old location if it exists and new one doesn't
     let old_dir = app_data_dir(app_handle).join("n8n-data");

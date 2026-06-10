@@ -435,6 +435,55 @@ impl EngineState {
                     info!("[engine] Enterprise build mode enabled");
                 }
             }
+        } else {
+            let mut config_changed = false;
+            let enterprise_config = store
+                .get_config(crate::commands::enterprise::ENTERPRISE_CONFIG_KEY)
+                .ok()
+                .flatten()
+                .and_then(|json| {
+                    serde_json::from_str::<crate::commands::enterprise::EnterpriseConfig>(&json)
+                        .ok()
+                });
+
+            if enterprise_config
+                .as_ref()
+                .is_some_and(|cfg| cfg.enabled || !cfg.access_token.trim().is_empty())
+            {
+                if let Ok(json) = serde_json::to_string(
+                    &crate::commands::enterprise::EnterpriseConfig::default(),
+                ) {
+                    store
+                        .set_config(crate::commands::enterprise::ENTERPRISE_CONFIG_KEY, &json)
+                        .ok();
+                    info!("[engine] Cleared stale enterprise configuration for non-enterprise build");
+                }
+            }
+
+            if config.providers.iter().any(|p| {
+                p.id == crate::commands::enterprise::ENTERPRISE_PROVIDER_ID
+            }) {
+                config
+                    .providers
+                    .retain(|p| p.id != crate::commands::enterprise::ENTERPRISE_PROVIDER_ID);
+                if config.default_provider.as_deref()
+                    == Some(crate::commands::enterprise::ENTERPRISE_PROVIDER_ID)
+                {
+                    config.default_provider = config.providers.first().map(|p| p.id.clone());
+                    config.default_model = config
+                        .default_provider
+                        .as_ref()
+                        .and_then(|id| config.providers.iter().find(|p| &p.id == id))
+                        .and_then(|p| p.default_model.clone());
+                }
+                config_changed = true;
+            }
+
+            if config_changed {
+                if let Ok(json) = serde_json::to_string(&config) {
+                    store.set_config("engine_config", &json).ok();
+                }
+            }
         }
 
         // Read max_concurrent_runs from config (default 4)

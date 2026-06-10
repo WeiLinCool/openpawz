@@ -12,6 +12,7 @@ import { escHtml, escAttr, confirmModal } from '../../components/helpers';
 import { showToast } from '../../components/toast';
 import { type Agent, TOOL_GROUPS, SPRITE_AVATARS, spriteAvatar } from './atoms';
 import { type EditorCallbacks } from './creator';
+import { t } from '../../i18n';
 
 // Re-export so index.ts can import both from one place
 export { openAgentCreator, type EditorCallbacks } from './creator';
@@ -185,7 +186,7 @@ function buildEditorHtml(agent: Agent, availableModels: { id: string; name: stri
           </div>
 
           <div class="form-group">
-            <label class="form-label">Boundaries & Rules</label>
+            <label class="form-label">${t('Boundaries & Rules')}</label>
             <div class="agent-boundaries" id="agent-boundaries">
               ${agent.boundaries
                 .map(
@@ -198,7 +199,7 @@ function buildEditorHtml(agent: Agent, availableModels: { id: string; name: stri
                 )
                 .join('')}
             </div>
-            <button class="btn btn-ghost btn-sm" id="agent-add-boundary">+ Add rule</button>
+            <button class="btn btn-ghost btn-sm" id="agent-add-boundary">+ ${t('Add rule')}</button>
           </div>
 
           ${

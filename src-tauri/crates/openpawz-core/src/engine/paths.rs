@@ -1,11 +1,11 @@
 // Paw Engine — Centralized path management
 //
 // All paths under the Paw data root are resolved through this module.
-// Default root: `~/.paw/`.  Users can override via a redirect file
-// at `~/.paw/storage.conf` (single line: the new root path).
+// Default roots are namespaced per installed app variant so personal and
+// enterprise builds can coexist without sharing engine state.
 //
-// The redirect file lives at the DEFAULT location so we can always
-// find it — even when the data itself has been moved elsewhere.
+// Users can override the active variant's root via a redirect file at
+// `{default_root}/storage.conf` (single line: the new root path).
 
 use std::path::PathBuf;
 use std::sync::RwLock;
@@ -14,12 +14,29 @@ use std::sync::RwLock;
 /// `None` → use default `~/.paw/`.  `Some(path)` → user-configured root.
 static DATA_ROOT_OVERRIDE: RwLock<Option<PathBuf>> = RwLock::new(None);
 
-/// The fixed location of the redirect file (always `~/.paw/storage.conf`).
-fn storage_conf_path() -> Option<PathBuf> {
-    dirs::home_dir().map(|h| h.join(".paw").join("storage.conf"))
+const BUILD_EDITION: Option<&str> = option_env!("OPENPAWZ_BUILD_EDITION");
+const BRAND_ID: Option<&str> = option_env!("OPENPAWZ_BRAND_ID");
+
+pub fn install_namespace() -> String {
+    let brand = BRAND_ID.unwrap_or("taiji").trim().to_ascii_lowercase();
+    let edition = BUILD_EDITION.unwrap_or("").trim().to_ascii_lowercase();
+    match edition.as_str() {
+        "enterprise" => format!("{brand}-enterprise"),
+        _ => brand,
+    }
 }
 
-/// Load the data root override from `~/.paw/storage.conf`.
+fn namespaced_hidden_dir(prefix: &str) -> PathBuf {
+    let home = dirs::home_dir().unwrap_or_else(|| PathBuf::from("."));
+    home.join(format!(".{}-{}", prefix, install_namespace()))
+}
+
+/// The fixed location of the redirect file for the active install namespace.
+fn storage_conf_path() -> Option<PathBuf> {
+    Some(default_data_dir().join("storage.conf"))
+}
+
+/// Load the data root override from `{default_root}/storage.conf`.
 /// Called once at app startup (before SessionStore::open).
 pub fn load_data_root_from_conf() {
     if let Some(conf) = storage_conf_path() {
@@ -41,15 +58,19 @@ pub fn load_data_root_from_conf() {
             }
         }
     }
-    log::info!("[paths] Using default data root (~/.paw/)");
+    log::info!(
+        "[paths] Using default data root ({})",
+        default_data_dir().display()
+    );
 }
 
-/// Persist the data root override to `~/.paw/storage.conf`.
+/// Persist the data root override to the active install namespace's storage.conf.
 pub fn save_data_root_to_conf(path: Option<&str>) -> Result<(), String> {
     let conf = storage_conf_path().ok_or("Cannot determine home directory")?;
-    // Ensure ~/.paw/ exists
+    // Ensure the active default root exists
     if let Some(parent) = conf.parent() {
-        std::fs::create_dir_all(parent).map_err(|e| format!("Cannot create ~/.paw/: {}", e))?;
+        std::fs::create_dir_all(parent)
+            .map_err(|e| format!("Cannot create '{}': {}", parent.display(), e))?;
     }
     match path {
         Some(p) if !p.is_empty() => {
@@ -78,10 +99,9 @@ pub fn get_data_root_override() -> Option<PathBuf> {
 
 // ── Root ───────────────────────────────────────────────────────────────
 
-/// The default data root: `~/.paw/`
+/// The default data root for the active install namespace.
 pub fn default_data_dir() -> PathBuf {
-    let home = dirs::home_dir().unwrap_or_else(|| PathBuf::from("."));
-    home.join(".paw")
+    namespaced_hidden_dir("paw")
 }
 
 /// The root data directory for all Paw engine data.
@@ -92,6 +112,11 @@ pub fn paw_data_dir() -> PathBuf {
         return p.clone();
     }
     default_data_dir()
+}
+
+/// Shared root for n8n/Node artifacts for the active install namespace.
+pub fn openpawz_data_dir() -> PathBuf {
+    namespaced_hidden_dir("openpawz")
 }
 
 // ── Derived paths ──────────────────────────────────────────────────────

@@ -4,6 +4,7 @@
 // and delegates message rendering / sending to the existing chat_controller.
 // Reads session/agent state from appState and the pawEngine IPC.
 
+import { t } from '../../i18n';
 import { pawEngine } from '../../engine';
 import {
   appState,
@@ -15,6 +16,7 @@ import {
 import { showToast } from '../../components/toast';
 import { confirmModal, promptModal, escHtml, parseDate } from '../../components/helpers';
 import * as AgentsModule from '../../views/agents';
+import { DEFAULT_AVATAR } from '../../views/agents/atoms';
 import {
   type ConversationEntry,
   filterConversations,
@@ -216,7 +218,7 @@ export async function refreshConversationList(): Promise<void> {
         sessionKey: session.key,
         agentId,
         agentName: agent?.name ?? 'Paw',
-        agentAvatar: agent?.avatar ?? '5',
+        agentAvatar: agent?.avatar ?? DEFAULT_AVATAR,
         agentColor: agent?.color ?? 'var(--accent)',
         lastMessage,
         lastRole,
@@ -241,7 +243,7 @@ export async function refreshConversationList(): Promise<void> {
         sessionKey: session.key,
         agentId,
         agentName: agent?.name ?? 'Paw',
-        agentAvatar: agent?.avatar ?? '5',
+        agentAvatar: agent?.avatar ?? DEFAULT_AVATAR,
         agentColor: agent?.color ?? 'var(--accent)',
         lastMessage: '',
         lastRole: 'user',
@@ -377,7 +379,7 @@ async function handleNewGroup(): Promise<void> {
   // Build agent multi-select overlay
   const agents = AgentsModule.getAgents();
   if (agents.length < 2) {
-    showToast('You need at least 2 agents to create a group chat', 'error');
+    showToast(t('You need at least 2 agents to create a group chat'), 'error');
     return;
   }
 
@@ -391,11 +393,11 @@ async function handleNewGroup(): Promise<void> {
     <h3 class="inbox-group-modal-title">New Group Chat</h3>
     <label class="inbox-group-modal-label">Group Name</label>
     <input type="text" class="inbox-group-name-input" placeholder="e.g. Research Team" />
-    <label class="inbox-group-modal-label">Select Agents</label>
+    <label class="inbox-group-modal-label">${t('Select Agents')}</label>
     <div class="inbox-group-agent-list"></div>
     <div class="inbox-group-modal-actions">
-      <button class="inbox-group-cancel">Cancel</button>
-      <button class="inbox-group-create">Create Group</button>
+      <button class="inbox-group-cancel">${t('Cancel')}</button>
+      <button class="inbox-group-create">${t('Create Group')}</button>
     </div>
   `;
 
@@ -440,7 +442,7 @@ async function handleNewGroup(): Promise<void> {
     createBtn.addEventListener('click', async () => {
       const name = nameInput.value.trim();
       if (selected.size < 2) {
-        showToast('Select at least 2 agents for a group chat', 'error');
+        showToast(t('Select at least 2 agents for a group chat'), 'error');
         return;
       }
       if (!name) {
@@ -496,7 +498,7 @@ async function handleNewGroup(): Promise<void> {
           .join(', ');
         _thread.setAgent(
           name,
-          agents.find((a) => a.id === primaryAgentId)?.avatar ?? '5',
+          agents.find((a) => a.id === primaryAgentId)?.avatar ?? DEFAULT_AVATAR,
           agents.find((a) => a.id === primaryAgentId)?.color ?? 'var(--accent)',
           `Group: ${memberNames}`,
         );
@@ -539,7 +541,7 @@ async function handleSwapAgent(agentId: string): Promise<void> {
   if (conv) {
     conv.agentId = agentId;
     conv.agentName = agent?.name ?? 'Paw';
-    conv.agentAvatar = agent?.avatar ?? '5';
+    conv.agentAvatar = agent?.avatar ?? DEFAULT_AVATAR;
     conv.agentColor = agent?.color ?? 'var(--accent)';
   }
 

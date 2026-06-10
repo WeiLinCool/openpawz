@@ -185,6 +185,9 @@ export const appState = {
   // Core config (loaded from localStorage)
   config: { configured: false } as AppConfig,
 
+  // User role for permissions (admin, user, etc.)
+  userRole: 'user' as 'admin' | 'user' | 'moderator', // Default role
+
   // Chat
   messages: [] as MessageWithAttachments[],
   /** Derived: true when any session has an active stream. */
@@ -285,5 +288,12 @@ export function persistGroupSessionMap(): void {
     localStorage.setItem('paw_group_sessions', JSON.stringify([...groupSessionMap.entries()]));
   } catch {
     /* ignore */
+  }
+}
+
+// ── Type declarations ──────────────────────────────────────────────────────
+declare global {
+  interface Window {
+    appState?: typeof appState;
   }
 }

@@ -23,7 +23,9 @@ if (isDev && env.OPENPAWZ_ENTERPRISE_RESET_SESSION !== '0') {
 }
 
 function resetEnterpriseSession() {
-  const dbPath = join(homedir(), '.paw', 'engine.db');
+  const brandId = (env.OPENPAWZ_BRAND_ID || 'taiji').trim().toLowerCase();
+  const namespace = `${brandId}-enterprise`;
+  const dbPath = join(homedir(), `.paw-${namespace}`, 'engine.db');
   if (!existsSync(dbPath)) return;
 
   spawnSync(

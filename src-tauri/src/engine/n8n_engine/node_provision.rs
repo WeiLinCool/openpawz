@@ -1,8 +1,8 @@
 // n8n_engine/node_provision.rs — Auto-download Node.js for .exe / .dmg users
 //
 // When neither Docker nor a system Node.js ≥ 18 is available, we download
-// a standalone Node.js binary from nodejs.org and extract it to
-// `~/.openpawz/node/`.  This gives .exe / .dmg users a zero-setup
+// a standalone Node.js binary from nodejs.org and extract it to the active
+// install namespace's hidden data root. This gives .exe / .dmg users a zero-setup
 // experience — they never have to install Node.js manually.
 //
 // The binary is **not** added to PATH; we use the full path internally
@@ -21,7 +21,7 @@ use std::path::{Path, PathBuf};
 /// Node 24 LTS is supported until April 2028.
 const NODE_VERSION: &str = "24.14.0";
 
-/// Subdirectory under `~/.openpawz/` where the Node.js tarball is extracted.
+/// Subdirectory under the namespaced hidden data root where Node.js is extracted.
 const NODE_DIR_NAME: &str = "node";
 
 // ── Public API ─────────────────────────────────────────────────────────
@@ -29,7 +29,7 @@ const NODE_DIR_NAME: &str = "node";
 /// Return the path to a usable `node` binary.
 ///
 /// 1. Check system `node` (version ≥ 18) → return `PathBuf::from("node")`
-/// 2. Check local `~/.openpawz/node/bin/node` → return full path
+/// 2. Check local namespaced `node/bin/node` → return full path
 /// 3. Neither → `None`
 pub fn local_node_binary() -> Option<PathBuf> {
     // Prefer system node if it meets version requirement
@@ -224,12 +224,9 @@ fn cleanup_old_versions() {
 
 // ── Path helpers ───────────────────────────────────────────────────────
 
-/// Root directory: `~/.openpawz/node/`
+/// Root directory for auto-provisioned Node.js in the active install namespace.
 fn node_dir() -> PathBuf {
-    dirs::home_dir()
-        .unwrap_or_else(|| PathBuf::from("."))
-        .join(".openpawz")
-        .join(NODE_DIR_NAME)
+    openpawz_core::engine::paths::openpawz_data_dir().join(NODE_DIR_NAME)
 }
 
 /// The directory name inside the tarball/zip, e.g. `node-v22.14.0-darwin-arm64`.

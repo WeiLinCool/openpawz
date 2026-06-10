@@ -89,6 +89,7 @@ import {
   applyEnterpriseNavigationPolicy,
   isEnterpriseMode,
 } from './enterprise-ui';
+import { BRAND_LOGO_AVATAR } from './views/agents/atoms';
 
 // ── Tauri bridge ─────────────────────────────────────────────────────────
 interface TauriWindow {
@@ -270,7 +271,7 @@ async function connectEngine(): Promise<boolean> {
     if (chatAgentName) {
       chatAgentName.innerHTML = initAgent
         ? `${AgentsModule.spriteAvatar(initAgent.avatar, 20)} ${escHtml(initAgent.name)}`
-        : `${AgentsModule.spriteAvatar('5', 20)} Paw`;
+        : `${AgentsModule.spriteAvatar(BRAND_LOGO_AVATAR, 20)} Paw`;
     }
     if (chatAvatarEl && initAgent)
       chatAvatarEl.innerHTML = AgentsModule.spriteAvatar(initAgent.avatar, 32);

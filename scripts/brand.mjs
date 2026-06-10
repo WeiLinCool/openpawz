@@ -1,6 +1,16 @@
 #!/usr/bin/env node
 
-import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  copyFileSync,
+  cpSync,
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
@@ -124,12 +134,16 @@ export function prepareBrand(brandId, overrides = {}) {
   const logoPath = resolveBrandPath(brandDir, brand.logo);
   const faviconPath = resolveBrandPath(brandDir, brand.favicon);
   const iconsDir = resolveBrandPath(brandDir, brand.iconsDir);
+  const avatarsDir = resolveBrandPath(brandDir, brand.avatarsDir);
 
   if (!existsSync(logoPath)) {
     throw new Error(`Brand logo not found: ${path.relative(repoRoot, logoPath)}`);
   }
   if (iconsDir && !existsSync(iconsDir)) {
     throw new Error(`Brand iconsDir not found: ${path.relative(repoRoot, iconsDir)}`);
+  }
+  if (avatarsDir && !existsSync(avatarsDir)) {
+    throw new Error(`Brand avatarsDir not found: ${path.relative(repoRoot, avatarsDir)}`);
   }
 
   rmSync(generatedPublicRoot, { recursive: true, force: true });
@@ -138,6 +152,28 @@ export function prepareBrand(brandId, overrides = {}) {
   if (faviconPath && existsSync(faviconPath)) {
     copyFileSync(faviconPath, path.join(generatedPublicRoot, 'brand', 'favicon.png'));
   }
+
+  let avatarBaseUrl = '/src/assets/avatars';
+  let avatarCount = Number.isFinite(brand.avatarCount) ? Number(brand.avatarCount) : null;
+  if (avatarsDir) {
+    const generatedAvatarsDir = path.join(generatedPublicRoot, 'brand', 'avatars');
+    mkdirSync(path.dirname(generatedAvatarsDir), { recursive: true });
+    cpSync(avatarsDir, generatedAvatarsDir, { recursive: true });
+    avatarBaseUrl = '/brand/avatars';
+
+    if (avatarCount == null) {
+      avatarCount = readdirSync(generatedAvatarsDir).filter((entry) => {
+        const entryPath = path.join(generatedAvatarsDir, entry);
+        return statSync(entryPath).isFile() && /^\d+\.(png|webp|jpg|jpeg|svg)$/i.test(entry);
+      }).length;
+    }
+  }
+
+  if (avatarCount == null || Number.isNaN(avatarCount) || avatarCount < 1) {
+    avatarCount = 25;
+  }
+
+  const defaultAvatar = brand.defaultAvatar ? String(brand.defaultAvatar) : '5';
 
   const activeBrand = {
     id: brand.id,
@@ -151,6 +187,9 @@ export function prepareBrand(brandId, overrides = {}) {
     repositoryUrl: brand.repositoryUrl ?? '',
     logoUrl: '/brand/logo.png',
     faviconUrl: faviconPath && existsSync(faviconPath) ? '/brand/favicon.png' : '/brand/logo.png',
+    avatarBaseUrl,
+    avatarCount,
+    defaultAvatar,
   };
 
   mkdirSync(generatedRoot, { recursive: true });
@@ -204,23 +243,30 @@ function main() {
     return;
   }
 
+  const childEnv = {
+    ...process.env,
+    OPENPAWZ_BUILD_EDITION: '',
+    OPENPAWZ_ENTERPRISE_ISSUER_URL: '',
+    OPENPAWZ_ENTERPRISE_CLIENT_ID: '',
+    OPENPAWZ_ENTERPRISE_DEFAULT_MODEL: '',
+    OPENPAWZ_ENTERPRISE_RESET_SESSION: '',
+    OPENPAWZ_BRAND: activeBrand.id,
+    OPENPAWZ_ACTIVE_BRAND_FILE: activeBrandFile,
+    OPENPAWZ_BRAND_ID: activeBrand.id,
+    OPENPAWZ_APP_NAME: activeBrand.appName,
+    OPENPAWZ_SHORT_NAME: activeBrand.shortName,
+    OPENPAWZ_PRODUCT_NAME: activeBrand.productName,
+    OPENPAWZ_WINDOW_TITLE: activeBrand.windowTitle,
+    OPENPAWZ_REPOSITORY_URL: activeBrand.repositoryUrl,
+    OPENPAWZ_TAGLINE: activeBrand.tagline,
+    OPENPAWZ_ABOUT_LINE: activeBrand.aboutLine,
+    ...overridesToEnv(overrides),
+  };
+
   const result = spawnSync('pnpm', ['exec', ...withTauriConfig(command)], {
     cwd: repoRoot,
     stdio: 'inherit',
-    env: {
-      ...process.env,
-      OPENPAWZ_BRAND: activeBrand.id,
-      OPENPAWZ_ACTIVE_BRAND_FILE: activeBrandFile,
-      OPENPAWZ_BRAND_ID: activeBrand.id,
-      OPENPAWZ_APP_NAME: activeBrand.appName,
-      OPENPAWZ_SHORT_NAME: activeBrand.shortName,
-      OPENPAWZ_PRODUCT_NAME: activeBrand.productName,
-      OPENPAWZ_WINDOW_TITLE: activeBrand.windowTitle,
-      OPENPAWZ_REPOSITORY_URL: activeBrand.repositoryUrl,
-      OPENPAWZ_TAGLINE: activeBrand.tagline,
-      OPENPAWZ_ABOUT_LINE: activeBrand.aboutLine,
-      ...overridesToEnv(overrides),
-    },
+    env: childEnv,
     shell: process.platform === 'win32',
   });
 

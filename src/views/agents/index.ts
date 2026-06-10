@@ -4,7 +4,14 @@
 import { pawEngine, type BackendAgent } from '../../engine';
 import { isEngineMode } from '../../engine-bridge';
 import { listen } from '@tauri-apps/api/event';
-import { type Agent, AVATAR_COLORS, SPRITE_AVATARS, DEFAULT_AVATAR, isAvatar } from './atoms';
+import {
+  type Agent,
+  AVATAR_COLORS,
+  SPRITE_AVATARS,
+  DEFAULT_AVATAR,
+  BRAND_LOGO_AVATAR,
+  isAvatar,
+} from './atoms';
 import { renderAgents } from './molecules';
 import { openAgentCreator, openAgentEditor } from './editor';
 import { seedSoulFiles, refreshAvailableModels } from './helpers';
@@ -20,8 +27,8 @@ import {
   renderActivityList,
   renderTemplateGrid,
   initAgentsKinetic,
-  AGENT_TEMPLATE_CATALOG,
 } from '../../components/agents-panel';
+import { templateLoader } from '../../engine/template-loader';
 
 // ── Module state ────────────────────────────────────────────────────────────
 
@@ -108,11 +115,11 @@ export async function loadAgents() {
     _agents.forEach((a) => {
       if (!a.source) a.source = 'local';
     });
-    // Migrate ANY non-numeric avatar to a new Pawz Boi avatar
+    // Migrate unknown legacy avatars to numeric sprites, but preserve the brand logo token.
     let migrated = false;
     const usedNums = new Set<number>();
     _agents.forEach((a) => {
-      if (!/^\d+$/.test(a.avatar)) {
+      if (a.avatar !== BRAND_LOGO_AVATAR && !/^\d+$/.test(a.avatar)) {
         let num: number;
         do {
           num = Math.floor(Math.random() * 50) + 1;
@@ -138,7 +145,7 @@ export async function loadAgents() {
     _agents.unshift({
       id: 'default',
       name: 'Pawz',
-      avatar: DEFAULT_AVATAR,
+      avatar: BRAND_LOGO_AVATAR,
       color: AVATAR_COLORS[0],
       bio: 'Your main AI agent',
       model: 'default',
@@ -285,6 +292,13 @@ export function initAgents() {
   loadAgents();
   initProfileUpdateListener();
 
+  // Seed builtin templates on first load (non-blocking)
+  if (isEngineMode()) {
+    templateLoader.seedBuiltinTemplates().catch(error => {
+      console.error('[agents] Failed to seed builtin templates:', error);
+    });
+  }
+
   // Render template marketplace + kinetic animations
   renderTemplateGrid((templateId) => _installTemplate(templateId));
   initAgentsKinetic();
@@ -317,47 +331,62 @@ export function initAgents() {
   document.getElementById('agents-qa-import')?.addEventListener('click', () => {
     _importConfig();
   });
+  
+  // Set admin status - in a real env this would depend on user permissions
+  // For now we're providing a hook for how to set it
+  function initializeUserPermissions() {
+    // In a real implementation, this would verify with backend
+    // via API call: pawEngine.getCurrentUserPermissions()
+    // For MVP, admin permissions can be set via app settings
+    try {
+      // Example: Check if admin has been enabled via a dev configuration
+      if (typeof window !== 'undefined' && window.appState) {
+        // Check for a specific development flag
+        if (localStorage.getItem('paw_is_dev_admin') === 'true') {
+          window.appState.userRole = 'admin';
+        } else {
+          window.appState.userRole = 'user'; // default
+        }
+      }
+    } catch (error) {
+      console.debug('[agents] Could not initialize admin status:', error);
+    }
+  }
+  initializeUserPermissions();
 }
 
 /** Install an agent from a template */
-function _installTemplate(templateId: string) {
-  const tpl = AGENT_TEMPLATE_CATALOG.find((t) => t.id === templateId);
-  if (!tpl) return;
-
-  // Create a new agent from the template
-  const agent: Agent = {
-    id: `${tpl.id}-${Date.now()}`,
-    name: tpl.name,
-    avatar: String(Math.floor(Math.random() * 25) + 1),
-    color: AVATAR_COLORS[_agents.length % AVATAR_COLORS.length],
-    bio: tpl.desc,
-    model: tpl.model || 'default',
-    template: 'custom',
-    personality: tpl.personality as Agent['personality'],
-    skills: tpl.skills,
-    boundaries: [],
-    systemPrompt: tpl.systemPrompt,
-    createdAt: new Date().toISOString(),
-    source: 'local',
-  };
-
-  _agents.push(agent);
-  saveAgents();
-  _renderAgents();
-
-  // Flash the install button as feedback
-  const btn = document.querySelector(`[data-tpl-id="${templateId}"]`) as HTMLElement | null;
-  if (btn) {
-    btn.textContent = '✓ Installed';
-    btn.style.background = 'var(--accent)';
-    btn.style.color = 'var(--bg-primary)';
-    btn.style.borderColor = 'var(--accent)';
-    setTimeout(() => {
-      btn.innerHTML = '<span class="ms ms-sm">download</span> Install';
-      btn.style.background = '';
-      btn.style.color = '';
-      btn.style.borderColor = '';
-    }, 2000);
+async function _installTemplate(templateId: string) {
+  try {
+    // Use the template loader API to install the template
+    const result = await templateLoader.installTemplate(templateId);
+    
+    if (!result.success) {
+      console.error('[agents] Failed to install template:', result.error);
+      return;
+    }
+    
+    // Update UI to reflect the installation
+    // Flash the install button as feedback
+    const btn = document.querySelector(`[data-tpl-id="${templateId}"]`) as HTMLElement | null;
+    if (btn) {
+      btn.textContent = '✓ Installed';
+      btn.style.background = 'var(--accent)';
+      btn.style.color = 'var(--bg-primary)';
+      btn.style.borderColor = 'var(--accent)';
+      setTimeout(() => {
+        btn.innerHTML = '<span class="ms ms-sm">download</span> Install';
+        btn.style.background = '';
+        btn.style.color = '';
+        btn.style.borderColor = '';
+      }, 2000);
+    }
+    
+    // Refresh the agents list to include the newly installed agent
+    loadAgents(); // This should fetch any new backend-created agents
+    
+  } catch (error) {
+    console.error('[agents] Install template error:', error);
   }
 }
 

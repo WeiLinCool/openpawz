@@ -578,6 +578,51 @@ pub fn run_migrations(conn: &Connection) -> EngineResult<()> {
     )
     .ok();
 
+    // ── Agent Templates (Remote Configuration) ──────────────────────
+    conn.execute_batch(
+        "
+        CREATE TABLE IF NOT EXISTS agent_templates (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            icon TEXT NOT NULL DEFAULT 'smart_toy',
+            description TEXT NOT NULL DEFAULT '',
+            category TEXT NOT NULL DEFAULT 'productivity',
+            model TEXT NOT NULL DEFAULT 'default',
+            skills TEXT NOT NULL DEFAULT '[]',
+            system_prompt TEXT NOT NULL DEFAULT '',
+            personality TEXT NOT NULL DEFAULT '{}',
+            boundaries TEXT NOT NULL DEFAULT '[]',
+            version TEXT NOT NULL DEFAULT '1.0.0',
+            author TEXT NOT NULL DEFAULT 'admin',
+            is_public INTEGER NOT NULL DEFAULT 1,
+            is_verified INTEGER NOT NULL DEFAULT 0,
+            popularity INTEGER NOT NULL DEFAULT 0,
+            tags TEXT NOT NULL DEFAULT '[]',
+            source TEXT NOT NULL DEFAULT 'builtin',
+            created_at TEXT NOT NULL DEFAULT (datetime('now')),
+            updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+        CREATE INDEX IF NOT EXISTS idx_agent_templates_category ON agent_templates(category);
+        CREATE INDEX IF NOT EXISTS idx_agent_templates_public ON agent_templates(is_public);
+        CREATE INDEX IF NOT EXISTS idx_agent_templates_popularity ON agent_templates(popularity DESC);
+        ",
+    )
+    .ok();
+
+    // ── Template Sync Status (Version Tracking) ─────────────────────
+    conn.execute_batch(
+        "
+        CREATE TABLE IF NOT EXISTS template_sync_status (
+            template_id TEXT PRIMARY KEY,
+            local_version TEXT NOT NULL,
+            remote_version TEXT NOT NULL,
+            last_synced_at TEXT NOT NULL DEFAULT (datetime('now')),
+            needs_update INTEGER NOT NULL DEFAULT 0
+        );
+        ",
+    )
+    .ok();
+
     Ok(())
 }
 

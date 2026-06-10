@@ -3,6 +3,8 @@
 // Pure functions for tool policy evaluation. No side effects.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { t } from '../../i18n';
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 /**
@@ -255,8 +257,8 @@ export const POLICY_PRESETS: Record<
   { label: string; description: string; policy: ToolPolicy }
 > = {
   unrestricted: {
-    label: 'Unrestricted',
-    description: 'Full access to all tools — no approval required',
+    label: t('Unrestricted'),
+    description: t('Full access to all tools — no approval required'),
     policy: {
       mode: 'unrestricted' as const,
       allowed: [],
@@ -266,18 +268,18 @@ export const POLICY_PRESETS: Record<
     },
   },
   standard: {
-    label: 'Standard',
-    description: 'All tools available, high-risk tools require approval (default)',
+    label: t('Standard'),
+    description: t('All tools available, high-risk tools require approval (default)'),
     policy: DEFAULT_POLICY,
   },
   readonly: {
-    label: 'Read-Only',
-    description: 'Only read/search tools — no modifications',
+    label: t('Read-Only'),
+    description: t('Only read/search tools — no modifications'),
     policy: READONLY_POLICY,
   },
   sandbox: {
-    label: 'Sandbox',
-    description: 'Web search and memory only — no file or exec access',
+    label: t('Sandbox'),
+    description: t('Web search and memory only — no file or exec access'),
     policy: {
       mode: 'allowlist',
       allowed: ['web_search', 'web_read', 'memory_store', 'memory_search', 'self_info'],

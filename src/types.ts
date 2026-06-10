@@ -6,6 +6,36 @@ export interface AppConfig {
   configured: boolean;
 }
 
+// ── Agent Template Types (for backend integration) ─────────────────────────────────
+
+export interface TemplatePersonality {
+  tone: string;      // "casual", "balanced", "formal"
+  initiative: string; // "reactive", "balanced", "proactive"  
+  detail: string;    // "brief", "balanced", "thorough"
+}
+
+export interface AgentTemplate {
+  id: string;
+  name: string;
+  icon: string; // Material Symbol name
+  description: string;
+  category: string;
+  model: string;
+  skills: string[];
+  systemPrompt: string;
+  personality: TemplatePersonality;
+  boundaries: string[];
+  version: string;
+  author: string;
+  isPublic: boolean;
+  isVerified: boolean;
+  popularity: number;
+  tags: string[];
+  source: string; // "builtin", "remote", "custom"
+  createdAt: string;
+  updatedAt: string;
+}
+
 // ── Agents ─────────────────────────────────────────────────────────────────
 
 export interface AgentSummary {

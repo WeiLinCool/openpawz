@@ -6,6 +6,7 @@
 // localStorage, so XSS in the webview cannot tamper with them.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { t } from '../../i18n';
 import {
   type ToolPolicy,
   type PolicyDecision,
@@ -97,12 +98,12 @@ export function getAgentPolicySummary(agentId: string): string {
   const policy = getAgentPolicy(agentId);
   switch (policy.mode) {
     case 'unrestricted':
-      return 'Unrestricted';
+      return t('Unrestricted');
     case 'allowlist':
       return `${policy.allowed.length} tools allowed`;
     case 'denylist':
       return `${policy.denied.length} tools blocked`;
     default:
-      return 'Unrestricted';
+      return t('Unrestricted');
   }
 }

@@ -2,6 +2,7 @@
 // NO pawEngine, NO document.*, NO Tauri imports allowed here
 
 import { t } from '../../i18n';
+import { brand } from '../../brand';
 
 export interface Agent {
   id: string;
@@ -146,11 +147,12 @@ export const AVATAR_COLORS = [
 ];
 
 // ── Avatars ────────────────────────────────────────────────────────────────
-// OpenPawz avatar set (PNGs in /src/assets/avatars/)
-export const SPRITE_AVATARS = Array.from({ length: 25 }, (_, i) => String(i + 1));
+// Brand-provided avatar set. Falls back to the built-in OpenPawz sprites.
+export const SPRITE_AVATARS = Array.from({ length: brand.avatarCount }, (_, i) => String(i + 1));
+export const BRAND_LOGO_AVATAR = 'brand-logo';
 
 /** Default avatar for the main Pawz agent */
-export const DEFAULT_AVATAR = '5';
+export const DEFAULT_AVATAR = brand.defaultAvatar;
 
 /** Check if avatar string is a numeric avatar ID vs a legacy emoji */
 export function isAvatar(avatar: string): boolean {
@@ -159,11 +161,14 @@ export function isAvatar(avatar: string): boolean {
 
 /** Render an agent avatar as an <img> or legacy emoji <span> */
 export function spriteAvatar(avatar: string, size = 32): string {
+  if (avatar === BRAND_LOGO_AVATAR) {
+    return `<img src="${brand.logoUrl}" alt="" width="${size}" height="${size}" style="display:block;border-radius:50%">`;
+  }
   if (isAvatar(avatar)) {
-    // Clamp to available avatar range (1–25)
+    // Clamp to available avatar range for the active brand.
     let id = parseInt(avatar, 10);
     if (id < 1 || id > SPRITE_AVATARS.length) id = ((id - 1) % SPRITE_AVATARS.length) + 1;
-    return `<img src="/src/assets/avatars/${id}.png" alt="" width="${size}" height="${size}" style="display:block;border-radius:50%">`;
+    return `<img src="${brand.avatarBaseUrl}/${id}.png" alt="" width="${size}" height="${size}" style="display:block;border-radius:50%">`;
   }
   // Legacy emoji fallback — escape to prevent XSS from config-injected values
   const safe = avatar

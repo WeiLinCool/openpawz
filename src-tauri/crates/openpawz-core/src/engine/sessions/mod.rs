@@ -25,6 +25,7 @@ use std::sync::Arc;
 
 mod agent_files;
 mod agent_messages;
+mod agent_templates;
 mod canvas;
 pub mod community_skills;
 mod config;

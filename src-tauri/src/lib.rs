@@ -391,6 +391,11 @@ pub fn run() {
             commands::skills::engine_pawzhub_search,
             commands::skills::engine_pawzhub_browse,
             commands::skills::engine_pawzhub_install,
+            // ── Agent Templates (Remote Configuration) ──
+            commands::templates::list_agent_templates,
+            commands::templates::search_agent_templates,
+            commands::templates::install_agent_template,
+            commands::templates::seed_builtin_templates,
             // ── Skill Outputs (Phase F.2) ──
             commands::skills::engine_list_skill_outputs,
             // ── FORGE (Certification & Skill Trees) ──

@@ -45,6 +45,15 @@ const EN_TO_ZH: Record<string, string> = {
   Workspace: '工作区',
   Skills: '技能',
   Foundry: '工坊',
+  // ── Agent Policy Presets ─────────────────────────────────────────────────
+  'Unrestricted': '无限制',
+  'Standard': '标准',
+  'Read-Only': '只读',
+  'Sandbox': '沙盒',
+  'Full access to all tools — no approval required': '完全访问所有工具 — 无需审批',
+  'All tools available, high-risk tools require approval (default)': '所有工具可用，高风险工具需审批（默认）',
+  'Only read/search tools — no modifications': '仅读取/搜索工具 — 无修改权限',
+  'Web search and memory only — no file or exec access': '仅网页搜索和记忆 — 无文件或执行权限',
   // ── Skills categories ─────────────────────────────────────────────────────
   'Vault (Credentials)': 'Vault（凭据）',
   'API Integrations': 'API 集成',
@@ -1840,6 +1849,7 @@ const EN_TO_ZH: Record<string, string> = {
   EXP: '过期',
   'Group Name': '群组名称',
   'Select Agents': '选择智能体',
+  'Create Group': '创建群聊',
   'Create & Open': '创建并打开',
   'e.g. Research Team': '例如：研究团队',
   'Send failed': '发送失败',

@@ -36,6 +36,7 @@ pub mod squad;
 pub mod state;
 pub mod tailscale;
 pub mod task;
+pub mod templates;
 pub mod telemetry;
 pub mod tool_bridge;
 pub mod trade;
