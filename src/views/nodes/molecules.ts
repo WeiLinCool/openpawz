@@ -5,6 +5,7 @@ import { showToast } from '../../components/toast';
 import { $ } from '../../components/helpers';
 import { esc } from './atoms';
 import { tesseractPlaceholder, activateTesseracts } from '../../components/tesseract';
+import { translateUiText } from '../../i18n';
 
 // ── Main loader ────────────────────────────────────────────────────────────
 export async function loadNodes() {
@@ -42,13 +43,13 @@ export async function loadNodes() {
       <div class="engine-card engine-card-wide">
         <div class="engine-card-header">
           <span class="ms">monitor_heart</span>
-          <h3>Engine Status</h3>
+          <h3>${translateUiText('Engine Status')}</h3>
         </div>
         <div class="engine-status-row">
           ${engineRunning ? tesseractPlaceholder(16, 'idle') : '<span class="engine-status-dot" style="color:var(--danger)"><span class="ms">circle</span></span>'}
           <div>
-            <div class="engine-status-label">Paw Engine</div>
-            <div class="engine-status-sub">${engineRunning ? 'Running — Tauri IPC connected' : 'Not responding'}</div>
+            <div class="engine-status-label">${translateUiText('Paw Engine')}</div>
+            <div class="engine-status-sub">${engineRunning ? translateUiText('Running — Tauri IPC connected') : translateUiText('Not responding')}</div>
           </div>
         </div>
       </div>`;
@@ -57,8 +58,7 @@ export async function loadNodes() {
     // ── Providers Card ─────────────────────────────────────────────────
     let provRows = '';
     if (!config.providers.length) {
-      provRows =
-        '<p class="engine-empty-hint">No providers configured. Go to Settings → Advanced to add providers.</p>';
+      provRows = `<p class="engine-empty-hint">${translateUiText('No providers configured. Go to Settings → Advanced to add providers.')}</p>`;
     } else {
       const kindIcons: Record<string, string> = {
         ollama: 'pets',
@@ -80,11 +80,11 @@ export async function loadNodes() {
           <div class="engine-provider-row" data-provider-kind="${esc(prov.kind.toLowerCase())}">
             <span class="ms engine-provider-icon">${icon}</span>
             <div class="engine-provider-info">
-              <div class="engine-provider-name">${esc(prov.kind)}${isDefault ? ' <span class="engine-default-badge">(default)</span>' : ''}</div>
+              <div class="engine-provider-name">${esc(prov.kind)}${isDefault ? ` <span class="engine-default-badge">${translateUiText('(default)')}</span>` : ''}</div>
               <div class="engine-provider-url">${esc(url)}</div>
             </div>
             <span class="engine-key-status" style="color:${hasKey ? 'var(--success)' : 'var(--warning)'}">
-              ${hasKey ? '● Key set' : '○ No key'}
+              ${hasKey ? translateUiText('● Key set') : translateUiText('○ No key')}
             </span>
           </div>`;
       }
@@ -94,7 +94,7 @@ export async function loadNodes() {
       <div class="engine-card">
         <div class="engine-card-header">
           <span class="ms">cloud</span>
-          <h3>Providers</h3>
+          <h3>${translateUiText('Providers')}</h3>
           <span class="engine-card-count">${config.providers.length}</span>
         </div>
         ${provRows}
@@ -104,7 +104,7 @@ export async function loadNodes() {
     target.querySelectorAll('.engine-provider-row[data-provider-kind="ollama"]').forEach((row) => {
       const testBtn = document.createElement('button');
       testBtn.className = 'btn btn-sm btn-ghost';
-      testBtn.textContent = 'Test';
+      testBtn.textContent = translateUiText('Test');
       testBtn.addEventListener('click', async () => {
         testBtn.disabled = true;
         testBtn.textContent = '…';
@@ -116,17 +116,17 @@ export async function loadNodes() {
             const data = (await resp.json()) as { models?: Array<{ name: string }> };
             const count = data.models?.length ?? 0;
             showToast(
-              `Ollama connected — ${count} model${count !== 1 ? 's' : ''} available`,
+              translateUiText(`Ollama connected — ${count} model${count !== 1 ? 's' : ''} available`),
               'success',
             );
           } else {
-            showToast(`Ollama returned ${resp.status}`, 'error');
+            showToast(translateUiText(`Ollama returned ${resp.status}`), 'error');
           }
         } catch (e) {
-          showToast(`Cannot reach Ollama: ${e instanceof Error ? e.message : e}`, 'error');
+          showToast(translateUiText(`Cannot reach Ollama: ${e instanceof Error ? e.message : e}`), 'error');
         } finally {
           testBtn.disabled = false;
-          testBtn.textContent = 'Test';
+          testBtn.textContent = translateUiText('Test');
         }
       });
       row.appendChild(testBtn);
@@ -138,11 +138,11 @@ export async function loadNodes() {
         <div class="engine-card">
           <div class="engine-card-header">
             <span class="ms">flag</span>
-            <h3>Active Model</h3>
+            <h3>${translateUiText('Active Model')}</h3>
           </div>
           <div class="engine-model-row">
             <span class="engine-model-name">${esc(config.default_model)}</span>
-            ${config.default_provider ? `<span class="engine-model-provider">via ${esc(config.default_provider)}</span>` : ''}
+            ${config.default_provider ? `<span class="engine-model-provider">${translateUiText('via')} ${esc(config.default_provider)}</span>` : ''}
           </div>
         </div>`;
     }
@@ -152,7 +152,7 @@ export async function loadNodes() {
       <div class="engine-card">
         <div class="engine-card-header">
           <span class="ms">tune</span>
-          <h3>Config</h3>
+          <h3>${translateUiText('Config')}</h3>
         </div>
         <div class="engine-config-grid">
           <div class="engine-config-item">
@@ -169,7 +169,7 @@ export async function loadNodes() {
           </div>
           <div class="engine-config-item">
             <span class="engine-config-label">default_model</span>
-            <span class="engine-config-value">${config.default_model ? esc(config.default_model) : '(not set)'}</span>
+            <span class="engine-config-value">${config.default_model ? esc(config.default_model) : translateUiText('(not set)')}</span>
           </div>
         </div>
       </div>`;
@@ -187,7 +187,7 @@ export async function loadNodes() {
             <span class="engine-skill-icon">${esc(skill.icon)}</span>
             <span class="engine-skill-name">${esc(skill.name)}</span>
             <span class="engine-skill-status" style="color:${ready ? 'var(--success)' : 'var(--warning)'}">
-              ${ready ? '● Ready' : `○ Missing: ${skill.missing_credentials.join(', ')}`}
+              ${ready ? translateUiText('● Ready') : translateUiText(`○ Missing: ${skill.missing_credentials.join(', ')}`)}
             </span>
           </div>`;
       }
@@ -196,14 +196,14 @@ export async function loadNodes() {
         <div class="engine-card engine-card-wide">
           <div class="engine-card-header">
             <span class="ms">extension</span>
-            <h3>Enabled Skills</h3>
-            <span class="engine-card-count">${readyCount}/${enabledSkills.length} ready</span>
+            <h3>${translateUiText('Enabled Skills')}</h3>
+            <span class="engine-card-count">${readyCount}/${enabledSkills.length} ${translateUiText('ready')}</span>
           </div>
-          ${skillRows || '<p class="engine-empty-hint">No skills enabled.</p>'}
+          ${skillRows || `<p class="engine-empty-hint">${translateUiText('No skills enabled.')}</p>`}
         </div>`;
     }
   } catch (e) {
     if (loading) loading.style.display = 'none';
-    target.innerHTML = `<p style="color:var(--danger);padding:24px">Failed to load engine status: ${esc(String(e))}</p>`;
+    target.innerHTML = `<p style="color:var(--danger);padding:24px">${translateUiText('Failed to load engine status')}: ${esc(String(e))}</p>`;
   }
 }

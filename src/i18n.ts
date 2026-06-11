@@ -1105,6 +1105,32 @@ const EN_TO_ZH: Record<string, string> = {
   'Available Models': '可用模型',
   'These models are provided by your organization through the enterprise gateway.':
     '这些模型由你的组织通过企业网关提供。',
+  'All models available from your configured providers. Click any model to copy its ID — paste it into task model overrides, agent routing, etc.':
+    '你配置的供应商提供的所有可用模型。点击任意模型复制其 ID — 可粘贴到任务模型覆盖、智能体路由等配置中。',
+  'Add a provider above to see available models.': '在上方添加供应商以查看可用模型。',
+  'Currently using:': '当前使用：',
+  'Hover for model tier info. Click to copy model ID.': '悬停查看模型层级信息。点击复制模型 ID。',
+  'Model Routing (Multi-Agent)': '模型路由（多智能体）',
+  'Use different models for different roles. Enable <strong>Smart Auto-Tier</strong> to automatically use the cheapest model for simple tasks and upgrade for complex ones.':
+    '为不同角色使用不同模型。启用<strong>智能自动分层</strong>可自动为简单任务使用最便宜的模型，复杂任务自动升级。',
+  'Smart Auto-Tier': '智能自动分层',
+  'Automatically use cheap model for simple tasks, upgrade for complex ones':
+    '自动为简单任务使用便宜模型，复杂任务升级',
+  'Enabled — saves cost on simple tasks': '已启用 — 为简单任务节省成本',
+  'Disabled — always uses default model': '已禁用 — 始终使用默认模型',
+  'Cheap Model (for simple tasks)': '便宜模型（用于简单任务）',
+  'Model used for greetings, status checks, single-tool calls':
+    '用于问候、状态检查、单工具调用的模型',
+  'Boss / Orchestrator Model': 'Boss / 协调者模型',
+  'Powerful model for the master agent that plans and delegates':
+    '用于计划和委派的主智能体的强大模型',
+  'Worker / Foreman Model': 'Worker / 工头模型',
+  'Cheaper/faster model that executes tool calls — any provider (cloud or local Ollama)':
+    '执行工具调用的更便宜/更快的模型 — 支持任何供应商（云端或本地 Ollama）',
+  'Per-Specialty Overrides': '按专业覆盖',
+  'Assign specific models to agent specialties. Leave blank to use the Worker model.':
+    '为智能体专业分配特定模型。留空则使用 Worker 模型。',
+  'Discovery failed': '发现失败',
   'Configured Providers': '已配置供应商',
   'All your AI providers. Agents can use any of these — add as many as you need.':
     '所有 AI 供应商都在这里。智能体可以使用其中任意一个，你可以按需添加多个。',
@@ -1178,9 +1204,6 @@ const EN_TO_ZH: Record<string, string> = {
   'Discover Models': '发现模型',
   'Discovering…': '发现中...',
   'No models found — check URL and API key': '未发现模型，请检查 URL 和 API Key',
-  Found: '发现',
-  'model(s)': '个模型',
-  'Discovery failed': '发现失败',
   updated: '已更新',
   'Save failed': '保存失败',
   'OpenAI-compatible / Custom': 'OpenAI 兼容 / 自定义',
@@ -1202,6 +1225,23 @@ const EN_TO_ZH: Record<string, string> = {
   'MCP Servers': 'MCP 服务器',
   Memory: '记忆',
   Engine: '引擎',
+  'Engine Status': '引擎状态',
+  'Paw Engine': 'Paw 引擎',
+  'Running — Tauri IPC connected': '运行中 — Tauri IPC 已连接',
+  'Not responding': '未响应',
+  'No providers configured. Go to Settings → Advanced to add providers.': '未配置供应商。前往设置 → 高级添加供应商。',
+  '(default)': '(默认)',
+  Test: '测试',
+  'Active Model': '活动模型',
+  via: '通过',
+  Config: '配置',
+  '(not set)': '(未设置)',
+  'Enabled Skills': '已启用的技能',
+  ready: '就绪',
+  '● Ready': '● 就绪',
+  '○ Missing': '○ 缺少',
+  'No skills enabled.': '未启用技能。',
+  'Failed to load engine status': '加载引擎状态失败',
   Logs: '日志',
   'Theme, software updates, and about information': '主题、软件更新和关于信息',
   'Built-in Paw Engine': '内置 Paw 引擎',
@@ -1591,8 +1631,13 @@ const EN_TO_ZH: Record<string, string> = {
   'The engine database and browser profiles stay local — only user-facing files sync.':
     '引擎数据库和浏览器配置档保留在本机，仅同步用户可见文件。',
   'Saving…': '正在保存…',
+  'Saved — database reconnected': '已保存 — 数据库已重新连接',
   'Saved — restart required': '已保存 - 需要重启',
   Saved: '已保存',
+  'Loading storage paths…': '正在加载存储路径...',
+  'Reset data root to default (~/.paw/)? Requires a restart.': '重置数据根目录为默认（~/.paw/）？需要重启。',
+  'Reset Data Root': '重置数据根目录',
+  'Failed to set data root': '设置数据根目录失败',
   Error: '错误',
   'Failed to load storage settings.': '无法加载存储设置。',
   Source: '来源',
@@ -2581,8 +2626,25 @@ const ZH_TO_EN = Object.fromEntries(Object.entries(EN_TO_ZH).map(([en, zh]) => [
 
 const UI_MESSAGE_PATTERNS: Array<{
   en: RegExp;
-  zh: (...groups: string[]) => string;
+  zh: (...args: string[]) => string;
 }> = [
+  // ── Engine status patterns ─────────────────────────────────────────
+  {
+    en: /^Ollama connected — (\d+) models? available$/,
+    zh: (count) => `Ollama 已连接 — ${count} 个模型可用`,
+  },
+  {
+    en: /^Ollama returned (\d+)$/,
+    zh: (status) => `Ollama 返回 ${status}`,
+  },
+  {
+    en: /^Cannot reach Ollama: (.+)$/,
+    zh: (error) => `无法连接 Ollama：${translateUiText(error)}`,
+  },
+  {
+    en: /^○ Missing: (.+)$/,
+    zh: (items) => `○ 缺少：${items}`,
+  },
   {
     en: /^Using (.+)$/,
     zh: (tool) => `正在使用 ${translateUiText(tool)}`,

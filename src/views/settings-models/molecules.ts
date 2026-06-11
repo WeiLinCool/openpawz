@@ -414,8 +414,8 @@ function buildModelRoutingSection(
   const section = document.createElement('div');
   section.className = 'settings-subsection';
   section.style.marginTop = '20px';
-  section.innerHTML = `<h3 class="settings-subsection-title">Model Routing (Multi-Agent)</h3>
-    <p class="settings-section-desc">Use different models for different roles. Enable <strong>Smart Auto-Tier</strong> to automatically use the cheapest model for simple tasks and upgrade for complex ones.</p>`;
+  section.innerHTML = `<h3 class="settings-subsection-title">${t('Model Routing (Multi-Agent)')}</h3>
+    <p class="settings-section-desc">${t('Use different models for different roles. Enable <strong>Smart Auto-Tier</strong> to automatically use the cheapest model for simple tasks and upgrade for complex ones.')}</p>`;
 
   const routing = config.model_routing ?? {};
 
@@ -433,8 +433,8 @@ function buildModelRoutingSection(
 
   // ── Smart Auto-Tier Toggle ──
   const autoTierRow = formRow(
-    'Smart Auto-Tier',
-    'Automatically use cheap model for simple tasks, upgrade for complex ones',
+    t('Smart Auto-Tier'),
+    t('Automatically use cheap model for simple tasks, upgrade for complex ones'),
   );
   const autoTierCheck = document.createElement('input');
   autoTierCheck.type = 'checkbox';
@@ -442,13 +442,13 @@ function buildModelRoutingSection(
   autoTierCheck.style.cssText = 'width:18px;height:18px;cursor:pointer';
   const autoTierLabel = document.createElement('span');
   autoTierLabel.textContent = routing.auto_tier
-    ? 'Enabled — saves cost on simple tasks'
-    : 'Disabled — always uses default model';
+    ? t('Enabled — saves cost on simple tasks')
+    : t('Disabled — always uses default model');
   autoTierLabel.style.cssText = 'font-size:12px;color:var(--text-muted);margin-left:8px';
   autoTierCheck.addEventListener('change', () => {
     autoTierLabel.textContent = autoTierCheck.checked
-      ? 'Enabled — saves cost on simple tasks'
-      : 'Disabled — always uses default model';
+      ? t('Enabled — saves cost on simple tasks')
+      : t('Disabled — always uses default model');
     cheapRow.style.display = autoTierCheck.checked ? '' : 'none';
   });
   const autoTierWrap = document.createElement('div');
@@ -460,8 +460,8 @@ function buildModelRoutingSection(
 
   // Cheap Model (for auto-tier)
   const cheapRow = formRow(
-    'Cheap Model (for simple tasks)',
-    'Model used for greetings, status checks, single-tool calls',
+    t('Cheap Model (for simple tasks)'),
+    t('Model used for greetings, status checks, single-tool calls'),
   );
   const cheapInp = textInput(
     routing.cheap_model ?? '',
@@ -475,8 +475,8 @@ function buildModelRoutingSection(
 
   // Boss Model
   const bossRow = formRow(
-    'Boss / Orchestrator Model',
-    'Powerful model for the master agent that plans and delegates',
+    t('Boss / Orchestrator Model'),
+    t('Powerful model for the master agent that plans and delegates'),
   );
   const bossInp = textInput(routing.boss_model ?? '', 'e.g. gemini-2.5-pro');
   bossInp.style.maxWidth = '320px';
@@ -486,8 +486,8 @@ function buildModelRoutingSection(
 
   // Worker Model
   const workerRow = formRow(
-    'Worker / Foreman Model',
-    'Cheaper/faster model that executes tool calls — any provider (cloud or local Ollama)',
+    t('Worker / Foreman Model'),
+    t('Cheaper/faster model that executes tool calls — any provider (cloud or local Ollama)'),
   );
   const workerInp = textInput(routing.worker_model ?? '', 'e.g. gemini-2.0-flash');
   workerInp.style.maxWidth = '320px';
@@ -534,8 +534,8 @@ function buildModelRoutingSection(
   // Specialty Overrides
   const specSection = document.createElement('div');
   specSection.style.cssText = 'margin-top:16px';
-  specSection.innerHTML = `<div style="font-weight:600;font-size:13px;margin-bottom:8px">Per-Specialty Overrides <span style="font-weight:normal;color:var(--text-muted)">(optional)</span></div>
-    <p style="font-size:12px;color:var(--text-muted);margin:0 0 8px 0">Assign specific models to agent specialties. Leave blank to use the Worker model.</p>`;
+  specSection.innerHTML = `<div style="font-weight:600;font-size:13px;margin-bottom:8px">${t('Per-Specialty Overrides')} <span style="font-weight:normal;color:var(--text-muted)">(optional)</span></div>
+    <p style="font-size:12px;color:var(--text-muted);margin:0 0 8px 0">${t('Assign specific models to agent specialties. Leave blank to use the Worker model.')}</p>`;
 
   const specModels: Record<string, string> = { ...(routing.specialty_models ?? {}) };
   const specGrid = document.createElement('div');
@@ -598,11 +598,11 @@ function buildAvailableModelsPanel(providers: EngineProviderConfig[]): HTMLDivEl
   section.className = 'settings-subsection';
   section.style.marginTop = '20px';
 
-  section.innerHTML = `<h3 class="settings-subsection-title">Available Models</h3>
-    <p class="settings-section-desc">All models available from your configured providers. Click any model to copy its ID — paste it into task model overrides, agent routing, etc.</p>`;
+  section.innerHTML = `<h3 class="settings-subsection-title">${t('Available Models')}</h3>
+    <p class="settings-section-desc">${t('All models available from your configured providers. Click any model to copy its ID — paste it into task model overrides, agent routing, etc.')}</p>`;
 
   if (providers.length === 0) {
-    section.innerHTML += `<p style="color:var(--text-muted);font-size:13px;padding:12px 0">Add a provider above to see available models.</p>`;
+    section.innerHTML += `<p style="color:var(--text-muted);font-size:13px;padding:12px 0">${t('Add a provider above to see available models.')}</p>`;
     return section;
   }
 
@@ -623,7 +623,7 @@ function buildAvailableModelsPanel(providers: EngineProviderConfig[]): HTMLDivEl
     if (p.default_model) {
       const activeTag = document.createElement('div');
       activeTag.style.cssText = 'font-size:11px;color:var(--text-muted);margin-bottom:6px';
-      activeTag.innerHTML = `Currently using: <strong style="color:var(--accent)">${esc(p.default_model)}</strong>`;
+      activeTag.innerHTML = `${t('Currently using:')} <strong style="color:var(--accent)">${esc(p.default_model)}</strong>`;
       provBlock.appendChild(activeTag);
     }
 
@@ -662,7 +662,7 @@ function buildAvailableModelsPanel(providers: EngineProviderConfig[]): HTMLDivEl
     if (Object.keys(tierInfo).length > 0) {
       const legend = document.createElement('div');
       legend.style.cssText = 'font-size:10px;color:var(--text-muted);margin-top:6px';
-      legend.textContent = 'Hover for model tier info. Click to copy model ID.';
+      legend.textContent = t('Hover for model tier info. Click to copy model ID.');
       provBlock.appendChild(legend);
     }
 
