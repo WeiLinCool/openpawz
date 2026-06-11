@@ -10,6 +10,11 @@ const defaults = {
   OPENPAWZ_ENTERPRISE_ISSUER_URL: 'http://localhost:3000',
   OPENPAWZ_ENTERPRISE_CLIENT_ID: 'openpawz-desktop',
   OPENPAWZ_ENTERPRISE_DEFAULT_MODEL: 'gpt-4o-mini',
+  OPENPAWZ_APP_NAME: '太极台 企业版',
+  OPENPAWZ_SHORT_NAME: '太极企',
+  OPENPAWZ_PRODUCT_NAME: '太极台 企业版',
+  OPENPAWZ_WINDOW_TITLE: '太极台 企业版',
+  OPENPAWZ_IDENTIFIER: 'com.openpawz.taiji-dragon.enterprise',
 };
 
 const args = process.argv.slice(2);

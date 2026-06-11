@@ -10,8 +10,8 @@
 use std::path::PathBuf;
 use std::sync::RwLock;
 
-/// Cached override for the data root, loaded from `~/.paw/storage.conf`.
-/// `None` → use default `~/.paw/`.  `Some(path)` → user-configured root.
+/// Cached override for the data root, loaded from the active namespace storage.conf.
+/// `None` → use the namespace default. `Some(path)` → user-configured root.
 static DATA_ROOT_OVERRIDE: RwLock<Option<PathBuf>> = RwLock::new(None);
 
 const BUILD_EDITION: Option<&str> = option_env!("OPENPAWZ_BUILD_EDITION");
@@ -26,9 +26,9 @@ pub fn install_namespace() -> String {
     }
 }
 
-fn namespaced_hidden_dir(prefix: &str) -> PathBuf {
+fn namespaced_hidden_dir() -> PathBuf {
     let home = dirs::home_dir().unwrap_or_else(|| PathBuf::from("."));
-    home.join(format!(".{}-{}", prefix, install_namespace()))
+    home.join(format!(".{}", install_namespace()))
 }
 
 /// The fixed location of the redirect file for the active install namespace.
@@ -101,11 +101,11 @@ pub fn get_data_root_override() -> Option<PathBuf> {
 
 /// The default data root for the active install namespace.
 pub fn default_data_dir() -> PathBuf {
-    namespaced_hidden_dir("paw")
+    namespaced_hidden_dir()
 }
 
 /// The root data directory for all Paw engine data.
-/// Defaults to `~/.paw/`, overridable via Settings → Storage.
+/// Defaults to `~/.<brand>/`, overridable via Settings → Storage.
 pub fn paw_data_dir() -> PathBuf {
     // Check override first
     if let Some(ref p) = *DATA_ROOT_OVERRIDE.read().unwrap() {
@@ -116,7 +116,7 @@ pub fn paw_data_dir() -> PathBuf {
 
 /// Shared root for n8n/Node artifacts for the active install namespace.
 pub fn openpawz_data_dir() -> PathBuf {
-    namespaced_hidden_dir("openpawz")
+    namespaced_hidden_dir()
 }
 
 // ── Derived paths ──────────────────────────────────────────────────────
